@@ -1,0 +1,12 @@
+# folders
+.0x-artifacts/
+.nyc_output/
+artifacts/
+build/
+coverage/
+docs/
+lib/
+node_modules/
+
+# files
+package.json

@@ -1,0 +1,50 @@
+@import "./fonts.scss";
+@import "./variables.scss";
+
+/* Elements */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Larsseit", system-ui, /* macOS 10.11-10.12 */ -apple-system, /* Windows 6+ */ Segoe UI,
+    /* Android 4+ */ Roboto, /* Ubuntu 10.10+ */ Ubuntu, /* Gnome 3+ */ Cantarell, /* KDE Plasma 5+ */ Noto Sans,
+    /* fallback */ sans-serif, /* macOS emoji */ "Apple Color Emoji", /* Windows emoji */ "Segoe UI Emoji",
+    /* Windows emoji */ "Segoe UI Symbol", /* Linux emoji */ "Noto Color Emoji";
+  font-size: 16px;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+
+  &:hover {
+    opacity: 0.6;
+    transition: all 0.2s ease-in-out 0s;
+  }
+}
+
+button {
+  border: none;
+  outline: none;
+}
+
+/* Classes */
+.spacer {
+  flex-grow: 1;
+}
+
+/* Ids */
+#app-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: $anti-flash-white;
+}
+
+#modal-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+}

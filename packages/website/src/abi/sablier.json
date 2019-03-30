@@ -1,0 +1,448 @@
+[
+  {
+    "inputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_streamId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "_sender",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_tokenAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_startBlock",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_stopBlock",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_payment",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_interval",
+        "type": "uint256"
+      }
+    ],
+    "name": "CreateStream",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_streamId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_funds",
+        "type": "uint256"
+      }
+    ],
+    "name": "Withdraw",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_streamId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "_sender",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_senderBalance",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_recipientBalance",
+        "type": "uint256"
+      }
+    ],
+    "name": "Redeem",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_streamId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "confirmer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_newTokenAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_newStopBlock",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_newPayment",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_newInterval",
+        "type": "uint256"
+      }
+    ],
+    "name": "ConfirmUpdate",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_streamId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "revoker",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_newTokenAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_newStopBlock",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_newPayment",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_newInterval",
+        "type": "uint256"
+      }
+    ],
+    "name": "RevokeUpdate",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_newStreamId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "_sender",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_newTokenAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_newStopBlock",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_newPayment",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "_newInterval",
+        "type": "uint256"
+      }
+    ],
+    "name": "ExecuteUpdate",
+    "type": "event"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_streamId",
+        "type": "uint256"
+      },
+      {
+        "name": "_addr",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_streamId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getStream",
+    "outputs": [
+      {
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "name": "tokenAddress",
+        "type": "address"
+      },
+      {
+        "name": "balance",
+        "type": "uint256"
+      },
+      {
+        "name": "startBlock",
+        "type": "uint256"
+      },
+      {
+        "name": "stopBlock",
+        "type": "uint256"
+      },
+      {
+        "name": "payment",
+        "type": "uint256"
+      },
+      {
+        "name": "interval",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_streamId",
+        "type": "uint256"
+      },
+      {
+        "name": "_addr",
+        "type": "address"
+      }
+    ],
+    "name": "getUpdate",
+    "outputs": [
+      {
+        "name": "active",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_sender",
+        "type": "address"
+      },
+      {
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "name": "_tokenAddress",
+        "type": "address"
+      },
+      {
+        "name": "_startBlock",
+        "type": "uint256"
+      },
+      {
+        "name": "_stopBlock",
+        "type": "uint256"
+      },
+      {
+        "name": "_payment",
+        "type": "uint256"
+      },
+      {
+        "name": "_interval",
+        "type": "uint256"
+      }
+    ],
+    "name": "create",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_streamId",
+        "type": "uint256"
+      },
+      {
+        "name": "_funds",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_streamId",
+        "type": "uint256"
+      }
+    ],
+    "name": "redeem",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_streamId",
+        "type": "uint256"
+      },
+      {
+        "name": "_tokenAddress",
+        "type": "address"
+      },
+      {
+        "name": "_stopBlock",
+        "type": "uint256"
+      },
+      {
+        "name": "_payment",
+        "type": "uint256"
+      },
+      {
+        "name": "_interval",
+        "type": "uint256"
+      }
+    ],
+    "name": "confirmUpdate",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_streamId",
+        "type": "uint256"
+      },
+      {
+        "name": "_tokenAddress",
+        "type": "address"
+      },
+      {
+        "name": "_stopBlock",
+        "type": "uint256"
+      },
+      {
+        "name": "_payment",
+        "type": "uint256"
+      },
+      {
+        "name": "_interval",
+        "type": "uint256"
+      }
+    ],
+    "name": "revokeUpdate",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

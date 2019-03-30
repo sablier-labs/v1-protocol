@@ -1,0 +1,27 @@
+# folders
+.0x-artifacts/
+.nyc_output/
+.vscode/
+artifacts/
+build/
+coverage/
+coverageEnv/
+docs/
+lib/
+node_modules/
+
+# files
+.DS_Store
+.env
+*.log
+coverage.json
+lerna-debug.log*
+npm-debug.log*
+scTopics
+yarn-debug.log*
+yarn-error.log*
+
+# packages
+packages/weierstrudel/debug.txt
+packages/weierstrudel/log.txt
+packages/weierstrudel/js_snippets/hashToPoint.js
