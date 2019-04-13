@@ -9,6 +9,9 @@ $malibu-blue: #5ca2ff;
 $royal-blue: #2f80ed;
 $zumthor-blue: #ebf4ff;
 
+// Brown
+$sandy-brown: #f4a261;
+
 // Gray
 $concrete-gray: #fafafa;
 $dove-gray: #737373;
@@ -18,21 +21,18 @@ $lavender-gray: #bcc1d5;
 $mercury-gray: #e1e1e1;
 $silver-gray: #c4c4c4;
 
+// Green
+$pigment-green: #00a351;
 // Red
-$salmon-red: #ff6871;
+$fire-engine-red: #ce2627;
+$rusty-red: #da223d;
 
 // White
 $white: #fff;
 $anti-flash-white: #f3f3f8;
+$ghost-white: #f8f9fc;
 
 /* Layout */
-%frame {
-  z-index: 100;
-  background-color: $white;
-  border-radius: 8px;
-  box-shadow: 0 20 32px rgba($granite-gray, 0.15);
-}
-
 %col-nowrap {
   display: flex;
   flex-flow: column nowrap;
@@ -44,53 +44,39 @@ $anti-flash-white: #f3f3f8;
 }
 
 /* Elements */
+%bordered-container {
+  border-radius: 4px;
+  box-shadow: $glitter-gray 0 0 0 2px inset;
+}
+
 %borderless-input {
-  width: 0;
   flex: 1 1 auto;
+  background: transparent;
   border: none;
   color: $space-cadet-black;
-  font-size: 16px;
+  font-family: sans-serif;
   outline: none;
 
   &::placeholder {
     color: $lavender-gray;
+    opacity: 1;
   }
 }
 
-%input-box {
-  @extend %row-nowrap;
-  width: 100%;
-  height: 64px;
+%centered-modal {
+  width: 560px;
+  height: 320px;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 16px;
-  border: 1.5px solid $glitter-gray;
-  border-radius: 4px;
-  font-size: 20px;
+  left: 50%;
+  top: 50%;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 300;
 }
 
-%primary-button {
-  font-size: 16px;
-  min-width: 256px;
-  padding: 16px;
-  background-color: $royal-blue;
-  border: 1px solid transparent;
-  border-radius: 48px;
-  color: $white;
-  cursor: pointer;
-  outline: none;
-  user-select: none;
-  transition: background-color 300ms ease-in-out;
-
-  &:hover {
-    background-color: lighten($royal-blue, 5);
-  }
-
-  &:active {
-    background-color: darken($royal-blue, 5);
-  }
-
-  &:disabled {
-    background-color: $mercury-gray;
-  }
+%frame {
+  z-index: 100;
+  background-color: $white;
+  border-radius: 8px;
+  box-shadow: rgba($granite-gray, 0.05) 0 0 16px 28px;
 }

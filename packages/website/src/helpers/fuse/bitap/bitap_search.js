@@ -1,21 +1,26 @@
-import bitapScore from './bitap_score';
-import matchedIndices from './bitap_matched_indices';
+import bitapScore from "./bitap_score";
+import matchedIndices from "./bitap_matched_indices";
 
-export default function (text, pattern, patternAlphabet, { location = 0, distance = 100, threshold = 0.6, findAllMatches = false, minMatchCharLength = 1 }) {
-  const expectedLocation = location
+export default function(
+  text,
+  pattern,
+  patternAlphabet,
+  { location = 0, distance = 100, threshold = 0.6, findAllMatches = false, minMatchCharLength = 1 },
+) {
+  const expectedLocation = location;
   // Set starting location at beginning text and initialize the alphabet.
-  const textLen = text.length
+  const textLen = text.length;
   // Highest score beyond which we give up.
-  let currentThreshold = threshold
+  let currentThreshold = threshold;
   // Is there a nearby exact match? (speedup)
-  let bestLocation = text.indexOf(pattern, expectedLocation)
+  let bestLocation = text.indexOf(pattern, expectedLocation);
 
-  const patternLen = pattern.length
+  const patternLen = pattern.length;
 
   // a mask of the matches
-  const matchMask = []
+  const matchMask = [];
   for (let i = 0; i < textLen; i += 1) {
-    matchMask[i] = 0
+    matchMask[i] = 0;
   }
 
   if (bestLocation !== -1) {
@@ -23,82 +28,82 @@ export default function (text, pattern, patternAlphabet, { location = 0, distanc
       errors: 0,
       currentLocation: bestLocation,
       expectedLocation,
-      distance
-    })
-    currentThreshold = Math.min(score, currentThreshold)
+      distance,
+    });
+    currentThreshold = Math.min(score, currentThreshold);
 
     // What about in the other direction? (speed up)
-    bestLocation = text.lastIndexOf(pattern, expectedLocation + patternLen)
+    bestLocation = text.lastIndexOf(pattern, expectedLocation + patternLen);
 
     if (bestLocation !== -1) {
       let score = bitapScore(pattern, {
         errors: 0,
         currentLocation: bestLocation,
         expectedLocation,
-        distance
-      })
-      currentThreshold = Math.min(score, currentThreshold)
+        distance,
+      });
+      currentThreshold = Math.min(score, currentThreshold);
     }
   }
 
   // Reset the best location
-  bestLocation = -1
+  bestLocation = -1;
 
-  let lastBitArr = []
-  let finalScore = 1
-  let binMax = patternLen + textLen
+  let lastBitArr = [];
+  let finalScore = 1;
+  let binMax = patternLen + textLen;
 
-  const mask = 1 << (patternLen - 1)
+  const mask = 1 << (patternLen - 1);
 
   for (let i = 0; i < patternLen; i += 1) {
     // Scan for the best match; each iteration allows for one more error.
     // Run a binary search to determine how far from the match location we can stray
     // at this error level.
-    let binMin = 0
-    let binMid = binMax
+    let binMin = 0;
+    let binMid = binMax;
 
     while (binMin < binMid) {
       const score = bitapScore(pattern, {
         errors: i,
         currentLocation: expectedLocation + binMid,
         expectedLocation,
-        distance
+        distance,
       });
 
       if (score <= currentThreshold) {
-        binMin = binMid
+        binMin = binMid;
       } else {
-        binMax = binMid
+        binMax = binMid;
       }
 
-      binMid = Math.floor((binMax - binMin) / 2 + binMin)
+      binMid = Math.floor((binMax - binMin) / 2 + binMin);
     }
 
     // Use the result from this iteration as the maximum for the next.
-    binMax = binMid
+    binMax = binMid;
 
-    let start = Math.max(1, expectedLocation - binMid + 1)
-    let finish = findAllMatches ? textLen : Math.min(expectedLocation + binMid, textLen) + patternLen
+    let start = Math.max(1, expectedLocation - binMid + 1);
+    let finish = findAllMatches ? textLen : Math.min(expectedLocation + binMid, textLen) + patternLen;
 
     // Initialize the bit array
-    let bitArr = Array(finish + 2)
+    let bitArr = Array(finish + 2);
 
-    bitArr[finish + 1] = (1 << i) - 1
+    bitArr[finish + 1] = (1 << i) - 1;
 
     for (let j = finish; j >= start; j -= 1) {
-      let currentLocation = j - 1
-      let charMatch = patternAlphabet[text.charAt(currentLocation)]
+      let currentLocation = j - 1;
+      let charMatch = patternAlphabet[text.charAt(currentLocation)];
 
       if (charMatch) {
-        matchMask[currentLocation] = 1
+        matchMask[currentLocation] = 1;
       }
 
       // First pass: exact match
-      bitArr[j] = ((bitArr[j + 1] << 1) | 1) & charMatch
+      bitArr[j] = ((bitArr[j + 1] << 1) | 1) & charMatch;
 
       // Subsequent passes: fuzzy match
       if (i !== 0) {
-        bitArr[j] |= (((lastBitArr[j + 1] | lastBitArr[j]) << 1) | 1) | lastBitArr[j + 1]
+        bitArr[j] |= ((lastBitArr[j + 1] | lastBitArr[j]) << 1) | 1 | lastBitArr[j + 1];
       }
 
       if (bitArr[j] & mask) {
@@ -106,23 +111,23 @@ export default function (text, pattern, patternAlphabet, { location = 0, distanc
           errors: i,
           currentLocation,
           expectedLocation,
-          distance
-        })
+          distance,
+        });
 
         // This match will almost certainly be better than any existing match.
         // But check anyway.
         if (finalScore <= currentThreshold) {
           // Indeed it is
-          currentThreshold = finalScore
-          bestLocation = currentLocation
+          currentThreshold = finalScore;
+          bestLocation = currentLocation;
 
           // Already passed `loc`, downhill from here on in.
           if (bestLocation <= expectedLocation) {
-            break
+            break;
           }
 
           // When passing `bestLocation`, don't exceed our current distance from `expectedLocation`.
-          start = Math.max(1, 2 * expectedLocation - bestLocation)
+          start = Math.max(1, 2 * expectedLocation - bestLocation);
         }
       }
     }
@@ -132,16 +137,16 @@ export default function (text, pattern, patternAlphabet, { location = 0, distanc
       errors: i + 1,
       currentLocation: expectedLocation,
       expectedLocation,
-      distance
-    })
+      distance,
+    });
 
     // console.log('score', score, finalScore)
 
     if (score > currentThreshold) {
-      break
+      break;
     }
 
-    lastBitArr = bitArr
+    lastBitArr = bitArr;
   }
 
   // console.log('FINAL SCORE', finalScore)
@@ -150,6 +155,6 @@ export default function (text, pattern, patternAlphabet, { location = 0, distanc
   return {
     isMatch: bestLocation >= 0,
     score: finalScore === 0 ? 0.001 : finalScore,
-    matchedIndices: matchedIndices(matchMask, minMatchCharLength)
-  }
+    matchedIndices: matchedIndices(matchMask, minMatchCharLength),
+  };
 }

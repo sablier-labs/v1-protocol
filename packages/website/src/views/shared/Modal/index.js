@@ -5,11 +5,11 @@ import { CSSTransitionGroup } from "react-transition-group";
 
 import "./modal.scss";
 
-const modalRoot = document.querySelector('#modal-root');
+const modalRoot = document.querySelector("#modal-root");
 class Modal extends Component {
   static propTypes = {
     onClose: PropTypes.func.isRequired,
-  }
+  };
 
   componentDidMount() {
     // The portal element is inserted in the DOM tree after

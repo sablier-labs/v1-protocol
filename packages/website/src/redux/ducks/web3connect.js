@@ -102,11 +102,13 @@ export const selectors = () => (dispatch, getState) => {
   };
 };
 
-const Balance = (value, label = "", decimals = 0) => ({
-  value: BN(value),
-  label: label.toUpperCase(),
-  decimals: +decimals,
-});
+const Balance = (value, label = "", decimals = 0) => {
+  return {
+    value: BN(value),
+    label: label.toUpperCase(),
+    decimals: +decimals,
+  };
+};
 
 export const initialize = () => (dispatch, getState) => {
   const { web3connect } = getState();
@@ -224,7 +226,7 @@ export const sync = () => async (dispatch, getState) => {
     watched,
     contracts,
     networkId,
-    transactions: { pending, confirmed },
+    transactions: { pending },
   } = getState().web3connect;
 
   // Sync Account
@@ -303,6 +305,7 @@ export const sync = () => async (dispatch, getState) => {
             );
         } catch (err) {}
       }
+      symbol = symbol || "";
 
       if (tokenBalance.value.isEqualTo(BN(balance)) && tokenBalance.label && tokenBalance.decimals) {
         return;
@@ -340,6 +343,7 @@ export const sync = () => async (dispatch, getState) => {
             symbol = symbol || web3.utils.hexToString(await contractBytes32.methods.symbol().call());
           } catch (err) {}
         }
+        symbol = symbol || "";
 
         if (approvalBalance.label && approvalBalance.value.isEqualTo(BN(balance))) {
           return;
@@ -394,7 +398,7 @@ export const startWatching = () => async (dispatch, getState) => {
   const timeout = !account ? 1000 : 5000;
 
   dispatch(sync());
-  //setTimeout(() => dispatch(startWatching()), timeout);
+  setTimeout(() => dispatch(startWatching()), timeout);
 };
 
 export default function web3connectReducer(state = initialState, { type, payload }) {
@@ -546,7 +550,7 @@ export class _Web3Connect extends Component {
     initialize() {},
   };
 
-  componentWillMount() {
+  componentDidMount() {
     this.props.initialize().then(this.props.startWatching());
   }
 

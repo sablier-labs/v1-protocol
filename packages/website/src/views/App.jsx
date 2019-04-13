@@ -10,13 +10,14 @@ import Dashboard from "./pages/Dashboard";
 import Header from "./shared/Header";
 import PayWithSablier from "./pages/PayWithSablier";
 import Stream from "./pages/Stream";
+import NetworkWarning from "./shared/NetworkWarning";
 
 import { history } from "../redux/store";
 import { setAddresses } from "../redux/ducks/addresses";
 import { Web3Connect, startWatching, initialize } from "../redux/ducks/web3connect";
 
 class App extends Component {
-  componentWillMount() {
+  componentDidMount() {
     const { initialize, startWatching } = this.props;
     initialize().then(startWatching);
   }
@@ -54,6 +55,7 @@ class App extends Component {
             <Route exact path="/stream/:streamId?" component={Stream} />
             <Redirect exact to="/" />
           </Switch>
+          <NetworkWarning />
         </ConnectedRouter>
       </div>
     );

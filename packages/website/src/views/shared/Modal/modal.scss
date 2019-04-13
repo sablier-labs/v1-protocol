@@ -4,7 +4,7 @@
   height: 100vh;
   width: 100vw;
   position: relative;
-  z-index: 200;
+  z-index: 100;
   background-color: rgba($black, .6);
 }
 
@@ -14,5 +14,5 @@
 
 .modal-container-appear.modal-container-appear-active {
   opacity: 1;
-  transition: opacity 200ms ease-in-out;
+  transition: opacity 250ms ease-in-out;
 }

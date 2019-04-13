@@ -16,7 +16,7 @@ class Header extends Component {
     currentAddress: PropTypes.string,
     isConnected: PropTypes.bool.isRequired,
   };
-  
+
   render() {
     const { t } = this.props;
 
@@ -25,9 +25,15 @@ class Header extends Component {
         <Logo />
         <div className="header__menu">
           <div className="header__link-container">
-              <Link className="header__link-item" to={links.menu.docs} target="_blank">{t("docs")}</Link>
-              <Link className="header__link-item" to={links.menu.github} target="_blank">{t("github")}</Link>
-              <Link className="header__link-item" to={links.menu.twitter} target="_blank">{t("twitter")}</Link>
+            <Link className="header__link-item" to={links.menu.docs} target="_blank">
+              {t("docs")}
+            </Link>
+            <Link className="header__link-item" to={links.menu.github} target="_blank">
+              GitHub
+            </Link>
+            <Link className="header__link-item" to={links.menu.twitter} target="_blank">
+              Twitter
+            </Link>
           </div>
           <Web3Status />
         </div>

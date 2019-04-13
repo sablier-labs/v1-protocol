@@ -12,43 +12,42 @@
   transform: translate(-50%, -64%);
   color: $space-cadet-black;
 
+  /* Form */
+  &__error-label {
+    margin-top: 12px;
+    color: $rusty-red;
+    // font-family: "Larsseit Medium";
+  }
+
   &__form {
     @extend %col-nowrap;
-    width: 52%;
+    width: 54%;
     height: 100%;
     padding: 72px 32px 52px 72px;
-
-    div:first-child {
-      margin-top: 0;
-    }
   }
 
   &__form-item {
     width: 100%;
-    height: 102px;
+    min-height: 102px;
     margin-top: 40px;
     font-size: 16px;
   }
 
-  &__label {
+  &__form-item-label {
     font-family: "Larsseit Medium";
-    letter-spacing: 0.4px;
+    font-size: 16px;
+    letter-spacing: 0.32px;
     text-transform: uppercase;
   }
 
-  &__input-box {
-    @extend %input-box;
-  }
+  &__horizontal-container {
+    @extend %row-nowrap;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 18px;
 
-  &__input {
-    @extend %borderless-input;
-    width: calc(100% - 64px);
-    height: calc(100% - 16px);
-    margin: 8px 0 8px 16px;
-    font-size: 20px;
-
-    &::placeholder {
-      font-family: "Helvetica", sans-serif;
+    &__separator {
+      margin-top: 16px;
     }
   }
 
@@ -56,8 +55,106 @@
     margin: 0 16px;
   }
 
-  &__receipt-box {
-    width: 46%;
-    height: 100%;
+  &__input {
+    @extend %borderless-input, %bordered-container;
+    width: 100%;
+    height: 64px;
+    padding: 8px 16px;
+    font-size: 18px;
+    transition: all 250ms ease-in-out;
+
+    &:focus {
+      box-shadow: $denim-blue 0 0 0 2px inset, rgba($denim-blue, 0.18) 0 0 0 4px;
+    }
+
+    &--invalid {
+      box-shadow: $rusty-red 0 0 0 2px inset;
+
+      &:focus {
+        box-shadow: $rusty-red 0 0 0 2px inset, rgba($rusty-red, 0.18) 0 0 0 4px;
+      }
+    }
+  }
+
+  &__input-container {
+    @extend %row-nowrap;
+    margin-top: 16px;
+  }
+
+  &__input-container-halved {
+    @extend %row-nowrap;
+    margin-top: 16px;
+    width: 44%;
+  }
+
+  &__recipient-icon {
+    margin-right: 16px;
+  }
+
+  /* Receipt Box */
+  &__receipt-container {
+    @extend %col-nowrap;
+    max-width: 40%;
+    max-height: 720px;
+    align-items: center;
+    flex-grow: 1;
+    box-shadow: $glitter-gray 0 0 0 2px inset;
+    border-radius: 4px;
+    margin: 106px 56px auto 32px;
+    padding: 28px 20px;
+  }
+
+  &__receipt-top-label {
+    color: $lavender-gray;
+    font-size: 16px;
+    letter-spacing: 0.64px;
+    text-transform: uppercase;
+  }
+
+  &__receipt-deposit-label {
+    margin: 8px 4px 0;
+    color: $denim-blue;
+    font-family: "Larsseit Medium";
+    font-size: 64px;
+    letter-spacing: 0.32px;
+    text-align: center;
+  }
+
+  &__receipt-line-item {
+    @extend %row-nowrap;
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 12px;
+    border-bottom: 1px dashed $lavender-gray;
+    font-size: 14px;
+    -webkit-box-pack: justify;
+  }
+
+  &__receipt-line-item-left {
+    min-width: 72px;
+    margin-bottom: -4px;
+    padding-right: 8px;
+    background: $white;
+    text-align: left;
+  }
+
+  &__receipt-line-item-right {
+    min-width: 60px;
+    margin-bottom: -4px;
+    padding-left: 8px;
+    background: $white;
+    text-align: right;
+  }
+
+  &__receipt-warning-button {
+    width: 100%;
+    margin-top: 32px;
+    cursor: inherit;
+    font-size: 15px;
+  }
+
+  &__receipt-deposit-button {
+    width: 100%;
+    margin-top: 16px;
   }
 }

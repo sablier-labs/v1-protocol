@@ -1,53 +1,16 @@
 @import "../../../styles/variables.scss";
 
-.currency-input-panel {
-  @extend %col-nowrap;
+.token-panel {
+  @extend %bordered-container, %col-nowrap;
   height: 64px;
-  justify-content: center;
   margin-top: 16px;
-  position: relative;
-  border: 1.5px solid $glitter-gray;
-  border-radius: 4px;
-  transition: box-shadow 200ms ease-in-out;
 
-  &__input-row {
-    @extend %row-nowrap;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    cursor: pointer;
-  }
-
-  &__input {
-    font-size: 24px;
-    @extend %borderless-input;
-
-    &--error {
-      color: $salmon-red;
-    }
-
-    &[type="number"] {
-      -moz-appearance: textfield;
-    }
-
-    &::-webkit-outer-spin-button,
-    &::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-    }
-  }
-
-  &__extra-text {
-    &--error {
-      color: $salmon-red;
-    }
-  }
-
-  &__currency-select {
+  &__token-select {
     @extend %row-nowrap;
     height: 32px;
     align-items: center;
     border-radius: 4px;
-    font-size: 20px;
+    font-size: 18px;
     outline: none;
     text-align: center;
     user-select: none;
@@ -56,9 +19,23 @@
   &__dropdown-icon {
     width: 24px;
     height: 32px;
-    background-position: 50% 50%;
-    background-repeat: no-repeat;
-    background-size: contain;
+  }
+
+  &__input {
+    font-size: 24px;
+    @extend %borderless-input;
+
+    &[type="number"] {
+      -moz-appearance: textfield;
+    }
+  }
+
+  &__input-container {
+    @extend %row-nowrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    cursor: pointer;
   }
 
   &__selected-token-logo {
@@ -96,7 +73,7 @@
 
   &__token-list {
     -webkit-overflow-scrolling: touch;
-    height: 280px;
+    height: 300px;
     padding-top: 4px;
     overflow-y: auto;
   }
@@ -112,11 +89,10 @@
 
     &--selected {
       background-color: $concrete-gray;
-      box-sizing: border-box;
       border: 1px solid $mercury-gray;
       border-radius: 8px;
 
-      .token-modal__token-label {
+      .token-modal__token-logo {
         color: $black;
       }
     }
@@ -131,7 +107,7 @@
     &:hover {
       background-color: $concrete-gray;
 
-      .token-modal__token-label {
+      .token-modal__token-logo {
         color: $black;
       }
     }
@@ -140,23 +116,10 @@
       background-color: darken($concrete-gray, 1);
     }
 
-    &--no-exchange {
+    &--no-results {
       color: $dove-gray;
       justify-content: center;
       background-color: darken($concrete-gray, 1);
-    }
-
-    &--create-exchange {
-      color: $white;
-      justify-content: center;
-      background-color: $malibu-blue;
-      &:hover {
-        background-color: lighten($malibu-blue, 1);
-      }
-
-      &:active {
-        background-color: darken($malibu-blue, 1);
-      }
     }
   }
 
@@ -165,7 +128,7 @@
     border-radius: 4px;
   }
 
-  &__token-label {
+  &__token-logo {
     color: $dove-gray;
   }
 
@@ -176,7 +139,7 @@
     left: 0;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 64px;
+    margin-top: 112px;
     padding-bottom: 16px;
     position: absolute;
     right: 0;

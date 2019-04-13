@@ -1,33 +1,38 @@
-import chronos from "../../constants/chronos";
+import { intervalBlocks } from "../../constants/time";
+import { getDaiAddressForNetworkId } from "../../constants/addresses";
+import { networkNamesToIds } from "../../constants/networks";
+
+const DAI = getDaiAddressForNetworkId(networkNamesToIds.mainnet);
 
 // Payloads
-const TOKEN = "app/form/token";
-const RATE = "app/form/rate";
-const TTL = "app/form/ttl";
-const RECIPIENT = "app/form/recipient";
+const UPDATE_TOKEN = "app/form/token";
+const UPDATE_RATE_PAYMENT = "app/form/rate/payment";
+const UPDATE_RATE_INTERVAL = "app/form/rate/interval";
+const UPDATE_TTL = "app/form/ttl";
+const UPDATE_RECIPIENT = "app/form/recipient";
 
 // States
 const getInitialState = () => {
   return {
-    token: "DAI",
+    token: DAI,
     rate: {
       payment: "",
-      interval: chronos.minute
+      interval: intervalBlocks.minute,
     },
     ttl: 0,
-    recipient: ""
+    recipient: "",
   };
 };
 
 // Reducer
 export default function reducer(state = getInitialState(), payload = {}) {
   switch (payload.type) {
-    case TOKEN:
+    case UPDATE_TOKEN:
       return {
         ...state,
         token: payload.token,
       };
-    case RATE:
+    case UPDATE_RATE_PAYMENT:
       return {
         ...state,
         rate: payload.rate,
@@ -43,17 +48,21 @@ export function loadForm() {
 }
 
 export function setToken(token) {
-  return { type: TOKEN, token };
+  return { type: UPDATE_TOKEN, token };
 }
 
-export function setRate(rate) {
-  return { type: RATE, rate };
+export function setRatePayment(payment) {
+  return { type: UPDATE_RATE_PAYMENT, payment };
+}
+
+export function setRateInterval(interval) {
+  return { type: UPDATE_RATE_INTERVAL, interval };
 }
 
 export function setTtl(ttl) {
-  return { type: TTL, ttl };
+  return { type: UPDATE_TTL, ttl };
 }
 
 export function setRecipient(recipient) {
-  return { type: RECIPIENT, recipient };
+  return { type: UPDATE_RECIPIENT, recipient };
 }

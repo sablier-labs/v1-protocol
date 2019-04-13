@@ -1,0 +1,64 @@
+@import "../../../styles/variables.scss";
+
+.primary-button {
+  @extend %row-nowrap;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  background-color: $denim-blue;
+  border: 1.5px solid $glitter-gray;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: "Larsseit Medium";
+  font-size: 16px;
+  outline: none;
+  user-select: none;
+  transition: opacity 250ms ease-in-out;
+
+  &--yellow {
+    background-color: $sandy-brown;
+  }
+
+  &--white {
+    background-color: $white;
+  }
+
+  &__icon {
+    width: 20px;
+    margin-left: 24px;
+    margin-right: auto;
+  }
+
+  &__label {
+    color: $white;
+    letter-spacing: 0.32px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  &__label--black {
+    color: $space-cadet-black;
+  }
+
+  &__label--no-transform {
+    text-transform: none;
+  }
+
+  &__spacer-left {
+    width: 20px;
+    height: 20px;
+    margin-left: 24px;
+    margin-right: auto;
+  }
+
+  &__spacer-right {
+    width: 20px;
+    height: 20px;
+    margin-left: auto;
+    margin-right: 24px;
+  }
+
+  &:hover {
+    opacity: 0.85;
+  }
+}

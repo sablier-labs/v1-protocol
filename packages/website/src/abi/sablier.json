@@ -3,7 +3,8 @@
     "inputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "constructor"
+    "type": "constructor",
+    "signature": "constructor"
   },
   {
     "anonymous": false,
@@ -50,7 +51,8 @@
       }
     ],
     "name": "CreateStream",
-    "type": "event"
+    "type": "event",
+    "signature": "0xb94a2d95170eee8a802f271a6b296f4b1d3cc1badd589759cf8488fbdbd6c852"
   },
   {
     "anonymous": false,
@@ -72,7 +74,8 @@
       }
     ],
     "name": "Withdraw",
-    "type": "event"
+    "type": "event",
+    "signature": "0x9da6493a92039daf47d1f2d7a782299c5994c6323eb1e972f69c432089ec52bf"
   },
   {
     "anonymous": false,
@@ -104,7 +107,8 @@
       }
     ],
     "name": "Redeem",
-    "type": "event"
+    "type": "event",
+    "signature": "0x9908c9a9b44e8e318fc2d72841d07742290c2e6604a6c8931a6234855adc56e6"
   },
   {
     "anonymous": false,
@@ -141,7 +145,8 @@
       }
     ],
     "name": "ConfirmUpdate",
-    "type": "event"
+    "type": "event",
+    "signature": "0x1cce0c004942fc2ff42b63a6cfb316ef8cb92a936961aaca2ca1eb31b890961f"
   },
   {
     "anonymous": false,
@@ -178,7 +183,8 @@
       }
     ],
     "name": "RevokeUpdate",
-    "type": "event"
+    "type": "event",
+    "signature": "0x652aa7dfd60d34135d95736f012daa465d0471f7c908dff2d69b9848680c6885"
   },
   {
     "anonymous": false,
@@ -220,7 +226,8 @@
       }
     ],
     "name": "ExecuteUpdate",
-    "type": "event"
+    "type": "event",
+    "signature": "0xd586e7f196fc84f737a1eba26ba1ad9e0b4b64d5803b17433c89a2608b887245"
   },
   {
     "constant": true,
@@ -243,7 +250,8 @@
     ],
     "payable": false,
     "stateMutability": "view",
-    "type": "function"
+    "type": "function",
+    "signature": "0x3656eec2"
   },
   {
     "constant": true,
@@ -290,7 +298,8 @@
     ],
     "payable": false,
     "stateMutability": "view",
-    "type": "function"
+    "type": "function",
+    "signature": "0x894e9a0d"
   },
   {
     "constant": true,
@@ -313,7 +322,8 @@
     ],
     "payable": false,
     "stateMutability": "view",
-    "type": "function"
+    "type": "function",
+    "signature": "0x26d056cc"
   },
   {
     "constant": false,
@@ -351,7 +361,8 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
+    "type": "function",
+    "signature": "0x4b20ae39"
   },
   {
     "constant": false,
@@ -369,7 +380,8 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
+    "type": "function",
+    "signature": "0x441a3e70"
   },
   {
     "constant": false,
@@ -383,7 +395,8 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
+    "type": "function",
+    "signature": "0xdb006a75"
   },
   {
     "constant": false,
@@ -413,7 +426,8 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
+    "type": "function",
+    "signature": "0x63aef682"
   },
   {
     "constant": false,
@@ -443,6 +457,7 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
+    "type": "function",
+    "signature": "0xc5daca92"
   }
 ]

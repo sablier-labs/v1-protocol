@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import classnames from "classnames";
 import PropTypes from "prop-types";
 
-import { BigNumber as BN } from "bignumber.js";
 import { connect } from "react-redux";
 import { CSSTransitionGroup } from "react-transition-group";
 import { withRouter } from "react-router-dom";
@@ -17,49 +16,39 @@ import TokenLogo from "../TokenLogo";
 import { addApprovalTx } from "../../../redux/ducks/pending";
 import { addToken } from "../../../redux/ducks/addresses";
 import { selectors, addPendingTx } from "../../../redux/ducks/web3connect";
-import "./currency-input-panel.scss";
+import "./token-panel.scss";
 
 const FUSE_OPTIONS = {
-  includeMatches: false,
-  threshold: 0.0,
-  tokenize: true,
-  location: 0,
   distance: 100,
+  includeMatches: false,
+  keys: [{ name: "address", weight: 0.8 }, { name: "label", weight: 0.5 }],
+  location: 0,
   maxPatternLength: 45,
   minMatchCharLength: 1,
-  keys: [{ name: "address", weight: 0.8 }, { name: "label", weight: 0.5 }],
+  threshold: 0.0,
+  tokenize: true,
 };
 
-const TOKEN_ADDRESS_TO_LABEL = { "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359": "DAI" };
-
-class CurrencyInputPanel extends Component {
+class TokenPanel extends Component {
   static propTypes = {
     account: PropTypes.string,
-    description: PropTypes.string,
     disableTokenSelect: PropTypes.bool,
     disableUnlock: PropTypes.bool,
-    errorMessage: PropTypes.string,
-    extraText: PropTypes.string,
-    filteredTokens: PropTypes.arrayOf(PropTypes.string),
-    onCurrencySelected: PropTypes.func,
-    onValueChange: PropTypes.func,
-    renderInput: PropTypes.func,
+    onSelectToken: PropTypes.func,
     selectedTokenAddress: PropTypes.string,
-    selectedTokens: PropTypes.array.isRequired,
+    selectedCurrencies: PropTypes.array.isRequired,
     selectors: PropTypes.func.isRequired,
     title: PropTypes.string,
     tokenAddresses: PropTypes.shape({
       addresses: PropTypes.array.isRequired,
     }).isRequired,
-    value: PropTypes.string,
+    tokenName: PropTypes.string.isRequired,
   };
 
   static defaultProps = {
-    selectedTokens: ["0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359"],
-    filteredTokens: [],
-    onCurrencySelected() {},
-    onValueChange() {},
-    selectedTokenAddress: "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
+    selectedCurrencies: [],
+    onSelectToken() {},
+    selectedTokenAddress: "",
   };
 
   state = {
@@ -69,7 +58,7 @@ class CurrencyInputPanel extends Component {
   };
 
   createTokenList = () => {
-    const { filteredTokens, tokenAddresses } = this.props;
+    const { tokenAddresses } = this.props;
     let tokens = tokenAddresses.addresses;
     let tokenList = [];
 
@@ -79,29 +68,24 @@ class CurrencyInputPanel extends Component {
       entry.label = tokens[i][0];
       entry.address = tokens[i][1];
       tokenList.push(entry);
-      TOKEN_ADDRESS_TO_LABEL[tokens[i][1]] = tokens[i][0];
     }
 
-    return tokenList.filter(({ address }) => !filteredTokens.includes(address));
+    return tokenList;
   };
 
-  onTokenSelect = (address) => {
+  onSelectToken = (address) => {
     this.setState({
       searchQuery: "",
       isShowingModal: false,
     });
 
-    this.props.onCurrencySelected(address);
+    this.props.onSelectToken(address);
   };
 
   renderTokenList() {
     const tokens = this.createTokenList();
     const { loadingToken, searchQuery } = this.state;
-    const {
-      disableTokenSelect,
-      selectedTokens,
-      t
-    } = this.props;
+    const { disableTokenSelect, selectedCurrencies, t } = this.props;
 
     if (loadingToken) {
       return (
@@ -127,14 +111,14 @@ class CurrencyInputPanel extends Component {
 
     if (!results.length) {
       return (
-        <div className="token-modal__token-row token-modal">
+        <div className="token-modal__token-row token-modal__token-row--no-results">
           <div>{t("noToken")}</div>
         </div>
       );
     }
 
     return results.map(({ label, address }) => {
-      const isSelected = selectedTokens.indexOf(address) > -1;
+      const isSelected = selectedCurrencies.indexOf(address) > -1;
 
       return (
         <div
@@ -142,10 +126,10 @@ class CurrencyInputPanel extends Component {
           className={classnames("token-modal__token-row", {
             "token-modal__token-row--selected": isSelected,
           })}
-          onClick={() => this.onTokenSelect(address)}
+          onClick={() => this.onSelectToken(address)}
         >
           <TokenLogo className="token-modal__token-logo" address={address} />
-          <div className="token-modal__token-label">{label}</div>
+          <div className="token-modal__token-logo">{label}</div>
         </div>
       );
     });
@@ -162,9 +146,9 @@ class CurrencyInputPanel extends Component {
           transitionName="token-modal"
           transitionAppear={true}
           transitionLeave={true}
-          transitionAppearTimeout={200}
-          transitionLeaveTimeout={200}
-          transitionEnterTimeout={200}
+          transitionAppearTimeout={250}
+          transitionLeaveTimeout={250}
+          transitionEnterTimeout={250}
         >
           <div className="token-modal">
             <div className="token-modal__search-container">
@@ -186,7 +170,7 @@ class CurrencyInputPanel extends Component {
   }
 
   renderInput() {
-    const { disableTokenSelect, renderInput, selectedTokenAddress, t } = this.props;
+    const { disableTokenSelect, renderInput, selectedTokenAddress, t, tokenName } = this.props;
 
     if (typeof renderInput === "function") {
       return renderInput();
@@ -194,7 +178,7 @@ class CurrencyInputPanel extends Component {
 
     return (
       <div
-        className="currency-input-panel__input-row"
+        className="token-panel__input-container"
         onClick={() => {
           if (!disableTokenSelect) {
             this.setState({ isShowingModal: true });
@@ -202,24 +186,24 @@ class CurrencyInputPanel extends Component {
         }}
       >
         <div
-          className={classnames("currency-input-panel__currency-select", {
-            "currency-input-panel__currency-select--selected": selectedTokenAddress,
-            "currency-input-panel__currency-select--disabled": disableTokenSelect,
+          className={classnames("token-panel__token-select", {
+            "token-panel__token-select--selected": selectedTokenAddress,
+            "token-panel__token-select--disabled": disableTokenSelect,
           })}
         >
           {selectedTokenAddress ? (
-            <TokenLogo className="currency-input-panel__selected-token-logo" address={selectedTokenAddress} />
+            <TokenLogo className="token-panel__selected-token-logo" address={selectedTokenAddress} />
           ) : null}
-          <span>{TOKEN_ADDRESS_TO_LABEL[selectedTokenAddress] || t("selectToken")}</span>
+          <span>{tokenName || t("selectToken")}</span>
         </div>
-        <img className="currency-input-panel__dropdown-icon" src={FaChevronCircleDown} alt="Dropdown Icon" />
+        <img className="token-panel__dropdown-icon" src={FaChevronCircleDown} alt="Dropdown Icon" />
       </div>
     );
   }
 
   render() {
     return (
-      <div className="currency-input-panel">
+      <div className="token-panel">
         {this.renderInput()}
         {this.renderModal()}
       </div>
@@ -230,7 +214,6 @@ class CurrencyInputPanel extends Component {
 export default withRouter(
   connect(
     (state) => ({
-      factoryAddress: state.addresses.factoryAddress,
       tokenAddresses: state.addresses.tokenAddresses,
       contracts: state.contracts,
       account: state.web3connect.account,
@@ -245,5 +228,5 @@ export default withRouter(
       addPendingTx: (opts) => dispatch(addPendingTx(opts)),
       addApprovalTx: (opts) => dispatch(addApprovalTx(opts)),
     }),
-  )(withTranslation()(CurrencyInputPanel)),
+  )(withTranslation()(TokenPanel)),
 );

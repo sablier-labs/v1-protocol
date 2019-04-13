@@ -1,7 +1,7 @@
 export default function promisify(web3, methodName, ...args) {
   return new Promise((resolve, reject) => {
     if (!web3) {
-      reject(new Error('No Web3 object'));
+      reject(new Error("No Web3 object"));
       return;
     }
 
@@ -19,6 +19,6 @@ export default function promisify(web3, methodName, ...args) {
       }
 
       resolve(data);
-    })
+    });
   });
 }

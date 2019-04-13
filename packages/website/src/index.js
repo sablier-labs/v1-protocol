@@ -5,10 +5,9 @@ import ReactGA from "react-ga";
 import { Provider } from "react-redux";
 
 import App from "./views/App";
-import store from "./redux/store"
+import store from "./redux/store";
 
 import "./i18n";
-// import "bootstrap/dist/css/bootstrap.min.css";
 import "sanitize.css/sanitize.css";
 import "./styles/index.scss";
 
