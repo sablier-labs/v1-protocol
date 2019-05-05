@@ -4,7 +4,6 @@ import PropTypes from "prop-types";
 
 import { connect } from "react-redux";
 import { CSSTransitionGroup } from "react-transition-group";
-import { withRouter } from "react-router-dom";
 import { withTranslation } from "react-i18next";
 
 import FaChevronCircleDown from "../../../assets/images/fa-chevron-circle-down.svg";
@@ -14,7 +13,6 @@ import SearchIcon from "../../../assets/images/magnifying-glass.svg";
 import TokenLogo from "../TokenLogo";
 
 import { addApprovalTx } from "../../../redux/ducks/pending";
-import { addToken } from "../../../redux/ducks/addresses";
 import { selectors, addPendingTx } from "../../../redux/ducks/web3connect";
 import "./token-panel.scss";
 
@@ -32,13 +30,14 @@ const FUSE_OPTIONS = {
 class TokenPanel extends Component {
   static propTypes = {
     account: PropTypes.string,
-    disableTokenSelect: PropTypes.bool,
-    disableUnlock: PropTypes.bool,
+    addApprovalTx: PropTypes.func.isRequired,
+    addPendingTx: PropTypes.func.isRequired,
+    approvals: PropTypes.object.isRequired,
     onSelectToken: PropTypes.func,
+    pendingApprovals: PropTypes.object.isRequired,
+    selectedTokens: PropTypes.array.isRequired,
     selectedTokenAddress: PropTypes.string,
-    selectedCurrencies: PropTypes.array.isRequired,
     selectors: PropTypes.func.isRequired,
-    title: PropTypes.string,
     tokenAddresses: PropTypes.shape({
       addresses: PropTypes.array.isRequired,
     }).isRequired,
@@ -46,7 +45,7 @@ class TokenPanel extends Component {
   };
 
   static defaultProps = {
-    selectedCurrencies: [],
+    selectedTokens: [],
     onSelectToken() {},
     selectedTokenAddress: "",
   };
@@ -85,7 +84,7 @@ class TokenPanel extends Component {
   renderTokenList() {
     const tokens = this.createTokenList();
     const { loadingToken, searchQuery } = this.state;
-    const { disableTokenSelect, selectedCurrencies, t } = this.props;
+    const { selectedTokens, t } = this.props;
 
     if (loadingToken) {
       return (
@@ -94,10 +93,6 @@ class TokenPanel extends Component {
           <div>{t("searchingToken")}</div>
         </div>
       );
-    }
-
-    if (disableTokenSelect) {
-      return;
     }
 
     let results;
@@ -118,7 +113,7 @@ class TokenPanel extends Component {
     }
 
     return results.map(({ label, address }) => {
-      const isSelected = selectedCurrencies.indexOf(address) > -1;
+      const isSelected = selectedTokens.indexOf(address) > -1;
 
       return (
         <div
@@ -160,7 +155,7 @@ class TokenPanel extends Component {
                   this.setState({ searchQuery: e.target.value });
                 }}
               />
-              <img src={SearchIcon} className="token-modal__search-icon" alt="Search Icon" />
+              <img className="token-modal__search-icon" alt="Search Icon" src={SearchIcon} />
             </div>
             <div className="token-modal__token-list">{this.renderTokenList()}</div>
           </div>
@@ -169,26 +164,23 @@ class TokenPanel extends Component {
     );
   }
 
-  renderInput() {
-    const { disableTokenSelect, renderInput, selectedTokenAddress, t, tokenName } = this.props;
+  renderPanel() {
+    const { renderPanel, selectedTokenAddress, t, tokenName } = this.props;
 
-    if (typeof renderInput === "function") {
-      return renderInput();
+    if (typeof renderPanel === "function") {
+      return renderPanel();
     }
 
     return (
       <div
         className="token-panel__input-container"
         onClick={() => {
-          if (!disableTokenSelect) {
-            this.setState({ isShowingModal: true });
-          }
+          this.setState({ isShowingModal: true });
         }}
       >
         <div
           className={classnames("token-panel__token-select", {
             "token-panel__token-select--selected": selectedTokenAddress,
-            "token-panel__token-select--disabled": disableTokenSelect,
           })}
         >
           {selectedTokenAddress ? (
@@ -204,29 +196,24 @@ class TokenPanel extends Component {
   render() {
     return (
       <div className="token-panel">
-        {this.renderInput()}
+        {this.renderPanel()}
         {this.renderModal()}
       </div>
     );
   }
 }
 
-export default withRouter(
-  connect(
-    (state) => ({
-      tokenAddresses: state.addresses.tokenAddresses,
-      contracts: state.contracts,
-      account: state.web3connect.account,
-      approvals: state.web3connect.approvals,
-      transactions: state.web3connect.transactions,
-      web3: state.web3connect.web3,
-      pendingApprovals: state.pending.approvals,
-    }),
-    (dispatch) => ({
-      selectors: () => dispatch(selectors()),
-      addToken: (opts) => dispatch(addToken(opts)),
-      addPendingTx: (opts) => dispatch(addPendingTx(opts)),
-      addApprovalTx: (opts) => dispatch(addApprovalTx(opts)),
-    }),
-  )(withTranslation()(TokenPanel)),
-);
+export default connect(
+  (state) => ({
+    account: state.web3connect.account,
+    approvals: state.web3connect.approvals,
+    pendingApprovals: state.pending.approvals,
+    tokenAddresses: state.addresses.tokenAddresses,
+    web3: state.web3connect.web3,
+  }),
+  (dispatch) => ({
+    addApprovalTx: (opts) => dispatch(addApprovalTx(opts)),
+    addPendingTx: (opts) => dispatch(addPendingTx(opts)),
+    selectors: () => dispatch(selectors()),
+  }),
+)(withTranslation()(TokenPanel));

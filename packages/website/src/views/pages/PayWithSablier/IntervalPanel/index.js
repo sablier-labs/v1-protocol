@@ -5,9 +5,9 @@ import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
 
-import FaChevronCircleDown from "../../../assets/images/fa-chevron-circle-down.svg";
+import FaChevronCircleDown from "../../../../assets/images/fa-chevron-circle-down.svg";
 
-import { intervalStringValues } from "../../../constants/time";
+import { intervalStringValues } from "../../../../constants/time";
 import "./interval-panel.scss";
 
 class IntervalPanel extends Component {
@@ -73,7 +73,7 @@ class IntervalPanel extends Component {
         >
           {intervalStringValues[interval] || t("placeholderInterval")}
         </span>
-        <img className="interval-panel__dropdown-icon" src={FaChevronCircleDown} alt="Dropdown Icon" />
+        <img className="interval-panel__dropdown-icon" alt="Dropdown Icon" src={FaChevronCircleDown} />
         {this.renderDropdown()}
       </div>
     );

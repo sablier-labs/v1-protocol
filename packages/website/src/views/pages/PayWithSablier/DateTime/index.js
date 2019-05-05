@@ -1,16 +1,16 @@
 import React, { Component } from "react";
 import classnames from "classnames";
-import DatePicker from "../MyReactDatePicker";
+import DatePicker from "../../../shared/MyReactDatePicker";
 import dayjs from "dayjs";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
 
-import Modal from "../Modal";
+import Modal from "../../../shared/Modal";
 
-import { formatTime } from "../../../helpers/format-utils";
-import { isDayJs, isIntervalShorterThanADay } from "../../../helpers/time-utils";
-import { intervalMins } from "../../../constants/time";
+import { formatTime } from "../../../../helpers/format-utils";
+import { isDayJs, isIntervalShorterThanADay } from "../../../../helpers/time-utils";
+import { intervalMins } from "../../../../constants/time";
 
 import "react-datepicker/dist/react-datepicker.css";
 import "./datetime.scss";
@@ -24,7 +24,7 @@ class SablierDateTime extends Component {
     name: PropTypes.string.isRequired,
     onSelectTime: PropTypes.func.isRequired,
     placeholder: PropTypes.string,
-    value: PropTypes.object.isRequired,
+    selectedTime: PropTypes.object.isRequired,
   };
 
   state = {
@@ -46,31 +46,39 @@ class SablierDateTime extends Component {
     }
   }
 
-  onClose() {
+  onClose(newTime) {
     this.setState({ showModal: false });
     this.inputRef.current.blur();
+    if (newTime) {
+      this.props.onSelectTime(newTime);
+    }
   }
 
   onSelectTime(time) {
-    const { value: previouslySelectedTime } = this.props;
-    const newTime = dayjs(time);
+    const { minTime, selectedTime } = this.props;
+    let newTime = dayjs(time);
 
     if (
-      isDayJs(previouslySelectedTime) &&
-      (previouslySelectedTime.hour() !== newTime.hour() || previouslySelectedTime.minute() !== newTime.minute())
+      isDayJs(selectedTime) &&
+      (selectedTime.hour() !== newTime.hour() || selectedTime.minute() !== newTime.minute())
     ) {
-      this.onClose();
+      this.onClose(newTime);
+      return;
     }
 
-    if (!isDayJs(previouslySelectedTime) && (newTime.hour() !== 0 || newTime.minute() !== 0)) {
-      this.onClose();
+    if (!isDayJs(selectedTime)) {
+      if (minTime.isAfter(newTime)) {
+        newTime = minTime.hour(newTime.hour()).minute(newTime.minute());
+      }
+      this.onClose(newTime);
+      return;
     }
 
     this.props.onSelectTime(newTime);
   }
 
   renderModal() {
-    const { maxTime, minTime, value } = this.props;
+    const { maxTime, minTime, selectedTime } = this.props;
     const { showModal, showTimeSelect } = this.state;
 
     if (!showModal) {
@@ -79,7 +87,7 @@ class SablierDateTime extends Component {
 
     const maxDate = isDayJs(maxTime) ? maxTime.toDate() : undefined;
     const minDate = isDayJs(minTime) ? minTime.toDate() : undefined;
-    const selectedDate = isDayJs(value) ? value.toDate() : undefined;
+    const selectedDate = isDayJs(selectedTime) ? selectedTime.toDate() : undefined;
 
     return (
       <Modal onClose={() => this.onClose()}>
@@ -89,7 +97,7 @@ class SablierDateTime extends Component {
           inline
           maxDate={maxDate}
           minDate={minDate}
-          onChange={(value) => this.onSelectTime(value)}
+          onChange={(time) => this.onSelectTime(time)}
           onClickOutside={() => this.onClose()}
           selected={selectedDate}
           showTimeSelect={showTimeSelect}
@@ -102,7 +110,7 @@ class SablierDateTime extends Component {
   }
 
   render() {
-    const { classNames, inputClassNames, name, placeholder, value, t } = this.props;
+    const { classNames, inputClassNames, name, placeholder, selectedTime, t } = this.props;
 
     return (
       <div className={classnames("sablier-datetime", classNames)}>
@@ -115,7 +123,7 @@ class SablierDateTime extends Component {
           placeholder={placeholder || t("selectTime")}
           readOnly={true}
           ref={this.inputRef}
-          value={isDayJs(value) ? formatTime(t, value) : ""}
+          value={isDayJs(selectedTime) ? formatTime(t, selectedTime) : ""}
         />
         {this.renderModal()}
       </div>

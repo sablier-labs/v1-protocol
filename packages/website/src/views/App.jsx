@@ -2,15 +2,15 @@ import React, { Component } from "react";
 import MediaQuery from "react-responsive";
 
 import { connect } from "react-redux";
+import { ConnectedRouter } from "connected-react-router";
 import { Redirect } from "react-router-dom";
 import { Route, Switch } from "react-router";
-import { ConnectedRouter } from "connected-react-router";
 
 import Dashboard from "./pages/Dashboard";
 import Header from "./shared/Header";
+import NetworkModal from "./shared/NetworkModal";
 import PayWithSablier from "./pages/PayWithSablier";
 import Stream from "./pages/Stream";
-import NetworkWarning from "./shared/NetworkWarning";
 
 import { history } from "../redux/store";
 import { setAddresses } from "../redux/ducks/addresses";
@@ -52,10 +52,10 @@ class App extends Component {
           <Switch>
             <Route exact path="/" component={PayWithSablier} />
             <Route exact path="/dashboard" component={Dashboard} />
-            <Route exact path="/stream/:streamId?" component={Stream} />
+            <Route exact path="/stream/:id?" component={Stream} />
             <Redirect exact to="/" />
           </Switch>
-          <NetworkWarning />
+          <NetworkModal />
         </ConnectedRouter>
       </div>
     );

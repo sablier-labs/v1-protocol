@@ -9,8 +9,6 @@ const Sablier = artifacts.require("./Sablier.sol");
 
 const { toWei } = web3.utils;
 
-console.log("devConstants", devConstants);
-
 /* eslint-disable-next-line no-unused-vars */
 contract("Sablier", function([_, sender, recipient, malicious, innocent]) {
   let token;

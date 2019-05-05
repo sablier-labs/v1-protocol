@@ -1,22 +1,24 @@
 @import "../../../styles/variables.scss";
 
 .pay-with-sablier {
-  @extend %row-nowrap, %frame;
+  @extend %frame, %row-nowrap;
   width: calc(100vw - 240px);
   height: calc(100vh - 228px);
   position: absolute;
-  top: 64%;
-  right: 50%;
-  bottom: 36%;
-  left: 50%;
-  transform: translate(-50%, -64%);
+  top: 144px;
+  right: 120px;
+  bottom: 84px;
+  left: 120px;
   color: $space-cadet-black;
+
+  &__button {
+    width: 100%;
+  }
 
   /* Form */
   &__error-label {
     margin-top: 12px;
     color: $rusty-red;
-    // font-family: "Larsseit Medium";
   }
 
   &__form {
@@ -102,13 +104,11 @@
     border-radius: 4px;
     margin: 106px 56px auto 32px;
     padding: 28px 20px;
+    text-align: center;
   }
 
-  &__receipt-top-label {
-    color: $lavender-gray;
-    font-size: 16px;
-    letter-spacing: 0.64px;
-    text-transform: uppercase;
+  &__receipt-deposit-button {
+    margin-top: 16px;
   }
 
   &__receipt-deposit-label {
@@ -120,41 +120,36 @@
     text-align: center;
   }
 
-  &__receipt-line-item {
-    @extend %row-nowrap;
-    width: 100%;
-    justify-content: space-between;
+  &__receipt-deposit-error-label {
     margin-top: 12px;
-    border-bottom: 1px dashed $lavender-gray;
+    font-size: 15px;
+    text-transform: capitalize;
+  }
+
+  &__receipt-dashed-line {
+    @extend %dashed-line;
+    margin-top: 12px;
     font-size: 14px;
-    -webkit-box-pack: justify;
   }
 
-  &__receipt-line-item-left {
-    min-width: 72px;
-    margin-bottom: -4px;
-    padding-right: 8px;
-    background: $white;
-    text-align: left;
+  &__receipt-dashed-line-left {
+    @extend %dashed-line-left;
   }
 
-  &__receipt-line-item-right {
-    min-width: 60px;
-    margin-bottom: -4px;
-    padding-left: 8px;
-    background: $white;
-    text-align: right;
+  &__receipt-dashed-line-right {
+    @extend %dashed-line-right;
+  }
+
+  &__receipt-top-label {
+    color: $lavender-gray;
+    font-size: 16px;
+    letter-spacing: 0.64px;
+    text-transform: uppercase;
   }
 
   &__receipt-warning-button {
-    width: 100%;
     margin-top: 32px;
     cursor: inherit;
     font-size: 15px;
-  }
-
-  &__receipt-deposit-button {
-    width: 100%;
-    margin-top: 16px;
   }
 }

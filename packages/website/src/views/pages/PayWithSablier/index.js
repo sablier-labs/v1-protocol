@@ -6,20 +6,23 @@ import ReactGA from "react-ga";
 
 import { BigNumber as BN } from "bignumber.js";
 import { connect } from "react-redux";
+import { push } from "connected-react-router";
 import { withTranslation } from "react-i18next";
 
 import FaExclamationMark from "../../../assets/images/fa-exclamation-mark.svg";
-import IntervalPanel from "../../shared/IntervalPanel";
+import InputWithCurrencySuffix from "../../shared/InputWithCurrencySuffix";
+import IntervalPanel from "./IntervalPanel";
 import PrimaryButton from "../..//shared/PrimaryButton";
 import SablierABI from "../../../abi/sablier";
-import SablierDateTime from "../../shared/DateTime";
+import SablierDateTime from "./DateTime";
 import TokenPanel from "../../shared/TokenPanel";
 
 import { acceptedTokens, getDaiAddressForNetworkId, getTokenLabelForAddress } from "../../../constants/addresses";
-import { addPendingTx, selectors } from "../../../redux/ducks/web3connect";
+import { addPendingTx, selectors, watchBalance } from "../../../redux/ducks/web3connect";
 import { intervalMins, intervalStringValues } from "../../../constants/time";
 import { formatDuration, roundToDecimalPlaces } from "../../../helpers/format-utils";
-import { getMinsForIntervalKey, isDayJs, timeToBlockNumber } from "../../../helpers/time-utils";
+import { getMinsForInterval, intervalToBlocks, isDayJs, timeToBlockNumber } from "../../../helpers/time-utils";
+import { retry } from "../../../helpers/promise-utils";
 
 import "./pay-with-sablier.scss";
 
@@ -31,21 +34,25 @@ const initialState = {
   minTime: {},
   payment: null,
   paymentLabel: "",
-  recipient: "",
+  recipient: "0x574B4756606715Fb35f112ae8283b8a16319c895",
   token: "",
   tokenName: "DAI",
   startTime: {},
   stopTime: {},
   submitted: false,
+  submittedError: "",
 };
 class PayWithSablier extends Component {
   static propTypes = {
     account: PropTypes.string,
     addPendingTx: PropTypes.func.isRequired,
+    balances: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     networkId: PropTypes.number,
+    push: PropTypes.func.isRequired,
     sablierAddress: PropTypes.string,
     selectors: PropTypes.func.isRequired,
+    watchBalance: PropTypes.func.isRequired,
     web3: PropTypes.object.isRequired,
   };
 
@@ -59,14 +66,20 @@ class PayWithSablier extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { networkId } = nextProps;
+    const { account, networkId, watchBalance } = nextProps;
     const { token, tokenName } = prevState;
     const dai = getDaiAddressForNetworkId(networkId);
     if (tokenName === "DAI" && dai !== token) {
+      watchBalance({ balanceOf: account, tokenAddress: dai });
       return { token: dai };
     } else {
-      return null;
+      return prevState;
     }
+  }
+
+  goToStream(txHash) {
+    const { push } = this.props;
+    push(`/stream/${txHash}`);
   }
 
   isUnapproved() {
@@ -87,67 +100,14 @@ class PayWithSablier extends Component {
     return false;
   }
 
-  onChangePaymentRate(e) {
-    const { tokenName } = this.state;
-    let paymentStr = e.target.value;
-    paymentStr = paymentStr.replace(" ", "");
-    paymentStr = paymentStr.replace(tokenName, "");
-
-    if (paymentStr.startsWith("0") && /^(0|0\.(.)*)$/.test(paymentStr) === false) {
-      paymentStr = "";
-    }
-
-    if (paymentStr.startsWith("-")) {
-      paymentStr = "";
-    }
-
-    let paymentLabel;
-    // Match only integers or float formatted like $a.$b
-    // e.g. 10.50 is okay, 10.50.50 is not
-    if (/^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$/.test(paymentStr)) {
-      paymentLabel = `${paymentStr} ${tokenName}`;
-    } else {
-      paymentStr = "";
-      paymentLabel = "";
-    }
-
-    this.setState(
-      {
-        payment: parseFloat(paymentStr),
-        paymentLabel: paymentLabel,
-      },
-      () => this.recalcState(),
-    );
+  onChangePayment(value, label) {
+    this.setState({ payment: value, paymentLabel: label }, () => this.recalcState());
   }
 
   onChangeState(e) {
     this.setState({
       [e.target.name]: e.target.value,
     });
-  }
-
-  /**
-   * @dev The backspace character needs to be handled discretionarily because we want to
-   *      clear one digit from the number, not the last letter of the token label.
-   */
-  onKeyDownPaymentRate(e) {
-    if (e.keyCode !== 8) {
-      return;
-    }
-    e.preventDefault();
-    const { tokenName } = this.state;
-    let paymentStr = e.target.value;
-    paymentStr = paymentStr.replace(" ", "");
-    paymentStr = paymentStr.replace(tokenName, "");
-    paymentStr = paymentStr.substr(0, paymentStr.length - 1);
-    const paymentLabel = paymentStr ? `${paymentStr} ${tokenName}` : "";
-    this.setState(
-      {
-        payment: parseFloat(paymentStr),
-        paymentLabel,
-      },
-      () => this.recalcState(),
-    );
   }
 
   onSelectInterval(interval) {
@@ -163,48 +123,59 @@ class PayWithSablier extends Component {
   }
 
   onSelectToken(token) {
-    const { networkId } = this.props;
+    const { account, networkId, watchBalance } = this.props;
     const tokenName = getTokenLabelForAddress(networkId, token);
 
-    this.setState({
-      token,
-      tokenName,
-    });
+    watchBalance({ balanceOf: account, tokenAddress: token });
+    this.setState({ token, tokenName });
+  }
+
+  onSubmitError(err) {
+    this.setState({ submitted: false, submittedError: err.toString() });
   }
 
   async onSubmit() {
-    console.log("Hi Mom");
-    const { account, addPendingTx, sablierAddress, web3 } = this.props;
-    const { deposit, interval, recipient, startTime, stopTime, token } = this.state;
+    const { account, addPendingTx, sablierAddress, selectors, web3 } = this.props;
+    const { interval, payment, recipient, startTime, stopTime, token } = this.state;
+
     if (
-      !this.isTokenInvalid() ||
-      !this.isPaymentInvalid() ||
-      !this.isIntervalInvalid() ||
-      !this.isTimesInvalid() ||
-      !this.isRecipientInvalid()
+      this.isTokenInvalid() ||
+      this.isPaymentInvalid() ||
+      this.isIntervalInvalid() ||
+      this.isTimesInvalid() ||
+      this.isRecipientInvalid()
     ) {
-      this.setState({ submitted: true });
       return;
     }
 
-    console.log("Hello There");
-
+    let startBlock = 0;
+    let stopBlock = 0;
     try {
-      const { decimals } = selectors().getBalance(account, token);
-      const startBlock = await timeToBlockNumber(web3, startTime);
-      const stopBlock = await timeToBlockNumber(web3, stopTime);
-      const payment = BN(deposit)
-        .multipliedBy(10 ** decimals)
-        .toFixed(0);
-      const data = await new web3.eth.Contract(SablierABI, sablierAddress).methods
-        .create(account, recipient, token, startBlock, stopBlock, payment, interval)
-        .send({ from: account });
-      addPendingTx(data);
-      this.resetState();
+      [startBlock, stopBlock] = await retry(() => {
+        return Promise.all([timeToBlockNumber(web3, startTime), timeToBlockNumber(web3, stopTime)]);
+      });
     } catch (err) {
-      // TODO: show error when this happens
-      console.log("Failed with error:", err);
+      this.onSubmitError(err);
     }
+
+    const { decimals } = selectors().getBalance(account, token);
+    const paymentWei = BN(payment)
+      .multipliedBy(10 ** decimals)
+      .toFixed(0);
+    const intervalBlocks = intervalToBlocks(interval);
+
+    new web3.eth.Contract(SablierABI, sablierAddress).methods
+      .create(account, recipient, token, startBlock, stopBlock, paymentWei, intervalBlocks)
+      .send({ from: account })
+      .on("transactionHash", (transactionHash) => {
+        addPendingTx(transactionHash);
+      })
+      .on("confirmation", (confirmationNumber, receipt) => {
+        this.goToStream(receipt.transactionHash);
+      })
+      .on("error", (err) => {
+        this.onSubmitError(err);
+      });
   }
 
   recalcDeposit() {
@@ -226,7 +197,7 @@ class PayWithSablier extends Component {
     let stopTime = previousStopTime;
     let duration = 0;
     if (isDayJs(previousStopTime)) {
-      if (getMinsForIntervalKey(interval) >= intervalMins.day) {
+      if (getMinsForInterval(interval) >= intervalMins.day) {
         const startTimeH = startTime.hour();
         const startTimeM = startTime.minute();
         stopTime = previousStopTime.hour(startTimeH).minute(startTimeM);
@@ -293,7 +264,7 @@ class PayWithSablier extends Component {
     }
 
     if (!acceptedTokens.includes(tokenName)) {
-      return t("errorTokenNotAccepted");
+      return t("errors.tokenNotAccepted");
     }
 
     return false;
@@ -316,14 +287,13 @@ class PayWithSablier extends Component {
     return (
       <div className="pay-with-sablier__form-item" style={{ marginTop: "0" }}>
         <label className="pay-with-sablier__form-item-label" htmlFor="token">
-          {t("inputToken")}
+          {t("input.token")}
         </label>
         {this.renderTokenError()}
         <TokenPanel
           onSelectToken={(token) => this.onSelectToken(token)}
-          selectedCurrencies={[token]}
+          selectedTokens={[token]}
           selectedTokenAddress={token}
-          title={t("input")}
           tokenName={tokenName}
         />
       </div>
@@ -335,7 +305,7 @@ class PayWithSablier extends Component {
     const { payment, paymentLabel, submitted, tokenName } = this.state;
 
     if (submitted && !payment && !paymentLabel) {
-      return t("errorPaymentInvalid");
+      return t("errors.paymentInvalid");
     }
 
     const paymentStr = paymentLabel.replace(" ", "").replace(tokenName, "");
@@ -343,15 +313,15 @@ class PayWithSablier extends Component {
 
     if (parts.length < 2) {
       if (payment < 0) {
-        return t("errorPaymentZero");
+        return t("errors.paymentZero");
       }
     } else {
       // Disallow 0 values and more than 3 decimal points
       if (paymentStr.startsWith("0.0") && paymentStr % 1 === 0) {
-        return t("errorPaymentZero");
+        return t("errors.paymentZero");
       }
       if (parts[1].length > 3) {
-        return t("errorPaymentDecimals");
+        return t("errors.paymentDecimals");
       }
     }
 
@@ -367,7 +337,7 @@ class PayWithSablier extends Component {
     }
 
     if (!Object.keys(intervalStringValues).includes(interval)) {
-      return t("errorIntervalInvalid");
+      return t("errors.intervalInvalid");
     }
 
     return false;
@@ -385,29 +355,25 @@ class PayWithSablier extends Component {
 
   renderRate() {
     const { t } = this.props;
-    const { paymentLabel, interval, tokenName } = this.state;
+    const { interval, tokenName } = this.state;
 
     return (
       <div className="pay-with-sablier__form-item">
         <label className="pay-with-sablier__form-item-label" htmlFor="payment">
-          {t("inputRate")}
+          {t("input.rate")}
         </label>
         {this.renderRateError(t)}
         <div className="pay-with-sablier__horizontal-container">
           <div className="pay-with-sablier__input-container-halved">
-            <input
-              autoComplete="off"
-              className={classnames("pay-with-sablier__input", {
+            <InputWithCurrencySuffix
+              classNames={classnames("pay-with-sablier__input", {
                 "pay-with-sablier__input--invalid": this.isPaymentInvalid(),
               })}
               id="payment"
               name="payment"
-              onChange={(e) => this.onChangePaymentRate(e)}
-              onKeyDown={(e) => this.onKeyDownPaymentRate(e)}
-              placeholder={`0 ${tokenName}`}
-              spellCheck={false}
+              onChange={(value, label) => this.onChangePayment(value, label)}
+              suffix={tokenName}
               type="text"
-              value={paymentLabel}
             />
           </div>
           <span className="pay-with-sablier__horizontal-container__separator">{t("per")}</span>
@@ -428,18 +394,18 @@ class PayWithSablier extends Component {
     const { duration, interval, startTime, stopTime, submitted } = this.state;
 
     if (submitted && !isDayJs(stopTime)) {
-      return t("errorStopTimeInvalid");
+      return t("errors.stopTimeInvalid");
     }
 
     if (isDayJs(startTime) && isDayJs(stopTime)) {
       if (stopTime.isBefore(startTime)) {
-        return t("errorStopTimeLowerThanStartTime");
+        return t("errors.stopTimeLowerThanStartTime");
       }
     }
 
-    const minutes = getMinsForIntervalKey(interval);
+    const minutes = getMinsForInterval(interval);
     if (duration && duration < minutes) {
-      return t("errorDurationLowerThanInterval");
+      return t("errors.durationLowerThanInterval");
     }
 
     return false;
@@ -459,7 +425,7 @@ class PayWithSablier extends Component {
     const { t } = this.props;
     const { interval, minTime, startTime, stopTime } = this.state;
 
-    const minutes = getMinsForIntervalKey(interval);
+    const minutes = getMinsForInterval(interval);
     const stopTimeMinTime = isDayJs(startTime)
       ? startTime.add(Math.max(minutes, intervalMins.hour), "minute")
       : startTime;
@@ -467,30 +433,34 @@ class PayWithSablier extends Component {
     return (
       <div className="pay-with-sablier__form-item">
         <label className="pay-with-sablier__form-item-label" htmlFor="startTime">
-          {t("inputDates")}
+          {t("input.dates")}
         </label>
         {this.renderTimesError()}
         <div className="pay-with-sablier__horizontal-container">
           <SablierDateTime
             classNames={classnames("pay-with-sablier__input-container-halved")}
-            inputClassNames={classnames("pay-with-sablier__input")}
+            inputClassNames={classnames("pay-with-sablier__input", {
+              "pay-with-sablier__input--invalid": this.isTimesInvalid(),
+            })}
             interval={interval}
             minTime={minTime}
             maxTime={stopTime}
             name="startTime"
             onSelectTime={(date) => this.onSelectStartTime(date)}
             placeholder={t("startTime")}
-            value={startTime}
+            selectedTime={startTime}
           />
           <SablierDateTime
             classNames={classnames("pay-with-sablier__input-container-halved")}
-            inputClassNames={classnames("pay-with-sablier__input")}
+            inputClassNames={classnames("pay-with-sablier__input", {
+              "pay-with-sablier__input--invalid": this.isTimesInvalid(),
+            })}
             interval={interval}
             minTime={stopTimeMinTime}
             name="stopTime"
             onSelectTime={(date) => this.onSelectStopTime(date)}
             placeholder={t("stopTime")}
-            value={stopTime}
+            selectedTime={stopTime}
           />
         </div>
       </div>
@@ -506,10 +476,10 @@ class PayWithSablier extends Component {
     }
 
     if (!web3.utils.isAddress(recipient)) {
-      return t("errorRecipientInvalid");
+      return t("errors.recipientInvalid");
     }
     if (account === recipient) {
-      return t("errorRecipientSelf");
+      return t("errors.recipientSelf");
     }
 
     return false;
@@ -532,7 +502,7 @@ class PayWithSablier extends Component {
     return (
       <div className="pay-with-sablier__form-item">
         <label className="pay-with-sablier__form-item-label" htmlFor="recipient">
-          {t("inputRecipient")}
+          {t("input.recipient")}
         </label>
         {this.renderRecipientError()}
         <div className={classnames("pay-with-sablier__input-container")}>
@@ -566,7 +536,7 @@ class PayWithSablier extends Component {
 
   renderReceipt() {
     const { t } = this.props;
-    const { deposit, duration, enableDepositButton, tokenName } = this.state;
+    const { deposit, duration, enableDepositButton, submittedError, tokenName } = this.state;
 
     const depositLabel = deposit ? `${deposit.toLocaleString()} ${tokenName}` : `0 ${tokenName}`;
 
@@ -574,26 +544,39 @@ class PayWithSablier extends Component {
       <div className="pay-with-sablier__receipt-container">
         <span className="pay-with-sablier__receipt-top-label">{t("depositing")}</span>
         <span className="pay-with-sablier__receipt-deposit-label">{depositLabel}</span>
-        <div className="pay-with-sablier__receipt-line-item" style={{ marginTop: "24px" }}>
-          <span className="pay-with-sablier__receipt-line-item-left">{t("duration")}</span>
-          <span className="pay-with-sablier__receipt-line-item-right">{formatDuration(t, duration)}</span>
+        <div className="pay-with-sablier__receipt-dashed-line" style={{ marginTop: "24px" }}>
+          <span className="pay-with-sablier__receipt-dashed-line-left">{t("duration")}</span>
+          <span className="pay-with-sablier__receipt-dashed-line-right">{formatDuration(t, duration)}</span>
         </div>
-        <div className="pay-with-sablier__receipt-line-item">
-          <span className="pay-with-sablier__receipt-line-item-left">{t("ourFee")}</span>
-          <span className="pay-with-sablier__receipt-line-item-right">{t("none")}</span>
+        <div className="pay-with-sablier__receipt-dashed-line">
+          <span className="pay-with-sablier__receipt-dashed-line-left">{t("ourFee")}</span>
+          <span className="pay-with-sablier__receipt-dashed-line-right">{t("none")}</span>
         </div>
         <PrimaryButton
-          classNames={classnames(["pay-with-sablier__receipt-warning-button", "primary-button--white"])}
+          classNames={classnames([
+            "pay-with-sablier__button",
+            "pay-with-sablier__receipt-warning-button",
+            "primary-button--white",
+          ])}
+          disabled={true}
           icon={FaExclamationMark}
           label={t("betaWarning")}
-          labelClassNames={classnames("primary-button__label--black", "primary-button__label--no-transform")}
+          labelClassNames={classnames("primary-button__label--black")}
+          onClick={() => {}}
         />
         <PrimaryButton
-          classNames={classnames("pay-with-sablier__receipt-deposit-button")}
+          classNames={classnames("pay-with-sablier__button", "pay-with-sablier__receipt-deposit-button")}
           disabled={!enableDepositButton}
           label={t("streamMoney")}
-          onClick={() => this.onSubmit()}
+          onClick={() => this.setState({ submitted: true, submittedError: "" }, () => this.onSubmit())}
         />
+        <div
+          className={classnames("pay-with-sablier__receipt-deposit-error-label", {
+            "pay-with-sablier__error-label": submittedError ? true : false,
+          })}
+        >
+          {submittedError || ""}
+        </div>
       </div>
     );
   }
@@ -620,6 +603,8 @@ export default connect(
   }),
   (dispatch) => ({
     addPendingTx: (id) => dispatch(addPendingTx(id)),
+    push: (path) => dispatch(push(path)),
     selectors: () => dispatch(selectors()),
+    watchBalance: ({ balanceOf, tokenAddress }) => dispatch(watchBalance({ balanceOf, tokenAddress })),
   }),
 )(withTranslation()(PayWithSablier));

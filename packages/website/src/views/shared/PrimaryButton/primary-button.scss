@@ -6,32 +6,23 @@
   align-items: center;
   justify-content: center;
   background-color: $denim-blue;
-  border: 1.5px solid $glitter-gray;
   border-radius: 4px;
   cursor: pointer;
   font-family: "Larsseit Medium";
-  font-size: 16px;
+  font-size: 15px;
   outline: none;
   user-select: none;
   transition: opacity 250ms ease-in-out;
 
-  &--yellow {
-    background-color: $sandy-brown;
-  }
-
-  &--white {
-    background-color: $white;
-  }
-
   &__icon {
-    width: 20px;
+    width: 19px;
     margin-left: 24px;
     margin-right: auto;
   }
 
   &__label {
     color: $white;
-    letter-spacing: 0.32px;
+    letter-spacing: 0.64px;
     text-align: center;
     text-transform: uppercase;
   }
@@ -56,6 +47,25 @@
     height: 20px;
     margin-left: auto;
     margin-right: 24px;
+  }
+
+  // Colours
+  &--red {
+    background-color: $rusty-red;
+  }
+
+  &--yellow {
+    background-color: $sandy-yellow;
+  }
+
+  &--white {
+    @extend %bordered-container;
+    background-color: $white;
+  }
+
+  // States
+  &--disabled {
+    background-color: $ash-gray;
   }
 
   &:hover {

@@ -4,6 +4,9 @@ module.exports = {
     github: "https://github.com/PaulRBerg",
     twitter: "https://twitter.com/PaulRBerg",
   },
+  share: {
+    sablier: "https://sablier.app",
+  },
   wallets: {
     brave: {
       android: "https://play.google.com/store/apps/details?id=com.brave.browser",
@@ -18,9 +21,9 @@ module.exports = {
     },
     trust: {
       android:
-        "https://links.trustwalletapp.com/a/key_live_lfvIpVeI9TFWxPCqwU8rZnogFqhnzs4D?&event=openURL&url=https://uniswap.exchange/swap",
+        "https://links.trustwalletapp.com/a/key_live_lfvIpVeI9TFWxPCqwU8rZnogFqhnzs4D?&event=openURL&url=https://sablier.app",
       ios:
-        "https://links.trustwalletapp.com/a/key_live_lfvIpVeI9TFWxPCqwU8rZnogFqhnzs4D?&event=openURL&url=https://uniswap.exchange/swap",
+        "https://links.trustwalletapp.com/a/key_live_lfvIpVeI9TFWxPCqwU8rZnogFqhnzs4D?&event=openURL&url=https://sablier.app",
     },
   },
 };

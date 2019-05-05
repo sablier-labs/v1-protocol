@@ -4,33 +4,36 @@ $black: #000;
 $space-cadet-black: #1f2a4b;
 
 // Blue
+$aero-blue: #a1c7ed;
 $denim-blue: #246eb9;
-$malibu-blue: #5ca2ff;
-$royal-blue: #2f80ed;
 $zumthor-blue: #ebf4ff;
 
-// Brown
-$sandy-brown: #f4a261;
-
 // Gray
+$ash-gray: #b8b8b8;
 $concrete-gray: #fafafa;
 $dove-gray: #737373;
 $glitter-gray: #e7ecf2;
 $granite-gray: #666666;
 $lavender-gray: #bcc1d5;
 $mercury-gray: #e1e1e1;
+$rhythm-gray: #6e7898;
 $silver-gray: #c4c4c4;
 
 // Green
 $pigment-green: #00a351;
+
 // Red
 $fire-engine-red: #ce2627;
 $rusty-red: #da223d;
+
+// Yellow
+$sandy-yellow: #f4a261;
 
 // White
 $white: #fff;
 $anti-flash-white: #f3f3f8;
 $ghost-white: #f8f9fc;
+$isabelline-white: #efefef;
 
 /* Layout */
 %col-nowrap {
@@ -57,7 +60,7 @@ $ghost-white: #f8f9fc;
   font-family: sans-serif;
   outline: none;
 
-  &::placeholder {
+  &:placeholder {
     color: $lavender-gray;
     opacity: 1;
   }
@@ -65,8 +68,9 @@ $ghost-white: #f8f9fc;
 
 %centered-modal {
   width: 560px;
-  height: 320px;
   align-items: center;
+  display: flex;
+  flex-flow: column nowrap;
   left: 50%;
   top: 50%;
   position: absolute;
@@ -74,9 +78,82 @@ $ghost-white: #f8f9fc;
   z-index: 300;
 }
 
+%dashed-line {
+  width: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  border-bottom: 1px dashed $lavender-gray;
+  color: $space-cadet-black;
+  font-family: sans-serif;
+  -webkit-box-pack: justify;
+}
+
+%dashed-line-left {
+  min-width: 72px;
+  margin-bottom: -4px;
+  padding-right: 8px;
+  background: $white;
+  text-align: left;
+}
+
+%dashed-line-right {
+  min-width: 72px;
+  margin-bottom: -4px;
+  padding-left: 8px;
+  background: $white;
+  text-align: right;
+}
+
 %frame {
   z-index: 100;
   background-color: $white;
   border-radius: 8px;
   box-shadow: rgba($granite-gray, 0.05) 0 0 16px 28px;
+}
+
+%frame-title-label {
+  color: $space-cadet-black;
+  letter-spacing: 0.32px;
+  font-family: "Larsseit Medium";
+  font-size: 24px;
+  text-transform: capitalize;
+}
+
+%loader {
+  width: 16px;
+  height: 16px;
+  border: 1px solid transparent; /* Light grey */
+  border-top: 1px solid $space-cadet-black; /* Blue */
+  border-radius: 50%;
+  margin-right: 4px;
+  animation: spin 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+%page-frame {
+  width: calc(100vw - 240px);
+  height: calc(100vh - 144px);
+  bottom: 44px;
+  left: 120px;
+  position: absolute;
+  right: 120px;
+  top: 100px;
+}
+
+%uppercase-label {
+  color: $rhythm-gray;
+  font-family: "Larsseit Bold";
+  font-size: 15px;
+  letter-spacing: 0.32px;
+  text-transform: uppercase;
+}
+
+/* Animations */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

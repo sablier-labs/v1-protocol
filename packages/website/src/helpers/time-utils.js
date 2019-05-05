@@ -13,8 +13,12 @@ export function getHighestIntervalShorterThanADay() {
   return intervalMins[intervalStringValues.hour];
 }
 
-export function getMinsForIntervalKey(key) {
-  return intervalMins[key] || 0;
+export function getMinsForInterval(interval) {
+  return intervalMins[interval] || 0;
+}
+
+export function getSecondsForInterval(interval) {
+  return intervalMins[interval] * 60 || 0;
 }
 
 export function isDayJs(time) {
@@ -22,8 +26,18 @@ export function isDayJs(time) {
 }
 
 export function isIntervalShorterThanADay(intervalKey) {
-  const minutes = getMinsForIntervalKey(intervalKey);
-  return minutes < intervalMins.day;
+  const minutes = getSecondsForInterval(intervalKey);
+  const minutesInDay = getSecondsForInterval("day");
+  return minutes < minutesInDay;
+}
+
+export function intervalToBlocks(interval) {
+  if (!Object.keys(intervalStringValues).includes(interval)) {
+    throw new Error(`Expected ${interval} to be one of ${intervalStringValues}`);
+  }
+
+  const seconds = getSecondsForInterval(interval);
+  return (seconds / BLOCK_TIME_AVERAGE).toFixed(0);
 }
 
 /**
@@ -39,6 +53,6 @@ export async function timeToBlockNumber(web3, time) {
 
   const currentBlockNumber = await web3.eth.getBlockNumber();
   const now = dayjs();
-  const seconds = time.subtract(now.second(), "second");
-  return currentBlockNumber + ( seconds / BLOCK_TIME_AVERAGE );
+  const unixDelta = time.subtract(now.unix(), "second").unix();
+  return (currentBlockNumber + unixDelta / BLOCK_TIME_AVERAGE).toFixed(0);
 }

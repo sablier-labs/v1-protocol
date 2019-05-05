@@ -2,15 +2,25 @@
 
 .web3-status {
   @extend %row-nowrap;
-  height: 2rem;
+  height: 32px;
   align-items: center;
   border: 1px solid $mercury-gray;
   border-radius: 4px;
   padding: 8px;
   background-color: $anti-flash-white;
   color: $space-cadet-black; // $dove-gray
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 15px;
+
+  &__container {
+    flex: 1 1 auto;
+    overflow: hidden;
+    margin-right: 4px;
+    margin-left: 8px;
+
+    &--pending {
+      margin-left: 4px;
+    }
+  }
 
   &__icon {
     height: 20px;
@@ -20,22 +30,21 @@
     color: $space-cadet-black;
   }
 
-  &__text {
-    flex: 1 1 auto;
-    overflow: hidden;
-    margin-right: 4px;
-    margin-left: 8px;
+  &__loader {
+    @extend %loader;
   }
 
-  &--pending-container {
-    display: flex;
-    justify-content: space-around;
+  &__pending-container {
+    @extend %row-nowrap;
+
+    &__label {
+      margin-left: 4px;
+      text-transform: lowercase;
+    }
   }
 
   &--pending {
-    background-color: $zumthor-blue;
-    border: 1px solid $royal-blue;
-    color: $royal-blue;
+    cursor: pointer;
   }
 }
 
@@ -46,8 +55,8 @@
   bottom: 192px;
   z-index: 200;
   background-color: $white;
-  border-top-left-radius: 1rem;
-  border-top-right-radius: 1rem;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
   transition: 250ms ease-in-out;
 
   &__transaction-list {
@@ -66,7 +75,7 @@
   }
 
   &__transaction-label {
-    color: $royal-blue;
+    color: $denim-blue;
     width: 60%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -75,8 +84,8 @@
 
   &--pending-indicator {
     @extend %row-nowrap;
-    color: $royal-blue;
-    border: 1px solid $royal-blue;
+    color: $denim-blue;
+    border: 1px solid $denim-blue;
     background-color: $zumthor-blue;
     padding: 8px 12px;
     border-radius: 100px;

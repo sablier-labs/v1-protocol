@@ -1,4 +1,4 @@
-@import "../../../styles/variables.scss";
+@import "../../../../styles/variables.scss";
 
 .sablier-datetime {
   position: relative;
@@ -11,9 +11,6 @@
   border-radius: 8px;
   font-family: sans-serif;
   transition: 250ms ease-in-out;
-
-  @media only screen and (min-width: 768px) {
-  }
 }
 
 .sablier-datetime-modal-appear {

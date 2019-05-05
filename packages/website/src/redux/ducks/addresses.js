@@ -4,10 +4,6 @@ const SET_ADDRESSES = "app/addresses/setAddresses";
 
 const initialState = MAINNET;
 
-export const addToken = ({ token, tokenAddress }) => (dispatch, getState) => {
-  console.log("addToken");
-};
-
 export const setAddresses = (networkId) => {
   switch (networkId) {
     // Main Net

@@ -13,7 +13,7 @@ class PrimaryButton extends Component {
     icon: PropTypes.string,
     label: PropTypes.string.isRequired,
     labelClassNames: PropTypes.string,
-    onClick: PropTypes.func,
+    onClick: PropTypes.func.isRequired,
   };
 
   renderIcon() {
@@ -27,12 +27,12 @@ class PrimaryButton extends Component {
   }
 
   render() {
-    const { label, onClick } = this.props;
+    const { disabled, label, onClick } = this.props;
 
     return (
       <button
         className={classnames("primary-button", this.props.classNames)}
-        disabled={false}
+        disabled={disabled}
         onClick={() => onClick()}
       >
         {this.renderIcon()}

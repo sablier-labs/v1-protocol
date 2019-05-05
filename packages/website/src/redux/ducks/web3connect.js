@@ -65,10 +65,6 @@ export const selectors = () => (dispatch, getState) => {
   };
 
   const getBalance = (address, tokenAddress) => {
-    if (process.env.NODE_ENV !== "production" && !tokenAddress) {
-      console.warn("No token address found - return ETH balance");
-    }
-
     if (!tokenAddress || tokenAddress === "ETH") {
       const balance = state.balances.ethereum[address];
       if (!balance) {
@@ -421,6 +417,7 @@ export default function web3connectReducer(state = initialState, { type, payload
           ...state.watched,
           balances: {
             ...state.watched.balances,
+            // TODO update from PayWithSablier OR with DAI
             ethereum: [...state.watched.balances.ethereum, payload],
           },
         },

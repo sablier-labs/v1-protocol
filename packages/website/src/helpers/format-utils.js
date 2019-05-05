@@ -11,19 +11,19 @@ export function formatDuration(t, duration) {
 
   const months = Math.floor(duration / intervalMins.month);
   if (months) {
-    result.push(`${months} ${t(months > 1 ? "months" : "month")}`);
+    result.push(`${months} ${t("month", { count: months })}`);
   }
 
   duration %= intervalMins.month;
   const days = Math.floor(duration / intervalMins.day);
   if (days) {
-    result.push(`${days} ${t(days > 1 ? "days" : "day")}`);
+    result.push(`${days} ${t("day", { count: days })}`);
   }
 
   duration %= intervalMins.day;
   const hours = Math.floor(duration / intervalMins.hour);
   if (hours) {
-    result.push(`${hours} ${t(hours > 1 ? "hours" : "hour")}`);
+    result.push(`${hours} ${t("hour", { count: hours })}`);
   }
 
   if (result.length === 0) {
@@ -32,7 +32,7 @@ export function formatDuration(t, duration) {
   return result.join(" ");
 }
 
-export function formatTime(t, time) {
+export function formatTime(t, time, beautify = true) {
   if (!(time instanceof dayjs)) {
     throw new Error("Expected dayjs object");
   }
@@ -40,10 +40,11 @@ export function formatTime(t, time) {
   const tomorrow = dayjs()
     .add(1, "day")
     .format("DD MMM YYYY");
-  return time
-    .format(SABLIER_FORMAT)
-    .replace(today, t("today"))
-    .replace(tomorrow, t("tomorrow"));
+  let formattedTime = time.format(SABLIER_FORMAT);
+  if (beautify) {
+    formattedTime = formattedTime.replace(today, t("today")).replace(tomorrow, t("tomorrow"));
+  }
+  return formattedTime;
 }
 
 export function roundToDecimalPlaces(num, places) {

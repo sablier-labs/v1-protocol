@@ -52,8 +52,5 @@
     "profile": "scripts/profile.sh",
     "test": "scripts/test.sh",
     "trace": "scripts/trace.sh"
-  },
-  "dependencies": {
-    "react-responsive": "^6.1.1"
   }
 }

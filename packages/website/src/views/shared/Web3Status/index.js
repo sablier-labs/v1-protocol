@@ -16,17 +16,6 @@ function getEtherscanLink(tx) {
   return `https://etherscan.io/tx/${tx}`;
 }
 
-function getPendingText(pendingTransactions, pendingLabel) {
-  return (
-    <div className="web3-status--pending-container">
-      <div className="loader" />
-      <span key="text">
-        {pendingTransactions.length} {pendingLabel}
-      </span>
-    </div>
-  );
-}
-
 function getText(text, disconnectedText) {
   if (!text || text.length < 42 || !Web3Utils.isHexStrict(text)) {
     return disconnectedText;
@@ -48,12 +37,16 @@ class Web3Status extends Component {
   };
 
   state = {
-    isShowingModal: false,
+    showModal: false,
   };
 
-  handleClick = () => {
-    if (this.props.pending.length && !this.state.isShowingModal) {
-      this.setState({ isShowingModal: true });
+  static getDerivedStateFromProps(nextProps, prevState) {
+    return prevState;
+  }
+
+  onClick = () => {
+    if (this.props.pending.length && !this.state.showModal) {
+      this.setState({ showModal: true });
     }
   };
 
@@ -75,12 +68,12 @@ class Web3Status extends Component {
   }
 
   renderModal() {
-    if (!this.state.isShowingModal) {
+    if (!this.state.showModal) {
       return null;
     }
 
     return (
-      <Modal onClose={() => this.setState({ isShowingModal: false })}>
+      <Modal onClose={() => this.setState({ showModal: false })}>
         <CSSTransitionGroup
           transitionName="token-modal"
           transitionAppear={true}
@@ -100,8 +93,27 @@ class Web3Status extends Component {
     );
   }
 
+  renderIcon(address) {
+    if (!address || address.length < 42 || !Web3Utils.isHexStrict(address)) {
+      return null;
+    }
+
+    return <img className="web3-status__icon" src={FaUserCircle} alt="Ethereum Wallet" />;
+  }
+
+  renderPendingContainer(pendingTransactions, pendingLabel) {
+    return (
+      <div className="web3-status__pending-container">
+        <div className="web3-status__loader" />
+        <span className="web3-status__pending-container__label" key="text">
+          {pendingTransactions.length} {pendingLabel}
+        </span>
+      </div>
+    );
+  }
+
   render() {
-    const { t, address, pending, confirmed } = this.props;
+    const { address, confirmed, pending, t } = this.props;
     const hasPendingTransactions = !!pending.length;
     const hasConfirmedTransactions = !!confirmed.length;
 
@@ -112,15 +124,19 @@ class Web3Status extends Component {
           "web3-status--pending": hasPendingTransactions,
           "web3-status--confirmed": hasConfirmedTransactions,
         })}
-        onClick={this.handleClick}
+        onClick={this.onClick}
       >
-        {!address || address.length < 42 || !Web3Utils.isHexStrict(address) ? null : (
-          <img className="web3-status__icon" src={FaUserCircle} alt="Ethereum Wallet" />
-        )}
-        <div className="web3-status__text">
-          {hasPendingTransactions ? getPendingText(pending, t("pending")) : getText(address, t("disconnected"))}
+        {hasPendingTransactions ? null : this.renderIcon(address)}
+        <div
+          className={classnames("web3-status__container", {
+            "web3-status__container--pending": hasPendingTransactions,
+          })}
+        >
+          {hasPendingTransactions
+            ? this.renderPendingContainer(pending, t("pending"))
+            : getText(address, t("disconnected"))}
+          {this.renderModal()}
         </div>
-        {this.renderModal()}
       </div>
     );
   }
@@ -129,7 +145,7 @@ class Web3Status extends Component {
 export default connect((state) => {
   return {
     address: state.web3connect.account,
-    isConnected: !!(state.web3connect.web3 && state.web3connect.account),
+    isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
     pending: state.web3connect.transactions.pending,
     confirmed: state.web3connect.transactions.confirmed,
   };

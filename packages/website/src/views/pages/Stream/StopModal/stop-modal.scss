@@ -1,0 +1,31 @@
+@import "../../../../styles/variables.scss";
+
+.stop-modal {
+  @extend %centered-modal, %frame;
+  padding: 16px 24px 24px;
+
+  &__button {
+    width: 100%;
+    margin-top: 24px;
+  }
+
+  &__label {
+    margin-top: 24px;
+    color: $space-cadet-black;
+    font-family: sans-serif;
+    font-size: 15px;
+    line-height: 20px;
+    text-align: center;
+  }
+
+  &__separator {
+    width: calc(100% + 48px);
+    height: 1px;
+    margin-top: 16px;
+    background-color: $glitter-gray;
+  }
+
+  &__title-label {
+    @extend %frame-title-label;
+  }
+}

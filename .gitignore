@@ -17,11 +17,5 @@ node_modules/
 coverage.json
 lerna-debug.log*
 npm-debug.log*
-scTopics
 yarn-debug.log*
 yarn-error.log*
-
-# packages
-packages/weierstrudel/debug.txt
-packages/weierstrudel/log.txt
-packages/weierstrudel/js_snippets/hashToPoint.js

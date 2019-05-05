@@ -7,13 +7,11 @@ import { withTranslation } from "react-i18next";
 import EthereumLogo from "../../../assets/images/ethereum-logo.svg";
 import Modal from "../Modal";
 
-import { networkNamesToIds } from "../../../constants/networks";
+import "./network-modal.scss";
 
-import "./network-warning.scss";
-
-class NetworkWarning extends Component {
+class NetworkModal extends Component {
   static propTypes = {
-    initialized: PropTypes.bool.isRequired,
+    isConnected: PropTypes.bool,
     networkId: PropTypes.number.isRequired,
     subtitle: PropTypes.string,
     title: PropTypes.string,
@@ -25,15 +23,12 @@ class NetworkWarning extends Component {
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const showModal =
-      nextProps.initialized &&
-      nextProps.networkId !== 0 &&
-      nextProps.networkId !== networkNamesToIds.mainnet &&
-      nextProps.networkId !== networkNamesToIds.rinkeby;
+    const showModal = nextProps.networkId && !nextProps.isConnected;
+    console.log({ networkId: nextProps.networkId, isConnected: nextProps.isConnected });
     if (showModal !== prevState.showModal) {
       return { showModal };
     } else {
-      return null;
+      return prevState;
     }
   }
 
@@ -47,11 +42,11 @@ class NetworkWarning extends Component {
 
     return (
       <Modal onClose={() => {}}>
-        <div className="network-warning">
-          <img className="network-warning__image" alt="Warning" src={EthereumLogo} />
-          <div className="network-warning__label-container">
-            <span className="network-warning__title">{title || t("whoops")}</span>
-            <span className="network-warning__subtitle">{subtitle || t("youAreOnTheWrongNetwork")}</span>
+        <div className="network-modal">
+          <img className="network-modal__image" alt="Warning" src={EthereumLogo} />
+          <div className="network-modal__label-container">
+            <span className="network-modal__title">{title || t("whoops")}</span>
+            <span className="network-modal__subtitle">{subtitle || t("youAreOnTheWrongNetwork")}</span>
           </div>
         </div>
       </Modal>
@@ -60,7 +55,7 @@ class NetworkWarning extends Component {
 }
 
 export default connect((state) => ({
-  initialized: state.web3connect.initialized,
+  isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
   networkId: state.web3connect.networkId,
   web3: state.web3connect.web3,
-}))(withTranslation()(NetworkWarning));
+}))(withTranslation()(NetworkModal));

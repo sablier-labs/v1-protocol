@@ -27,7 +27,10 @@
     "jquery": "^3.3.1",
     "popper.js": "^1.14.7",
     "prop-types": "^15.7.2",
+    "random-words": "^1.1.0",
+    "rc-slider": "^8.6.9",
     "react": "^16.8.6",
+    "react-circular-progressbar": "^1.2.0",
     "react-cookies": "^0.1.0",
     "react-datepicker": "^2.4.0",
     "react-dom": "^16.8.6",
@@ -38,21 +41,26 @@
     "react-responsive": "^6.1.1",
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
+    "react-tooltip": "^3.10.0",
     "react-transition-group": "1.x",
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0",
     "sanitize.css": "^8.0.0",
     "validator": "^10.11.0",
-    "web3": "^1.0.0-beta.52",
+    "web3": "^1.0.0-beta.51",
     "web3-utils": "^1.0.0-beta.52"
   },
   "devDependencies": {
+    "commitizen": "^3.0.7",
     "eslint": "^5.15.3",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-import": "^2.16.0",
+    "lerna": "^3.13.1",
     "node-sass": "^4.11.0",
-    "react-scripts": "2.1.8"
+    "prettier": "^1.16.4",
+    "react-scripts": "2.1.8",
+    "wsrun": "^3.6.4"
   },
   "eslintConfig": {
     "extends": "react-app"
