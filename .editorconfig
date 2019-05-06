@@ -16,10 +16,18 @@ trim_trailing_whitespace = true
 [*.css]
 indent_size=2
 
+# GraphQL
+[*.graphql]
+indent_size=2
+
 # JavaScript
 [*.js]
 indent_size=2
 
 # Scss
 [*.scss]
+indent_size=2
+
+# Yaml
+[*.{yaml, yml}]
 indent_size=2
