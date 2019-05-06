@@ -1,7 +1,6 @@
 {
   "name": "@sablier/website",
   "description": "Sablier dApp frontend",
-  "homepage": "https://sablier.app",
   "version": "0.0.0-semantically-released",
   "author": {
     "name": "Paul Berg",
@@ -65,6 +64,8 @@
   "eslintConfig": {
     "extends": "react-app"
   },
+  "homepage": "https://sablier.app",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "build": "react-scripts build",
