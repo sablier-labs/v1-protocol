@@ -8,68 +8,70 @@ interface IERC1620 {
     /// @dev This emits when streams are successfully created and added
     ///  in the mapping object.
     event CreateStream(
-        uint256 indexed _streamId,
-        address indexed _sender,
-        address indexed _recipient,
-        address _tokenAddress,
-        uint256 _startBlock,
-        uint256 _stopBlock,
-        uint256 _payment,
-        uint256 _interval
+        uint256 indexed streamId,
+        address indexed sender,
+        address indexed recipient,
+        address tokenAddress,
+        uint256 startBlock,
+        uint256 stopBlock,
+        uint256 payment,
+        uint256 interval
     );
 
     /// @dev This emits when the receiver of a stream withdraws a portion
     ///  or all of their available funds from an ongoing stream, without
-    ///  stopping it.
-    event Withdraw(
-        uint256 indexed _streamId,
-        address indexed _recipient,
-        uint256 _funds
+    ///  stopping it. Note that we don't keep track of both the sender and
+    ///  the recipient's balance because only the recipient can withdraw
+    ///  while the stream is active.
+    event WithdrawFromStream(
+        uint256 indexed streamId,
+        address indexed recipient,
+        uint256 funds
     );
 
     /// @dev This emits when a stream is successfully redeemed and
     ///  all involved parties get their share of the available funds.
-    event Redeem(
-        uint256 indexed _streamId,
-        address indexed _sender,
-        address indexed _recipient,
-        uint256 _senderBalance,
-        uint256 _recipientBalance
+    event RedeemStream(
+        uint256 indexed streamId,
+        address indexed sender,
+        address indexed recipient,
+        uint256 senderBalance,
+        uint256 recipientBalance
     );
 
     /// @dev This emits when an update is successfully committed by
     ///  one of the involved parties.
     event ConfirmUpdate(
-        uint256 indexed _streamId,
-        address indexed _confirmer,
-        address _newTokenAddress,
-        uint256 _newStopBlock,
-        uint256 _newPayment,
-        uint256 _newInterval
+        uint256 indexed streamId,
+        address indexed confirmer,
+        address newTokenAddress,
+        uint256 newStopBlock,
+        uint256 newPayment,
+        uint256 newInterval
     );
 
     /// @dev This emits when one of the involved parties revokes
     ///  a proposed update to the stream.
     event RevokeUpdate(
-        uint256 indexed _streamId,
+        uint256 indexed streamId,
         address indexed revoker,
-        address _newTokenAddress,
-        uint256 _newStopBlock,
-        uint256 _newPayment,
-        uint256 _newInterval
+        address newTokenAddress,
+        uint256 newStopBlock,
+        uint256 newPayment,
+        uint256 newInterval
     );
 
     /// @dev This emits when an update (that is, modifications to
     ///  payment rate, starting or stopping block) is successfully
     ///  approved by all involved parties.
     event ExecuteUpdate(
-        uint256 indexed _newStreamId,
-        address indexed _sender,
-        address indexed _recipient,
-        address _newTokenAddress,
-        uint256 _newStopBlock,
-        uint256 _newPayment,
-        uint256 _newInterval
+        uint256 indexed streamId,
+        address indexed sender,
+        address indexed recipient,
+        address newTokenAddress,
+        uint256 newStopBlock,
+        uint256 newPayment,
+        uint256 newInterval
     );
 
     /// @notice Creates a new stream between `msg.sender` and `_recipient`
@@ -86,7 +88,7 @@ interface IERC1620 {
     /// @param _stopBlock The stopping time of the stream
     /// @param _payment How much money moves from sender to recipient
     /// @param _interval How often the `payment` moves from sender to recipient
-    function create(
+    function createStream(
         address _sender,
         address _recipient,
         address _tokenAddress,
@@ -102,7 +104,7 @@ interface IERC1620 {
     ///  Throws if `msg.sender` is not the recipient of the given `streamId`
     /// @param _streamId The stream to withdraw from
     /// @param _funds The amount of money to withdraw
-    function withdraw(
+    function withdrawFromStream(
         uint256 _streamId,
         uint256 _funds
     )
@@ -113,7 +115,7 @@ interface IERC1620 {
     ///  Throws unless `msg.sender` is either the sender or the recipient
     ///  of the given `streamId`.
     /// @param _streamId The stream to stop
-    function redeem(
+    function redeemStream(
         uint256 _streamId
     )
     external;
@@ -121,7 +123,7 @@ interface IERC1620 {
     /// @notice Signals one party's willingness to update the stream
     /// @dev Throws if `_streamId` doesn't point to a valid stream.
     ///  Not executed prior to everyone agreeing to the new terms.
-    ///  In terms of validation, it works exactly the same as the `create` function.
+    ///  In terms of validation, it works exactly the same as the `createStream` function.
     /// @param _streamId The stream to update
     /// @param _tokenAddress The token contract address
     /// @param _stopBlock The new stopping time of the stream

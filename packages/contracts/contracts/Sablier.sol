@@ -27,9 +27,9 @@ contract Sablier is IERC1620 {
         address sender;
         address recipient;
         address tokenAddress;
-        uint256 balance;
         Timeframe timeframe;
         Rate rate;
+        uint256 balance;
     }
 
     /**
@@ -43,56 +43,57 @@ contract Sablier is IERC1620 {
      * Events
      */
     event CreateStream(
-        uint256 indexed _streamId,
-        address indexed _sender,
-        address indexed _recipient,
-        address _tokenAddress,
-        uint256 _startBlock,
-        uint256 _stopBlock,
-        uint256 _payment,
-        uint256 _interval
+        uint256 indexed streamId,
+        address indexed sender,
+        address indexed recipient,
+        address tokenAddress,
+        uint256 startBlock,
+        uint256 stopBlock,
+        uint256 payment,
+        uint256 interval,
+        uint256 balance
     );
 
-    event Withdraw(
-        uint256 indexed _streamId,
-        address indexed _recipient,
-        uint256 _funds
+    event WithdrawFromStream(
+        uint256 indexed streamId,
+        address indexed recipient,
+        uint256 funds
     );
 
-    event Redeem(
-        uint256 indexed _streamId,
-        address indexed _sender,
-        address indexed _recipient,
-        uint256 _senderBalance,
-        uint256 _recipientBalance
+    event RedeemStream(
+        uint256 indexed streamId,
+        address indexed sender,
+        address indexed recipient,
+        uint256 senderBalance,
+        uint256 recipientBalance
     );
 
     event ConfirmUpdate(
-        uint256 indexed _streamId,
+        uint256 indexed streamId,
         address indexed confirmer,
-        address _newTokenAddress,
-        uint256 _newStopBlock,
-        uint256 _newPayment,
-        uint256 _newInterval
+        address newTokenAddress,
+        uint256 newStopBlock,
+        uint256 newPayment,
+        uint256 newInterval
     );
 
     event RevokeUpdate(
-        uint256 indexed _streamId,
+        uint256 indexed streamId,
         address indexed revoker,
-        address _newTokenAddress,
-        uint256 _newStopBlock,
-        uint256 _newPayment,
-        uint256 _newInterval
+        address newTokenAddress,
+        uint256 newStopBlock,
+        uint256 newPayment,
+        uint256 newInterval
     );
 
     event ExecuteUpdate(
-        uint256 indexed _newStreamId,
-        address indexed _sender,
-        address indexed _recipient,
-        address _newTokenAddress,
-        uint256 _newStopBlock,
-        uint256 _newPayment,
-        uint256 _newInterval
+        uint256 indexed streamId,
+        address indexed sender,
+        address indexed recipient,
+        address newTokenAddress,
+        uint256 newStopBlock,
+        uint256 newPayment,
+        uint256 newInterval
     );
 
     /*
@@ -149,10 +150,14 @@ contract Sablier is IERC1620 {
 
         if (stream.balance != deposit)
             funds = funds.sub(deposit.sub(stream.balance));
-        if (_addr == stream.recipient)
+
+        if (_addr == stream.recipient) {
             return funds;
-        else
+        } else if (_addr == stream.sender) {
             return stream.balance.sub(funds);
+        } else {
+            return 0;
+        }
     }
 
     function getStream(uint256 _streamId)
@@ -192,7 +197,7 @@ contract Sablier is IERC1620 {
         return updates[_streamId][_addr];
     }
 
-    function create(
+    function createStream(
         address _sender,
         address _recipient,
         address _tokenAddress,
@@ -218,10 +223,10 @@ contract Sablier is IERC1620 {
 
         // create and log the stream if the deposit is okay
         streams[streamNonce] = Stream({
+            balance : deposit,
             sender : _sender,
             recipient : _recipient,
             tokenAddress : _tokenAddress,
-            balance : deposit,
             timeframe : Timeframe(_startBlock, _stopBlock),
             rate : Rate(_payment, _interval)
         });
@@ -233,7 +238,8 @@ contract Sablier is IERC1620 {
             _startBlock,
             _stopBlock,
             _payment,
-            _interval
+            _interval,
+            deposit
         );
         streamNonce = streamNonce.add(1);
 
@@ -241,7 +247,7 @@ contract Sablier is IERC1620 {
         tokenContract.transferFrom(_sender, address(this), deposit);
     }
 
-    function withdraw(
+    function withdrawFromStream(
         uint256 _streamId,
         uint256 _funds
     )
@@ -254,11 +260,11 @@ contract Sablier is IERC1620 {
         require(availableFunds >= _funds, "not enough funds");
 
         streams[_streamId].balance = streams[_streamId].balance.sub(_funds);
-        emit Withdraw(_streamId, stream.recipient, _funds);
+        emit WithdrawFromStream(_streamId, stream.recipient, _funds);
         IERC20(stream.tokenAddress).transfer(stream.recipient, _funds);
     }
 
-    function redeem(uint256 _streamId)
+    function redeemStream(uint256 _streamId)
     public
     streamExists(_streamId)
     onlySenderOrRecipient(_streamId)
@@ -266,12 +272,12 @@ contract Sablier is IERC1620 {
         Stream memory stream = streams[_streamId];
         uint256 senderBalance = balanceOf(_streamId, stream.sender);
         uint256 recipientBalance = balanceOf(_streamId, stream.recipient);
-        emit Redeem(
-        _streamId,
-        stream.sender,
-        stream.recipient,
-        senderBalance,
-        recipientBalance
+        emit RedeemStream(
+            _streamId,
+            stream.sender,
+            stream.recipient,
+            senderBalance,
+            recipientBalance
         );
         delete streams[_streamId];
         updates[_streamId][stream.sender] = false;
@@ -471,8 +477,8 @@ contract Sablier is IERC1620 {
         updates[_streamId][stream.sender] = false;
         updates[_streamId][stream.recipient] = false;
 
-        redeem(_streamId);
-        create(
+        redeemStream(_streamId);
+        createStream(
             stream.sender,
             stream.recipient,
             _tokenAddress,

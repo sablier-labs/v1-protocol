@@ -38,19 +38,29 @@ function createProvider(network) {
   };
 }
 
-let kovanProvider = {};
-let rinkebyProvider = {};
-let ropstenProvider = {};
-
-const projectRoot = "";
+const defaultFromAddress = getFirstAddress();
 const isVerbose = true;
 const coverageSubproviderConfig = {
   isVerbose,
   ignoreFilesGlobs: ["**/node_modules/**", "**/interfaces/**", "**/mocks/**", "**/test/**"],
 };
-const defaultFromAddress = getFirstAddress();
+
+const projectRoot = "";
 const artifactAdapter = new TruffleArtifactAdapter(projectRoot, compilerConfig.solcVersion);
+
 const provider = new ProviderEngine();
+let ganacheSubprovider = new GanacheSubprovider();
+provider.addProvider(ganacheSubprovider);
+provider.start((err) => {
+  if (err !== undefined) {
+    console.log(err);
+    process.exit(1);
+  }
+});
+
+let kovanProvider;
+let rinkebyProvider;
+let ropstenProvider;
 
 switch (process.env.MODE) {
   case "profile":
@@ -70,28 +80,22 @@ switch (process.env.MODE) {
     provider.addProvider(new RevertTraceSubprovider(artifactAdapter, defaultFromAddress, isVerbose));
     break;
   default:
+    // Due to some strange error, contracts do not get deployed when using the ganache subprovider
+    // required by the 0x tools
+    ganacheSubprovider = undefined;
     kovanProvider = createProvider("kovan");
     rinkebyProvider = createProvider("rinkeby");
     ropstenProvider = createProvider("ropsten");
     break;
 }
 
-let ganacheSubprovider = {};
-ganacheSubprovider = new GanacheSubprovider();
-provider.addProvider(ganacheSubprovider);
-
-provider.start((err) => {
-  if (err !== undefined) {
-    console.log(err);
-    process.exit(1);
-  }
-});
-
 /**
  * HACK: Truffle providers should have `send` function, while `ProviderEngine` creates providers with `sendAsync`,
  * but it can be easily fixed by assigning `sendAsync` to `send`.
  */
 provider.send = provider.sendAsync.bind(provider);
+
+const developmentOptions = ganacheSubprovider ? { provider } : { host: "127.0.0.1" };
 
 module.exports = {
   compilers: {
@@ -106,8 +110,8 @@ module.exports = {
   },
   networks: {
     development: {
-      provider,
-      gas: 4700000,
+      ...developmentOptions,
+      gas: 6000000,
       gasPrice: toHex(toWei("1", "gwei")),
       network_id: "*", // eslint-disable-line camelcase
       port: 8545,
@@ -120,13 +124,13 @@ module.exports = {
     },
     rinkeby: {
       provider: rinkebyProvider,
-      gas: 4700000,
+      gas: 6000000,
       gasPrice: toHex(toWei("10", "gwei")),
       network_id: "4",
     },
     ropsten: {
       provider: ropstenProvider,
-      gas: 4700000,
+      gas: 6000000,
       gasPrice: toHex(toWei("10", "gwei")),
       network_id: "3",
     },

@@ -25,5 +25,5 @@
   },
   "contractsDir": "./contracts",
   "isOfflineMode": false,
-  "solcVersion": "0.5.7"
+  "solcVersion": "0.5.8"
 }

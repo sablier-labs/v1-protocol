@@ -22,11 +22,11 @@ contract("Sablier", function([_, sender, recipient, malicious, innocent]) {
     streamIdWrong: 314,
     stopBlock: 0,
   };
-  const unit = "1";
+  const unit = 1;
   const payments = {
     interval: 1,
     unit,
-    unitWei: toWei(unit),
+    unitWei: toWei(`${unit}`),
     deposit: toWei(`${unit * vars.delta}`),
   };
 
@@ -47,7 +47,15 @@ contract("Sablier", function([_, sender, recipient, malicious, innocent]) {
     });
 
     await sablier.contract.methods
-      .create(sender, recipient, token.address, vars.startBlock, vars.stopBlock, payments.unitWei, payments.interval)
+      .createStream(
+        sender,
+        recipient,
+        token.address,
+        vars.startBlock,
+        vars.stopBlock,
+        payments.unitWei,
+        payments.interval,
+      )
       .send({
         from: sender,
       });
@@ -114,13 +122,13 @@ contract("Sablier", function([_, sender, recipient, malicious, innocent]) {
     const { unitWei } = payments;
     await truffleAssert.reverts(
       sablier.contract.methods
-        .create(sender, recipient, tokenAddress, startBlock, stopBlock, unitWei, interval)
+        .createStream(sender, recipient, tokenAddress, startBlock, stopBlock, unitWei, interval)
         .send({ from: sender }),
       error,
     );
   }
 
-  describe("create", async function() {
+  describe("createStream", async function() {
     it("...should fail to create a stream", async function() {
       const blockNumber = await web3.eth.getBlockNumber();
 
@@ -181,27 +189,27 @@ contract("Sablier", function([_, sender, recipient, malicious, innocent]) {
     });
   });
 
-  makeSuite("withdraw", function() {
+  makeSuite("withdrawFromStream", function() {
     it("...should fail to withdraw funds", async function() {
       await truffleAssert.reverts(
-        sablier.contract.methods.withdraw(vars.streamIdWrong, 10).send({ from: recipient }),
+        sablier.contract.methods.withdrawFromStream(vars.streamIdWrong, 10).send({ from: recipient }),
         errors.STREAM_EXISTENCE,
       );
 
       await truffleAssert.reverts(
-        sablier.contract.methods.withdraw(vars.streamId, 10).send({ from: malicious }),
+        sablier.contract.methods.withdrawFromStream(vars.streamId, 10).send({ from: malicious }),
         errors.AUTH_RECIPIENT,
       );
 
       const billionEther = toWei("1", "gether");
       await truffleAssert.reverts(
-        sablier.contract.methods.withdraw(vars.streamId, billionEther).send({ from: recipient }),
+        sablier.contract.methods.withdrawFromStream(vars.streamId, billionEther).send({ from: recipient }),
         errors.INSOLVENCY,
       );
     });
 
     async function shouldWithdraw(previousWalletBalance, previousContractBalance, fundsToWithdraw) {
-      await sablier.contract.methods.withdraw(vars.streamId, fundsToWithdraw).send({ from: recipient });
+      await sablier.contract.methods.withdrawFromStream(vars.streamId, fundsToWithdraw).send({ from: recipient });
 
       // wallet balance
       const walletBalance = new BigNumber(await token.balanceOf(recipient));
@@ -249,25 +257,25 @@ contract("Sablier", function([_, sender, recipient, malicious, innocent]) {
     });
   });
 
-  makeSuite("redeem", function() {
+  makeSuite("redeemStream", function() {
     it("...should fail to redeem the stream", async function() {
       // stream doesn't exist
       await truffleAssert.reverts(
-        sablier.contract.methods.redeem(vars.streamIdWrong).send({ from: sender }),
+        sablier.contract.methods.redeemStream(vars.streamIdWrong).send({ from: sender }),
         errors.STREAM_NONEXISTENT,
       );
 
       // only the stream sender or recipient allowed
       await truffleAssert.reverts(
-        sablier.contract.methods.redeem(vars.streamId).send({ from: malicious }),
+        sablier.contract.methods.redeemStream(vars.streamId).send({ from: malicious }),
         errors.AUTH_BOTH,
       );
     });
 
-    async function shouldRedeem() {
+    async function shouldRedeemStream() {
       const previousWalletBalance = await token.contract.methods.balanceOf(recipient).call();
       const contractBalance = await sablier.contract.methods.balanceOf(vars.streamId, recipient).call();
-      await sablier.contract.methods.redeem(vars.streamId).send({
+      await sablier.contract.methods.redeemStream(vars.streamId).send({
         from: sender,
       });
 
@@ -281,21 +289,21 @@ contract("Sablier", function([_, sender, recipient, malicious, innocent]) {
 
     it("...should redeem the funds", async function() {
       // before the stream starts
-      await shouldRedeem();
+      await shouldRedeemStream();
 
       // while the stream is ongoing
       await createStream();
       await web3.utils.advanceBlock(vars.offset);
-      await shouldRedeem();
+      await shouldRedeemStream();
 
       // after the blockchain passed the stop block
       await createStream();
       await web3.utils.advanceBlock(vars.delta + vars.offset);
-      await shouldRedeem();
+      await shouldRedeemStream();
     });
   });
 
-  makeSuite("update", function() {
+  makeSuite("updateStream", function() {
     it("...should confirm the sender's update", async function() {
       await web3.utils.advanceBlock(vars.offset);
       await sablier.contract.methods
