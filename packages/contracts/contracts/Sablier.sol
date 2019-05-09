@@ -51,7 +51,7 @@ contract Sablier is IERC1620 {
         uint256 stopBlock,
         uint256 payment,
         uint256 interval,
-        uint256 balance
+        uint256 deposit
     );
 
     event WithdrawFromStream(

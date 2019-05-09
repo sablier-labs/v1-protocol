@@ -4,6 +4,9 @@ const Sablier = artifacts.require("./Sablier.sol");
 
 module.exports = (deployer, network, accounts) => {
   deployer.deploy(Sablier).then(async (sablier) => {
+    if (network !== "development") {
+      return;
+    }
     const allowance = web3.utils.toWei("1000");
     const erc20Mintable = await ERC20Mintable.deployed();
     await erc20Mintable.approve(sablier.address, allowance, { from: accounts[0] });

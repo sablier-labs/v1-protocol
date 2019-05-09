@@ -115,24 +115,28 @@ module.exports = {
       gasPrice: toHex(toWei("1", "gwei")),
       network_id: "*", // eslint-disable-line camelcase
       port: 8545,
+      skipDryRun: true,
     },
     kovan: {
       provider: kovanProvider,
       gas: 6000000,
       gasPrice: toHex(toWei("10", "gwei")),
       network_id: "42",
+      skipDryRun: true,
     },
     rinkeby: {
       provider: rinkebyProvider,
       gas: 6000000,
       gasPrice: toHex(toWei("10", "gwei")),
       network_id: "4",
+      skipDryRun: true,
     },
     ropsten: {
       provider: ropstenProvider,
       gas: 6000000,
       gasPrice: toHex(toWei("10", "gwei")),
       network_id: "3",
+      skipDryRun: true,
     },
   },
   plugins: ["truffle-security"],
