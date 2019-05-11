@@ -1,5 +1,3 @@
-import { networkNamesToIds } from "./networks";
-
 export const MAINNET = {
   tokenAddresses: {
     addresses: [
@@ -27,21 +25,7 @@ export const RINKEBY = {
   tokenAddressesToLabels: {
     "0x8ad3aA5d5ff084307d28C8f514D7a193B2Bfe725": "DAI",
   },
-  sablierAddress: "0xaac080e988A388476EbbA238CB2529de1B550c89",
+  sablierAddress: "0xBB6209d27791D3c52BDb4a0FE4CE1cf99156BBeF",
 };
 
 export const acceptedTokens = ["DAI", "GUSD", "PAX", "TUSD", "USDC"];
-
-export const getDaiAddressForNetworkId = (networkId) => {
-  if (networkId === networkNamesToIds.rinkeby) {
-    return "0x8ad3aA5d5ff084307d28C8f514D7a193B2Bfe725";
-  }
-  return "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359";
-};
-
-export const getTokenLabelForAddress = (networkId, address) => {
-  if (networkId === networkNamesToIds.rinkeby) {
-    return RINKEBY.tokenAddressesToLabels[address];
-  }
-  return MAINNET.tokenAddressesToLabels[address];
-};

@@ -24,7 +24,6 @@ class NetworkModal extends Component {
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const showModal = nextProps.networkId && !nextProps.isConnected;
-    console.log({ networkId: nextProps.networkId, isConnected: nextProps.isConnected });
     if (showModal !== prevState.showModal) {
       return { showModal };
     } else {

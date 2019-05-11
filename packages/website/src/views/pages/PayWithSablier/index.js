@@ -17,11 +17,12 @@ import SablierABI from "../../../abi/sablier";
 import SablierDateTime from "./DateTime";
 import TokenPanel from "../../shared/TokenPanel";
 
-import { acceptedTokens, getDaiAddressForNetworkId, getTokenLabelForAddress } from "../../../constants/addresses";
+import { acceptedTokens } from "../../../constants/addresses";
 import { addPendingTx, selectors, watchBalance } from "../../../redux/ducks/web3connect";
+import { getMinsForInterval, intervalToBlocks, isDayJs, timeToBlockNumber } from "../../../helpers/time-utils";
+import { getTokenLabelForAddress } from "../../../helpers/token-utils";
 import { intervalMins, intervalStringValues } from "../../../constants/time";
 import { formatDuration, roundToDecimalPlaces } from "../../../helpers/format-utils";
-import { getMinsForInterval, intervalToBlocks, isDayJs, timeToBlockNumber } from "../../../helpers/time-utils";
 import { retry } from "../../../helpers/promise-utils";
 
 import "./pay-with-sablier.scss";
@@ -29,7 +30,6 @@ import "./pay-with-sablier.scss";
 const initialState = {
   deposit: 0,
   duration: 0,
-  enableDepositButton: false,
   interval: "",
   minTime: {},
   payment: null,
@@ -52,6 +52,9 @@ class PayWithSablier extends Component {
     push: PropTypes.func.isRequired,
     sablierAddress: PropTypes.string,
     selectors: PropTypes.func.isRequired,
+    tokenAddresses: PropTypes.shape({
+      addresses: PropTypes.array.isRequired,
+    }).isRequired,
     watchBalance: PropTypes.func.isRequired,
     web3: PropTypes.object.isRequired,
   };
@@ -66,10 +69,10 @@ class PayWithSablier extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { account, networkId, watchBalance } = nextProps;
+    const { account, isConnected, tokenAddresses, watchBalance } = nextProps;
     const { token, tokenName } = prevState;
-    const dai = getDaiAddressForNetworkId(networkId);
-    if (tokenName === "DAI" && dai !== token) {
+    const dai = tokenAddresses.addresses.find((address) => address[0] === "DAI")[1];
+    if (isConnected && tokenName === "DAI" && dai !== token) {
       watchBalance({ balanceOf: account, tokenAddress: dai });
       return { token: dai };
     } else {
@@ -159,13 +162,11 @@ class PayWithSablier extends Component {
     }
 
     const { decimals } = selectors().getBalance(account, token);
-    const paymentWei = BN(payment)
-      .multipliedBy(10 ** decimals)
-      .toFixed(0);
+    const paymentWei = new BN(payment).multipliedBy(10 ** decimals).toFixed(0);
     const intervalBlocks = intervalToBlocks(interval);
 
     new web3.eth.Contract(SablierABI, sablierAddress).methods
-      .create(account, recipient, token, startBlock, stopBlock, paymentWei, intervalBlocks)
+      .createStream(account, recipient, token, startBlock, stopBlock, paymentWei, intervalBlocks)
       .send({ from: account })
       .on("transactionHash", (transactionHash) => {
         addPendingTx(transactionHash);
@@ -237,7 +238,7 @@ class PayWithSablier extends Component {
     return roundedTime;
   }
 
-  toggleDepositButton() {
+  isDepositButtonDisabled() {
     const { web3 } = this.props;
     const { token, interval, payment, startTime, stopTime, recipient } = this.state;
 
@@ -249,9 +250,9 @@ class PayWithSablier extends Component {
       !isDayJs(stopTime) ||
       !web3.utils.isAddress(recipient)
     ) {
-      this.setState({ enableDepositButton: false });
+      return true;
     } else {
-      this.setState({ enableDepositButton: true });
+      return false;
     }
   }
 
@@ -536,7 +537,7 @@ class PayWithSablier extends Component {
 
   renderReceipt() {
     const { t } = this.props;
-    const { deposit, duration, enableDepositButton, submittedError, tokenName } = this.state;
+    const { deposit, duration, submittedError, tokenName } = this.state;
 
     const depositLabel = deposit ? `${deposit.toLocaleString()} ${tokenName}` : `0 ${tokenName}`;
 
@@ -566,7 +567,7 @@ class PayWithSablier extends Component {
         />
         <PrimaryButton
           classNames={classnames("pay-with-sablier__button", "pay-with-sablier__receipt-deposit-button")}
-          disabled={!enableDepositButton}
+          disabled={this.isDepositButtonDisabled()}
           label={t("streamMoney")}
           onClick={() => this.setState({ submitted: true, submittedError: "" }, () => this.onSubmit())}
         />
@@ -594,11 +595,13 @@ class PayWithSablier extends Component {
 export default connect(
   (state) => ({
     account: state.web3connect.account,
+    addresses: state.addresses,
     balances: state.web3connect.balances,
     // eslint-disable-next-line eqeqeq
     isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
     networkId: state.web3connect.networkId,
     sablierAddress: state.addresses.sablierAddress,
+    tokenAddresses: state.addresses.tokenAddresses,
     web3: state.web3connect.web3,
   }),
   (dispatch) => ({

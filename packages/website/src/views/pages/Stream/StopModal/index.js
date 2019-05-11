@@ -14,16 +14,11 @@ import { formatTime } from "../../../../helpers/format-utils";
 
 import "./stop-modal.scss";
 
-const initialState = {
-  showModal: false,
-};
-
 class StopModal extends Component {
   static propTypes = {
     account: PropTypes.string,
     addPendingTx: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
-    showModal: PropTypes.bool.isRequired,
     stopTime: PropTypes.object.isRequired,
     streams: PropTypes.array.isRequired,
     tokenName: PropTypes.string.isRequired,
@@ -36,40 +31,17 @@ class StopModal extends Component {
     streams: [],
   };
 
-  state = {
-    ...initialState,
-  };
-
-  static getDerivedStateFromProps(nextProps, prevState) {
-    const showModal = nextProps.isConnected && nextProps.showModal;
-    if (showModal !== prevState.showModal) {
-      return { showModal };
-    } else {
-      return prevState;
-    }
-  }
 
   onClickStopAndWithdraw() {
     this.onClose();
   }
 
   onClose() {
-    const { onClose } = this.props;
-    this.resetState();
-    onClose();
-  }
-
-  resetState() {
-    this.setState(initialState);
+    this.props.onClose();
   }
 
   render() {
     const { stopTime, t, tokenName, totalValue, withdrawable } = this.props;
-    const { showModal } = this.state;
-
-    if (!showModal) {
-      return null;
-    }
 
     const isWithdrawable = withdrawable !== 0;
     return (
@@ -106,7 +78,6 @@ class StopModal extends Component {
 export default connect(
   (state) => ({
     account: state.web3connect.account,
-    isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
     web3: state.web3connect.web3,
   }),
   (dispatch) => ({

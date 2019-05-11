@@ -18,7 +18,6 @@ import "./withdraw-modal.scss";
 const initialState = {
   amountToWithdraw: 0,
   earned: 0,
-  showModal: false,
   withdrawable: 0,
   withdrawn: 0,
 };
@@ -28,10 +27,8 @@ class WithdrawModal extends Component {
     account: PropTypes.string,
     addPendingTx: PropTypes.func.isRequired,
     earned: PropTypes.number.isRequired,
-    isConnected: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     selectors: PropTypes.func.isRequired,
-    showModal: PropTypes.bool.isRequired,
     tokenName: PropTypes.string.isRequired,
     web3: PropTypes.object.isRequired,
     withdrawn: PropTypes.number.isRequired,
@@ -43,16 +40,10 @@ class WithdrawModal extends Component {
     const earned = nextProps.earned;
     const withdrawable = nextProps.withdrawable;
     const withdrawn = nextProps.withdrawn;
-    const showModal = nextProps.isConnected && nextProps.showModal;
 
-    if (
-      earned !== prevState.earned ||
-      withdrawn !== prevState.withdrawn ||
-      !withdrawable !== prevState.withdrawable ||
-      showModal !== prevState.showModal
-    ) {
+    if (earned !== prevState.earned || withdrawn !== prevState.withdrawn || !withdrawable !== prevState.withdrawable) {
       const amountToWithdraw = prevState.amountToWithdraw || roundToDecimalPlaces(withdrawable / 2, 2);
-      return { amountToWithdraw, earned, showModal, withdrawable, withdrawn };
+      return { amountToWithdraw, earned, withdrawable, withdrawn };
     } else {
       return prevState;
     }
@@ -63,9 +54,8 @@ class WithdrawModal extends Component {
   }
 
   onClose() {
-    const { onClose } = this.props;
     this.resetState();
-    onClose();
+    this.props.onClose();
   }
 
   resetState() {
@@ -74,11 +64,7 @@ class WithdrawModal extends Component {
 
   render() {
     const { t, tokenName } = this.props;
-    const { amountToWithdraw, earned, showModal, withdrawable, withdrawn } = this.state;
-
-    if (!showModal) {
-      return null;
-    }
+    const { amountToWithdraw, earned, withdrawable, withdrawn } = this.state;
 
     const isWithdrawable = withdrawable !== 0;
     const sliderStep = Math.min(roundToDecimalPlaces(withdrawable, 2), 1);
@@ -134,7 +120,6 @@ class WithdrawModal extends Component {
 export default connect(
   (state) => ({
     account: state.web3connect.account,
-    isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
     web3: state.web3connect.web3,
   }),
   (dispatch) => ({

@@ -44,9 +44,9 @@ class Stream extends Component {
 
   state = {
     earned: 0,
-    streamId: "",
     showStopModal: false,
     showWithdrawModal: false,
+    streamId: "",
     stopTime: new Date(),
     totalValue: 0,
     withdrawable: 0,
@@ -77,11 +77,8 @@ class Stream extends Component {
     window.open(mailto);
   }
 
-  onClickWithdraw() {
-    this.setState({ showWithdrawModal: true });
-  }
-
   onClickStopAndWithdraw() {
+    console.log("onClickStopAndWithdraw");
     this.setState({ showStopModal: true });
   }
 
@@ -192,13 +189,13 @@ class Stream extends Component {
             classNames={classnames(["stream__button", "stream__action-container-button"])}
             icon={FaInboxOut}
             label={t("withdraw")}
-            onClick={() => this.onClickWithdraw()}
+            onClick={() => this.setState({ showWithdrawModal: true })}
           />
           <PrimaryButton
             classNames={classnames(["stream__button", "stream__action-container-button", "primary-button--yellow"])}
             icon={FaStopwatch}
             label={t("stopAndWithdraw")}
-            onClick={() => this.onClickStopAndWithdraw()}
+            onClick={() => this.setState({ showStopModal: true })}
           />
         </div>
       </div>
@@ -207,9 +204,7 @@ class Stream extends Component {
 
   renderSocials() {
     const { t } = this.props;
-    const { earned, showStopModal, showWithdrawModal, stopTime, totalValue, withdrawable, withdrawn } = this.state;
 
-    const tokenName = "DAI";
     return (
       <div className="stream__social-container">
         <span className="stream__title-label">{t("social")}</span>
@@ -229,27 +224,14 @@ class Stream extends Component {
             onClick={() => this.onClickInviteYourFriends()}
           />
         </div>
-        <WithdrawModal
-          earned={earned}
-          onClose={() => this.setState({ showWithdrawModal: false })}
-          showModal={showWithdrawModal}
-          tokenName={tokenName}
-          withdrawable={withdrawable}
-          withdrawn={withdrawn}
-        />
-        <StopModal
-          onClose={() => this.setState({ showStopModal: false })}
-          showModal={showStopModal}
-          stopTime={stopTime}
-          tokenName={tokenName}
-          totalValue={totalValue}
-          withdrawable={withdrawable}
-        />
       </div>
     );
   }
 
   render() {
+    const { earned, showStopModal, showWithdrawModal, stopTime, totalValue, withdrawable, withdrawn } = this.state;
+
+    const tokenName = "DAI";
     return (
       <div className="stream">
         {this.renderStream()}
@@ -257,6 +239,24 @@ class Stream extends Component {
           {this.renderActions()}
           {this.renderSocials()}
         </div>
+        {!showWithdrawModal ? null : (
+          <WithdrawModal
+            earned={earned}
+            onClose={() => this.setState({ showWithdrawModal: false })}
+            tokenName={tokenName}
+            withdrawable={withdrawable}
+            withdrawn={withdrawn}
+          />
+        )}
+        {!showStopModal ? null : (
+          <StopModal
+            stopTime={stopTime}
+            onClose={() => this.setState({ showStopModal: false })}
+            tokenName={tokenName}
+            totalValue={totalValue}
+            withdrawable={withdrawable}
+          />
+        )}
       </div>
     );
   }
