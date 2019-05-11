@@ -1,0 +1,80 @@
+@import "../../../styles/variables.scss";
+
+.withdraw-modal {
+  @extend %centered-modal, %frame;
+  justify-content: center;
+  padding: 16px 24px 24px;
+  border-radius: 4px;
+
+  &__button {
+    width: 100%;
+    margin-top: 24px;
+  }
+
+  &__dashed-line {
+    @extend %dashed-line;
+    margin-top: 12px;
+    font-size: 15px;
+  }
+
+  &__dashed-line-left {
+    @extend %dashed-line-left;
+  }
+
+  &__dashed-line-right {
+    @extend %dashed-line-right;
+  }
+
+  &__separator {
+    width: calc(100% + 48px);
+    height: 1px;
+    margin-top: 16px;
+    background-color: $glitter-gray;
+  }
+
+  &__slider {
+    width: 100%;
+    margin-top: 24px;
+  }
+
+  &__stats-container {
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  &__title-label {
+    @extend %frame-title-label;
+  }
+}
+
+.rc-slider-handle {
+  width: 21px;
+  height: 21px;
+  margin-top: -7.5px;
+  margin-left: -11px;
+}
+
+.rc-slider-handle,
+.rc-slider-handle:active,
+.rc-slider-handle:focus,
+.rc-slider-handle:hover {
+  border: solid 2px $denim-blue;
+}
+
+.rc-slider-handle:active {
+  box-shadow: 0 0 5px $denim-blue;
+}
+
+.rc-slider-handle:focus {
+  box-shadow: 0 0 0 5px $aero-blue;
+}
+
+.rc-slider-rail {
+  height: 6px;
+  background-color: $isabelline-white;
+}
+
+.rc-slider-track {
+  height: 6px;
+  background-color: $denim-blue;
+}

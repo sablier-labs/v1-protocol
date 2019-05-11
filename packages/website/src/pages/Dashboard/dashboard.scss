@@ -1,0 +1,67 @@
+@import "../../styles/variables.scss";
+
+.dashboard {
+  @extend %frame, %page-frame;
+  &__header-label-container {
+    @extend %row-nowrap;
+    width: calc(100% - 72px);
+    justify-content: space-between;
+    padding: 40px 40px 0px;
+  }
+
+  &__header-label {
+    color: $lavender-gray;
+    font-family: "Larsseit Medium";
+    font-size: 14px;
+    letter-spacing: 0.32px;
+    text-transform: uppercase;
+  }
+
+  &__row-container {
+    width: 100%;
+    overflow-y: auto;
+  }
+
+  &__plus-icon-container {
+    @extend %col-nowrap;
+    padding: 10px;
+    position: absolute;
+    right: 28px;
+    top: 18px;
+    background-color: $denim-blue;
+    border-radius: 4px;
+  }
+
+  &__plus-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+  &__separator {
+    width: 100%;
+    height: 1px;
+    background-color: $glitter-gray;
+  }
+
+  &__title-label {
+    @extend %frame-title-label;
+    font-size: 28px;
+    margin-top: 24px;
+    margin-left: 32px;
+  }
+}
+
+.dashboard__row {
+  @extend %row-nowrap;
+  width: 100%;
+  height: 63px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 36px;
+
+  &__label {
+    width: 96px;
+    text-align: left;
+  }
+}

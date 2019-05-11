@@ -1,4 +1,4 @@
-import thunk from "redux-thunk";
+import thunkMiddleware from "redux-thunk";
 
 import { applyMiddleware, compose, createStore } from "redux";
 import { createBrowserHistory } from "history";
@@ -15,5 +15,5 @@ export const history = createBrowserHistory();
 export default createStore(
   createRootReducer(history), // root reducer with router state
   initialState,
-  composeEnhancers(applyMiddleware(routerMiddleware(history), thunk), ...enhancers),
+  composeEnhancers(applyMiddleware(routerMiddleware(history), thunkMiddleware), ...enhancers),
 );
