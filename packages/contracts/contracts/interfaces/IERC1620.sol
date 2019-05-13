@@ -26,7 +26,7 @@ interface IERC1620 {
     event WithdrawFromStream(
         uint256 indexed streamId,
         address indexed recipient,
-        uint256 funds
+        uint256 amount
     );
 
     /// @dev This emits when a stream is successfully redeemed and
@@ -35,8 +35,8 @@ interface IERC1620 {
         uint256 indexed streamId,
         address indexed sender,
         address indexed recipient,
-        uint256 senderBalance,
-        uint256 recipientBalance
+        uint256 senderAmount,
+        uint256 recipientAmount
     );
 
     /// @dev This emits when an update is successfully committed by
