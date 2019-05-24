@@ -8,6 +8,7 @@ import { withTranslation } from "react-i18next";
 
 import FaChevronCircleDown from "../../assets/images/fa-chevron-circle-down.svg";
 import Fuse from "../../helpers/fuse";
+import Loader from "../Loader";
 import Modal from "../Modal";
 import SearchIcon from "../../assets/images/magnifying-glass.svg";
 import TokenLogo from "../TokenLogo";
@@ -33,7 +34,7 @@ class TokenPanel extends Component {
     addApprovalTx: PropTypes.func.isRequired,
     addPendingTx: PropTypes.func.isRequired,
     approvals: PropTypes.object.isRequired,
-    onSelectToken: PropTypes.func,
+    onSelectTokenAddress: PropTypes.func,
     pendingApprovals: PropTypes.object.isRequired,
     selectedTokens: PropTypes.array.isRequired,
     selectedTokenAddress: PropTypes.string,
@@ -41,12 +42,12 @@ class TokenPanel extends Component {
     tokenAddresses: PropTypes.shape({
       addresses: PropTypes.array.isRequired,
     }).isRequired,
-    tokenName: PropTypes.string.isRequired,
+    tokenSymbol: PropTypes.string.isRequired,
   };
 
   static defaultProps = {
     selectedTokens: [],
-    onSelectToken() {},
+    onSelectTokenAddress() {},
     selectedTokenAddress: "",
   };
 
@@ -72,13 +73,13 @@ class TokenPanel extends Component {
     return tokenList;
   };
 
-  onSelectToken = (address) => {
+  onSelectTokenAddress(address) {
     this.setState({
       searchQuery: "",
       isShowingModal: false,
     });
 
-    this.props.onSelectToken(address);
+    this.props.onSelectTokenAddress(address);
   };
 
   renderTokenList() {
@@ -89,7 +90,7 @@ class TokenPanel extends Component {
     if (loadingToken) {
       return (
         <div className="token-modal__token-row token-modal__token-row--searching">
-          <div className="loader" />
+          <Loader />
           <div>{t("searchingToken")}</div>
         </div>
       );
@@ -121,7 +122,7 @@ class TokenPanel extends Component {
           className={classnames("token-modal__token-row", {
             "token-modal__token-row--selected": isSelected,
           })}
-          onClick={() => this.onSelectToken(address)}
+          onClick={() => this.onSelectTokenAddress(address)}
         >
           <TokenLogo className="token-modal__token-logo" address={address} />
           <div className="token-modal__token-logo">{label}</div>
@@ -165,7 +166,7 @@ class TokenPanel extends Component {
   }
 
   renderPanel() {
-    const { renderPanel, selectedTokenAddress, t, tokenName } = this.props;
+    const { renderPanel, selectedTokenAddress, t, tokenSymbol } = this.props;
 
     if (typeof renderPanel === "function") {
       return renderPanel();
@@ -186,7 +187,7 @@ class TokenPanel extends Component {
           {selectedTokenAddress ? (
             <TokenLogo className="token-panel__selected-token-logo" address={selectedTokenAddress} />
           ) : null}
-          <span>{tokenName || t("selectToken")}</span>
+          <span>{tokenSymbol || t("selectToken")}</span>
         </div>
         <img className="token-panel__dropdown-icon" src={FaChevronCircleDown} alt="Dropdown Icon" />
       </div>

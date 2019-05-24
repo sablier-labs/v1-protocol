@@ -1,7 +1,7 @@
 {
   "name": "@sablier/website",
   "description": "Sablier dApp frontend",
-  "version": "0.0.0-semantically-released",
+  "version": "0.0.1",
   "author": {
     "name": "Paul Berg",
     "url": "https://paulrberg.com"
@@ -22,8 +22,8 @@
     "bootstrap": "^4.3.1",
     "classnames": "^2.2.6",
     "connected-react-router": "^6.3.2",
-    "core-js": "^3.0.1",
     "dayjs": "^1.8.12",
+    "enumify": "^1.0.4",
     "graphql": "^14.3.0",
     "graphql-tag": "^2.10.1",
     "history": "^4.9.0",
@@ -33,7 +33,6 @@
     "jquery": "^3.3.1",
     "popper.js": "^1.14.7",
     "prop-types": "^15.7.2",
-    "random-words": "^1.1.0",
     "rc-slider": "^8.6.9",
     "react": "^16.8.6",
     "react-apollo": "^2.5.5",
@@ -45,17 +44,17 @@
     "react-i18next": "^10.6.0",
     "react-onclickoutside": "^6.8.0",
     "react-redux": "^6.0.1",
-    "react-responsive": "^6.1.1",
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
+    "react-table": "^6.10.0",
     "react-tooltip": "^3.10.0",
     "react-transition-group": "1.x",
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0",
     "sanitize.css": "^8.0.0",
     "validator": "^10.11.0",
-    "web3": "^1.0.0-beta.51",
-    "web3-utils": "^1.0.0-beta.52"
+    "web3": "1.0.0-beta.55",
+    "web3-utils": "1.0.0-beta.55"
   },
   "devDependencies": {
     "commitizen": "^3.0.7",

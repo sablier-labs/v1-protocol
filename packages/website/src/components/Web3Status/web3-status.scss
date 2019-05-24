@@ -25,13 +25,12 @@
   &__icon {
     height: 20px;
     width: 20px;
-    border-radius: 18px;
-    margin-left: 4px;
-    color: $space-cadet-black;
   }
 
   &__loader {
-    @extend %loader;
+    margin-right: 4px;
+    border-left-color: $space-cadet-black;
+    border-top-color: $space-cadet-black;
   }
 
   &__pending-container {
@@ -45,6 +44,12 @@
 
   &--pending {
     cursor: pointer;
+  }
+
+  @media only screen and (max-width: 960px) {
+    &__container {
+      display: none;
+    }
   }
 }
 

@@ -1,20 +1,22 @@
 @import "../../../styles/variables.scss";
 
-.stop-modal {
-  @extend %centered-modal, %frame;
-  padding: 16px 24px 24px;
+.redeem-modal {
+  @extend %frame, %centered-modal;
 
   &__button {
     width: 100%;
-    margin-top: 24px;
+    margin-top: 28px;
+  }
+
+  &__dashed-line {
+    margin-top: 10px;
   }
 
   &__label {
     margin-top: 24px;
     color: $space-cadet-black;
-    font-family: sans-serif;
-    font-size: 15px;
-    line-height: 20px;
+    font-size: 16px;
+    line-height: 18px;
     text-align: center;
   }
 
@@ -23,6 +25,11 @@
     height: 1px;
     margin-top: 16px;
     background-color: $glitter-gray;
+  }
+
+  &__funds-container {
+    width: 100%;
+    margin-top: 12px;
   }
 
   &__title-label {

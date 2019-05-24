@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import MediaQuery from "react-responsive";
 
 import { connect } from "react-redux";
 import { ConnectedRouter } from "connected-react-router";
@@ -44,18 +43,16 @@ class App extends Component {
 
     return (
       <div id="app-container">
-        <MediaQuery query="(min-width: 768px)">
-          <Header />
-        </MediaQuery>
         <Web3Connect />
         <ConnectedRouter className="app-container" history={history}>
+          <Header />
           <Switch>
             <Route exact path="/" component={PayWithSablier} />
             <Route exact path="/dashboard" component={Dashboard} />
-            <Route exact path="/stream/:id?" component={Stream} />
+            <Route exact path="/stream/:rawStreamId?" component={Stream} />
             <Redirect exact to="/" />
           </Switch>
-          <NetworkModal />
+          {this.props.networkId && !this.props.isConnected ? <NetworkModal /> : null}
         </ConnectedRouter>
       </div>
     );
@@ -66,6 +63,9 @@ export default connect(
   (state) => ({
     account: state.web3connect.account,
     initialized: state.web3connect.initialized,
+    // eslint-disable-next-line eqeqeq
+    isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
+    networkId: state.web3connect.networkId,
     web3: state.web3connect.web3,
   }),
   (dispatch) => ({

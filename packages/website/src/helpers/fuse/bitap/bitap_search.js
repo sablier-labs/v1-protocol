@@ -140,16 +140,12 @@ export default function(
       distance,
     });
 
-    // console.log('score', score, finalScore)
-
     if (score > currentThreshold) {
       break;
     }
 
     lastBitArr = bitArr;
   }
-
-  // console.log('FINAL SCORE', finalScore)
 
   // Count exact matches (those with a score of 0) to be "almost" exact
   return {

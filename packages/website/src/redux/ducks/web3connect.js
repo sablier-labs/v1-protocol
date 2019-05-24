@@ -8,28 +8,23 @@ import { BigNumber as BN } from "bignumber.js";
 import ERC20_ABI from "../../abi/erc20";
 import ERC20_WITH_BYTES_ABI from "../../abi/erc20_symbol_bytes32";
 
+export const ADD_CONFIRMED_TX = "web3connect/addConfirmedTx";
+export const ADD_CONTRACT = "web3connect/addContract";
+export const ADD_PENDING_TX = "web3connect/addPendingTx";
 export const INITIALIZE = "web3connect/initialize";
-export const UPDATE_ACCOUNT = "web3connect/updateAccount";
-export const WATCH_ETH_BALANCE = "web3connect/watchEthBalance";
-export const WATCH_TOKEN_BALANCE = "web3connect/watchTokenBalance";
+export const REMOVE_PENDING_TX = "web3connect/removePendingTx";
 export const UPDATE_ETH_BALANCE = "web3connect/updateEthBalance";
 export const UPDATE_TOKEN_BALANCE = "web3connect/updateTokenBalance";
-export const WATCH_APPROVALS = "web3connect/watchApprovals";
+export const UPDATE_ACCOUNT = "web3connect/updateAccount";
 export const UPDATE_APPROVALS = "web3connect/updateApprovals";
-export const ADD_CONTRACT = "web3connect/addContract";
+export const UPDATE_BLOCK_NUMBER = "web3connect/updateBlockNumber";
 export const UPDATE_NETWORK_ID = "web3connect/updateNetworkId";
-export const ADD_PENDING_TX = "web3connect/addPendingTx";
-export const REMOVE_PENDING_TX = "web3connect/removePendingTx";
-export const ADD_CONFIRMED_TX = "web3connect/addConfirmedTx";
+export const WATCH_APPROVALS = "web3connect/watchApprovals";
+export const WATCH_ETH_BALANCE = "web3connect/watchEthBalance";
+export const WATCH_TOKEN_BALANCE = "web3connect/watchTokenBalance";
 
 const initialState = {
-  web3: null,
-  networkId: 0,
-  initialized: false,
   account: "",
-  balances: {
-    ethereum: {},
-  },
   approvals: {
     "0x0": {
       TOKEN_OWNER: {
@@ -37,6 +32,13 @@ const initialState = {
       },
     },
   },
+  balances: {
+    ethereum: {},
+  },
+  blockNumber: 0,
+  contracts: {},
+  initialized: false,
+  networkId: 0,
   transactions: {
     pending: [],
     confirmed: [],
@@ -47,7 +49,7 @@ const initialState = {
     },
     approvals: {},
   },
-  contracts: {},
+  web3: null,
 };
 
 // selectors
@@ -98,10 +100,10 @@ export const selectors = () => (dispatch, getState) => {
   };
 };
 
-const Balance = (value, label = "", decimals = 0) => {
+const Balance = (value, symbol = "", decimals = 0) => {
   return {
     value: BN(value),
-    label: label.toUpperCase(),
+    symbol: symbol.toUpperCase(),
     decimals: +decimals,
   };
 };
@@ -115,9 +117,16 @@ export const initialize = () => (dispatch, getState) => {
       return;
     }
 
+    // See https://github.com/ethereum/web3.js/issues/2601#issuecomment-493752483
+    const options = !process.env.REACT_APP_NETWORK_ID
+      ? {}
+      : {
+          transactionConfirmationBlocks: 1,
+        };
+
     if (typeof window.ethereum !== "undefined") {
       try {
-        const web3 = new Web3(window.ethereum);
+        const web3 = new Web3(window.ethereum, null, options);
         await window.ethereum.enable();
         dispatch({
           type: INITIALIZE,
@@ -134,7 +143,7 @@ export const initialize = () => (dispatch, getState) => {
     }
 
     if (typeof window.web3 !== "undefined") {
-      const web3 = new Web3(window.web3.currentProvider);
+      const web3 = new Web3(window.web3.currentProvider, null, options);
       dispatch({
         type: INITIALIZE,
         payload: web3,
@@ -219,10 +228,11 @@ export const sync = () => async (dispatch, getState) => {
   const web3 = await dispatch(initialize());
   const {
     account,
-    watched,
+    blockNumber,
     contracts,
     networkId,
     transactions: { pending },
+    watched,
   } = getState().web3connect;
 
   // Sync Account
@@ -232,10 +242,20 @@ export const sync = () => async (dispatch, getState) => {
     dispatch(watchBalance({ balanceOf: accounts[0] }));
   }
 
+  // Sync Network Id
   if (!networkId) {
     dispatch({
       type: UPDATE_NETWORK_ID,
       payload: await web3.eth.net.getId(),
+    });
+  }
+
+  // Sync Block Number
+  const currentBlockNumber = await web3.eth.getBlockNumber();
+  if (blockNumber !== currentBlockNumber) {
+    dispatch({
+      type: UPDATE_BLOCK_NUMBER,
+      payload: currentBlockNumber,
     });
   }
 
@@ -303,7 +323,7 @@ export const sync = () => async (dispatch, getState) => {
       }
       symbol = symbol || "";
 
-      if (tokenBalance.value.isEqualTo(BN(balance)) && tokenBalance.label && tokenBalance.decimals) {
+      if (tokenBalance.value.isEqualTo(BN(balance)) && tokenBalance.symbol && tokenBalance.decimals) {
         return;
       }
 
@@ -318,7 +338,7 @@ export const sync = () => async (dispatch, getState) => {
     });
   });
 
-  // Update Approvals
+  // Sync Approvals
   Object.entries(watched.approvals).forEach(([tokenAddress, token]) => {
     const contract = contracts[tokenAddress] || new web3.eth.Contract(ERC20_ABI, tokenAddress);
     const contractBytes32 = contracts[tokenAddress] || new web3.eth.Contract(ERC20_WITH_BYTES_ABI, tokenAddress);
@@ -331,7 +351,7 @@ export const sync = () => async (dispatch, getState) => {
         const approvalBalance = getApprovals(tokenAddress, tokenOwnerAddress, spenderAddress);
         const balance = await contract.methods.allowance(tokenOwnerAddress, spenderAddress).call();
         const decimals = approvalBalance.decimals || (await contract.methods.decimals().call());
-        let symbol = approvalBalance.label;
+        let symbol = approvalBalance.symbol;
         try {
           symbol = symbol || (await contract.methods.symbol().call());
         } catch (e) {
@@ -341,7 +361,7 @@ export const sync = () => async (dispatch, getState) => {
         }
         symbol = symbol || "";
 
-        if (approvalBalance.label && approvalBalance.value.isEqualTo(BN(balance))) {
+        if (approvalBalance.symbol && approvalBalance.value.isEqualTo(BN(balance))) {
           return;
         }
 
@@ -357,6 +377,7 @@ export const sync = () => async (dispatch, getState) => {
     });
   });
 
+  // Sync Pending Transactions
   pending.forEach(async (txId) => {
     try {
       const data = (await web3.eth.getTransactionReceipt(txId)) || {};
@@ -399,43 +420,74 @@ export const startWatching = () => async (dispatch, getState) => {
 
 export default function web3connectReducer(state = initialState, { type, payload }) {
   switch (type) {
+    case ADD_CONFIRMED_TX:
+      if (state.transactions.confirmed.includes(payload)) {
+        return state;
+      }
+
+      return {
+        ...state,
+        transactions: {
+          ...state.transactions,
+          confirmed: [...state.transactions.confirmed, payload],
+        },
+      };
+    case ADD_CONTRACT:
+      return {
+        ...state,
+        contracts: {
+          ...state.contracts,
+          [payload.address]: payload.contract,
+        },
+      };
+    case ADD_PENDING_TX:
+      return {
+        ...state,
+        transactions: {
+          ...state.transactions,
+          pending: [...state.transactions.pending, payload],
+        },
+      };
     case INITIALIZE:
       return {
         ...state,
         web3: payload,
         initialized: true,
       };
+    case REMOVE_PENDING_TX:
+      return {
+        ...state,
+        transactions: {
+          ...state.transactions,
+          pending: state.transactions.pending.filter((id) => id !== payload),
+        },
+      };
     case UPDATE_ACCOUNT:
       return {
         ...state,
         account: payload,
       };
-    case WATCH_ETH_BALANCE:
-      return {
-        ...state,
-        watched: {
-          ...state.watched,
-          balances: {
-            ...state.watched.balances,
-            // TODO update from PayWithSablier OR with DAI
-            ethereum: [...state.watched.balances.ethereum, payload],
-          },
-        },
-      };
-    case WATCH_TOKEN_BALANCE:
-      const { watched } = state;
-      const { balances } = watched;
-      const watchlist = balances[payload.tokenAddress] || [];
+    case UPDATE_APPROVALS:
+      const erc20 = state.approvals[payload.tokenAddress] || {};
+      const erc20Owner = erc20[payload.tokenOwner] || {};
 
       return {
         ...state,
-        watched: {
-          ...watched,
-          balances: {
-            ...balances,
-            [payload.tokenAddress]: [...watchlist, payload.balanceOf],
+        approvals: {
+          ...state.approvals,
+          [payload.tokenAddress]: {
+            ...erc20,
+            [payload.tokenOwner]: {
+              ...erc20Owner,
+              [payload.spender]: payload.balance,
+            },
           },
         },
+      };
+    case UPDATE_BLOCK_NUMBER:
+      return {
+        ...state,
+        blockNumber: payload,
       };
     case UPDATE_ETH_BALANCE:
       return {
@@ -448,6 +500,8 @@ export default function web3connectReducer(state = initialState, { type, payload
           },
         },
       };
+    case UPDATE_NETWORK_ID:
+      return { ...state, networkId: payload };
     case UPDATE_TOKEN_BALANCE:
       const tokenBalances = state.balances[payload.tokenAddress] || {};
       return {
@@ -458,14 +512,6 @@ export default function web3connectReducer(state = initialState, { type, payload
             ...tokenBalances,
             [payload.balanceOf]: payload.balance,
           },
-        },
-      };
-    case ADD_CONTRACT:
-      return {
-        ...state,
-        contracts: {
-          ...state.contracts,
-          [payload.address]: payload.contract,
         },
       };
     case WATCH_APPROVALS:
@@ -485,51 +531,30 @@ export default function web3connectReducer(state = initialState, { type, payload
           },
         },
       };
-    case UPDATE_APPROVALS:
-      const erc20 = state.approvals[payload.tokenAddress] || {};
-      const erc20Owner = erc20[payload.tokenOwner] || {};
-
+    case WATCH_ETH_BALANCE:
       return {
         ...state,
-        approvals: {
-          ...state.approvals,
-          [payload.tokenAddress]: {
-            ...erc20,
-            [payload.tokenOwner]: {
-              ...erc20Owner,
-              [payload.spender]: payload.balance,
-            },
+        watched: {
+          ...state.watched,
+          balances: {
+            ...state.watched.balances,
+            ethereum: [...state.watched.balances.ethereum, payload],
           },
         },
       };
-    case UPDATE_NETWORK_ID:
-      return { ...state, networkId: payload };
-    case ADD_PENDING_TX:
-      return {
-        ...state,
-        transactions: {
-          ...state.transactions,
-          pending: [...state.transactions.pending, payload],
-        },
-      };
-    case REMOVE_PENDING_TX:
-      return {
-        ...state,
-        transactions: {
-          ...state.transactions,
-          pending: state.transactions.pending.filter((id) => id !== payload),
-        },
-      };
-    case ADD_CONFIRMED_TX:
-      if (state.transactions.confirmed.includes(payload)) {
-        return state;
-      }
+    case WATCH_TOKEN_BALANCE:
+      const { watched } = state;
+      const { balances } = watched;
+      const watchlist = balances[payload.tokenAddress] || [];
 
       return {
         ...state,
-        transactions: {
-          ...state.transactions,
-          confirmed: [...state.transactions.confirmed, payload],
+        watched: {
+          ...watched,
+          balances: {
+            ...balances,
+            [payload.tokenAddress]: [...watchlist, payload.balanceOf],
+          },
         },
       };
     default:

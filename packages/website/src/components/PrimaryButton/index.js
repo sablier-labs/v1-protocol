@@ -2,15 +2,18 @@ import React, { Component } from "react";
 import classnames from "classnames";
 import PropTypes from "prop-types";
 
+import Loader from "../Loader";
+
 import "./primary-button.scss";
 
 class PrimaryButton extends Component {
   static propTypes = {
-    classNames: PropTypes.string,
+    className: PropTypes.string,
     disabled: PropTypes.bool,
     icon: PropTypes.string,
     label: PropTypes.string.isRequired,
-    labelClassNames: PropTypes.string,
+    labelClassName: PropTypes.string,
+    loading: PropTypes.bool,
     onClick: PropTypes.func.isRequired,
   };
 
@@ -25,16 +28,20 @@ class PrimaryButton extends Component {
   }
 
   render() {
-    const { disabled, label, onClick } = this.props;
+    const { disabled, label, loading, onClick } = this.props;
 
     return (
       <button
-        className={classnames("primary-button", this.props.classNames)}
-        disabled={disabled}
+        className={classnames(["primary-button", this.props.className])}
+        disabled={disabled || loading}
         onClick={() => onClick()}
       >
         {this.renderIcon()}
-        <span className={classnames("primary-button__label", this.props.labelClassNames)}>{label}</span>
+        {!loading ? (
+          <span className={classnames("primary-button__label", this.props.labelClassName)}>{label}</span>
+        ) : (
+          <Loader className="primary-button__loader" />
+        )}
         <div className="primary-button__spacer-right" />
       </button>
     );

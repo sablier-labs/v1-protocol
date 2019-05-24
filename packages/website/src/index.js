@@ -10,7 +10,6 @@ import client from "./apollo/client";
 import store from "./redux/store";
 
 import "./i18n";
-import "core-js/fn/object/assign";
 import "sanitize.css/sanitize.css";
 
 import "./styles/index.scss";

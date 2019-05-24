@@ -2061,9 +2061,9 @@ var DROPDOWN_FOCUS_CLASSNAMES = [
 var isDropdownSelect = function isDropdownSelect() {
   var element = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-  var classNames = (element.className || "").split(/\s+/);
+  var className = (element.className || "").split(/\s+/);
   return DROPDOWN_FOCUS_CLASSNAMES.some(function(testClassname) {
-    return classNames.indexOf(testClassname) >= 0;
+    return className.indexOf(testClassname) >= 0;
   });
 };
 

@@ -1,8 +1,8 @@
 module.exports = {
   menu: {
     docs: "https://sablier.app",
-    github: "https://github.com/PaulRBerg",
-    twitter: "https://twitter.com/PaulRBerg",
+    github: "https://github.com/SablierApp/sablier",
+    twitter: "https://twitter.com/SablierApp",
   },
   share: {
     sablier: "https://sablier.app",

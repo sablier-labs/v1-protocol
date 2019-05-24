@@ -1,0 +1,50 @@
+@import "../../styles/variables.scss";
+
+.token-approval-modal {
+  @extend %col-nowrap, %frame, %centered-modal;
+  align-items: center;
+
+  &__address-container {
+    @extend %row-nowrap;
+    width: 100%;
+    justify-content: center;
+    margin-top: 24px;
+    padding: 18px;
+    background-color: $glitter-gray;
+    color: $independence-black;
+    font-size: 16px;
+  }
+
+  &__address-container:active {
+    color: $independence-black;
+  }
+
+  &__button {
+    width: 100%;
+    margin-top: 28px;
+  }
+
+  &__image-container {
+    width: 144px;
+    height: 144px;
+  }
+
+  &__label {
+    margin-top: 24px;
+    color: $space-cadet-black;
+    font-size: 16px;
+    line-height: 18px;
+    text-align: center;
+  }
+
+  &__separator {
+    width: calc(100% + 48px);
+    height: 1px;
+    margin-top: 16px;
+    background-color: $glitter-gray;
+  }
+
+  &__title-label {
+    @extend %frame-title-label;
+  }
+}

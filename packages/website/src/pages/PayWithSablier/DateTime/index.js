@@ -10,21 +10,21 @@ import Modal from "../../../components/Modal";
 
 import { formatTime } from "../../../helpers/format-utils";
 import { isDayJs, isIntervalShorterThanADay } from "../../../helpers/time-utils";
-import { intervalMins } from "../../../constants/time";
+import { INTERVAL_MINUTES } from "../../../constants/time";
 
 import "react-datepicker/dist/react-datepicker.css";
 import "./datetime.scss";
 class SablierDateTime extends Component {
   static propTypes = {
-    classNames: PropTypes.string,
+    className: PropTypes.string,
     inputClassNames: PropTypes.string,
     interval: PropTypes.string.isRequired,
     maxTime: PropTypes.object,
-    minTime: PropTypes.object.isRequired,
+    minTime: PropTypes.object,
     name: PropTypes.string.isRequired,
     onSelectTime: PropTypes.func.isRequired,
     placeholder: PropTypes.string,
-    selectedTime: PropTypes.object.isRequired,
+    selectedTime: PropTypes.object,
   };
 
   state = {
@@ -102,7 +102,7 @@ class SablierDateTime extends Component {
           selected={selectedDate}
           showTimeSelect={showTimeSelect}
           dateFormat="h:mm aa"
-          timeIntervals={intervalMins.hour}
+          timeIntervals={INTERVAL_MINUTES.hour}
           withPortal
         />
       </Modal>
@@ -110,10 +110,10 @@ class SablierDateTime extends Component {
   }
 
   render() {
-    const { classNames, inputClassNames, name, placeholder, selectedTime, t } = this.props;
+    const { className, inputClassNames, name, placeholder, selectedTime, t } = this.props;
 
     return (
-      <div className={classnames("sablier-datetime", classNames)}>
+      <div className={classnames("sablier-datetime", className)}>
         <input
           autoComplete="off"
           className={classnames("sablier-datetime__input", inputClassNames)}
@@ -123,7 +123,7 @@ class SablierDateTime extends Component {
           placeholder={placeholder || t("selectTime")}
           readOnly={true}
           ref={this.inputRef}
-          value={isDayJs(selectedTime) ? formatTime(t, selectedTime) : ""}
+          value={isDayJs(selectedTime) ? formatTime(t, selectedTime, { prettyPrint: true }) : ""}
         />
         {this.renderModal()}
       </div>

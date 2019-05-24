@@ -35,6 +35,13 @@
     text-transform: none;
   }
 
+  &__loader {
+    width: 24px;
+    height: 24px;
+    border-left-color: $white;
+    border-top-color: $white;
+  }
+
   &__spacer-left {
     width: 20px;
     height: 20px;
@@ -50,6 +57,10 @@
   }
 
   // Colours
+  &--black {
+    background-color: $space-cadet-black;
+  }
+
   &--red {
     background-color: $rusty-red;
   }
@@ -68,7 +79,12 @@
     background-color: $ash-gray;
   }
 
+  // Pseudo
   &:hover {
     opacity: 0.85;
+  }
+
+  &--white:hover {
+    background-color: darken($white, 2%);
   }
 }

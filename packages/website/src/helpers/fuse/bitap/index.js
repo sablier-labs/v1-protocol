@@ -80,8 +80,4 @@ class Bitap {
   }
 }
 
-// let x = new Bitap("od mn war", {})
-// let result = x.search("Old Man's War")
-// console.log(result)
-
 export default Bitap;

@@ -7,12 +7,12 @@ import { withTranslation } from "react-i18next";
 
 import FaChevronCircleDown from "../../../assets/images/fa-chevron-circle-down.svg";
 
-import { intervalStringValues } from "../../../constants/time";
+import { INTERVALS } from "../../../constants/time";
 import "./interval-panel.scss";
 
 class IntervalPanel extends Component {
   static propTypes = {
-    classNames: PropTypes.string,
+    className: PropTypes.string,
     interval: PropTypes.string,
     onSelectInterval: PropTypes.func.isRequired,
   };
@@ -40,7 +40,7 @@ class IntervalPanel extends Component {
 
     return (
       <div className="interval-dropdown">
-        {Object.keys(intervalStringValues).map((key, index) => {
+        {Object.keys(INTERVALS).map((key, index) => {
           return (
             <div
               className={classnames("interval-dropdown__row", {
@@ -49,7 +49,7 @@ class IntervalPanel extends Component {
               key={index}
               onClick={() => this.onSelectInterval(key)}
             >
-              {intervalStringValues[key]}
+              {INTERVALS[key]}
             </div>
           );
         })}
@@ -58,10 +58,10 @@ class IntervalPanel extends Component {
   }
 
   render() {
-    const { classNames, interval, t } = this.props;
+    const { className, interval, t } = this.props;
     return (
       <div
-        className={classnames("interval-panel", classNames)}
+        className={classnames("interval-panel", className)}
         onClick={() => {
           this.setState({ showIntervalDropdown: !this.state.showIntervalDropdown });
         }}
@@ -71,7 +71,7 @@ class IntervalPanel extends Component {
             "interval-panel__interval-label--placeholder": !interval,
           })}
         >
-          {intervalStringValues[interval] || t("placeholderInterval")}
+          {INTERVALS[interval] || t("placeholderInterval")}
         </span>
         <img className="interval-panel__dropdown-icon" alt="Dropdown Icon" src={FaChevronCircleDown} />
         {this.renderDropdown()}

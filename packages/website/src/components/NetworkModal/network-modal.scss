@@ -1,7 +1,7 @@
 @import "../../styles/variables.scss";
 
 .network-modal {
-  @extend %centered-modal, %col-nowrap, %frame;
+  @extend %col-nowrap, %frame, %centered-modal;
   height: 320px;
   padding: 24px;
   border-radius: 4px;
@@ -20,7 +20,7 @@
     width: 100%;
     align-items: center;
     flex-grow: 1;
-    margin-top: 32px;
+    margin-top: 28px;
     color: $space-cadet-black;
     text-align: center;
   }
@@ -31,7 +31,7 @@
   }
 
   &__subtitle {
-    margin-top: 14px;
+    margin-top: 16px;
     font-family: sans-serif;
     font-size: 16px;
   }

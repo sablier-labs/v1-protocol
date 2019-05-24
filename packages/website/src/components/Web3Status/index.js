@@ -1,29 +1,19 @@
 import React, { Component } from "react";
 import classnames from "classnames";
 import PropTypes from "prop-types";
-import * as Web3Utils from "web3-utils";
 
 import { connect } from "react-redux";
 import { CSSTransitionGroup } from "react-transition-group";
+import { isHexStrict, toChecksumAddress } from "web3-utils";
 import { withTranslation } from "react-i18next";
 
 import FaUserCircle from "../../assets/images/fa-user-circle.svg";
+import Loader from "../Loader";
 import Modal from "../Modal";
 
+import { getEtherscanTransactionLink } from "../../helpers/web3-utils";
+
 import "./web3-status.scss";
-
-function getEtherscanLink(tx) {
-  return `https://etherscan.io/tx/${tx}`;
-}
-
-function getText(text, disconnectedText) {
-  if (!text || text.length < 42 || !Web3Utils.isHexStrict(text)) {
-    return disconnectedText;
-  }
-
-  const address = Web3Utils.toChecksumAddress(text);
-  return `${address.substring(0, 6)}...${address.substring(38)}`;
-}
 
 class Web3Status extends Component {
   static propTypes = {
@@ -40,10 +30,6 @@ class Web3Status extends Component {
     showModal: false,
   };
 
-  static getDerivedStateFromProps(nextProps, prevState) {
-    return prevState;
-  }
-
   onClick = () => {
     if (this.props.pending.length && !this.state.showModal) {
       this.setState({ showModal: true });
@@ -51,16 +37,18 @@ class Web3Status extends Component {
   };
 
   renderPendingTransactions() {
-    return this.props.pending.map((transaction) => {
+    const { pending, t } = this.props;
+    return pending.map((txhash) => {
       return (
         <div
-          key={transaction}
+          key={txhash}
           className={classnames("pending-modal__transaction-row")}
-          onClick={() => window.open(getEtherscanLink(transaction), "_blank")}
+          onClick={() => window.open(getEtherscanTransactionLink(txhash), "_blank")}
         >
-          <div className="pending-modal__transaction-label">{transaction}</div>
+          <div className="pending-modal__transaction-label">{txhash}</div>
           <div className="pending-modal--pending-indicator">
-            <div className="loader" /> {this.props.t("pending")}
+            <Loader />
+            {t("pending")}
           </div>
         </div>
       );
@@ -94,17 +82,30 @@ class Web3Status extends Component {
   }
 
   renderIcon(address) {
-    if (!address || address.length < 42 || !Web3Utils.isHexStrict(address)) {
+    if (!address || address.length < 42 || !isHexStrict(address)) {
       return null;
     }
 
     return <img className="web3-status__icon" src={FaUserCircle} alt="Ethereum Wallet" />;
   }
 
+  renderLabel(text, disconnectedText) {
+    if (!text || text.length < 42 || !isHexStrict(text)) {
+      return <span className="web3-status__label">disconnectedText</span>;
+    }
+
+    const address = toChecksumAddress(text);
+    return (
+      <span className="web3-status__label">
+        {address.substring(0, 6)}...{address.substring(38)}
+      </span>
+    );
+  }
+
   renderPendingContainer(pendingTransactions, pendingLabel) {
     return (
       <div className="web3-status__pending-container">
-        <div className="web3-status__loader" />
+        <Loader className="web3-status__loader" />
         <span className="web3-status__pending-container__label" key="text">
           {pendingTransactions.length} {pendingLabel}
         </span>
@@ -113,14 +114,14 @@ class Web3Status extends Component {
   }
 
   render() {
-    const { address, confirmed, pending, t } = this.props;
+    const { address, confirmed, isConnected, pending, t } = this.props;
     const hasPendingTransactions = !!pending.length;
     const hasConfirmedTransactions = !!confirmed.length;
 
     return (
       <div
         className={classnames("web3-status", {
-          "web3-status__connected": this.props.isConnected,
+          "web3-status__connected": isConnected,
           "web3-status--pending": hasPendingTransactions,
           "web3-status--confirmed": hasConfirmedTransactions,
         })}
@@ -134,7 +135,7 @@ class Web3Status extends Component {
         >
           {hasPendingTransactions
             ? this.renderPendingContainer(pending, t("pending"))
-            : getText(address, t("disconnected"))}
+            : this.renderLabel(address, t("disconnected"))}
           {this.renderModal()}
         </div>
       </div>
@@ -145,6 +146,7 @@ class Web3Status extends Component {
 export default connect((state) => {
   return {
     address: state.web3connect.account,
+    // eslint-disable-next-line eqeqeq
     isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
     pending: state.web3connect.transactions.pending,
     confirmed: state.web3connect.transactions.confirmed,

@@ -1,6 +1,7 @@
 /* Colours */
 // Black
 $black: #000;
+$independence-black: #4b5164;
 $space-cadet-black: #1f2a4b;
 
 // Blue
@@ -17,23 +18,24 @@ $granite-gray: #666666;
 $lavender-gray: #bcc1d5;
 $mercury-gray: #e1e1e1;
 $rhythm-gray: #6e7898;
-$silver-gray: #c4c4c4;
 
 // Green
+$jungle-green: #27a68c;
 $pigment-green: #00a351;
 
 // Red
-$fire-engine-red: #ce2627;
 $rusty-red: #da223d;
 
 // Yellow
+$blanched-almond-yellow: #fcedc6;
+$lumber-yellow: #fbe3cf;
 $sandy-yellow: #f4a261;
 
 // White
 $white: #fff;
 $anti-flash-white: #f3f3f8;
-$ghost-white: #f8f9fc;
 $isabelline-white: #efefef;
+$smoke-white: #f6f6fa;
 
 /* Layout */
 %col-nowrap {
@@ -46,7 +48,14 @@ $isabelline-white: #efefef;
   flex-flow: row nowrap;
 }
 
-/* Elements */
+/* Tags */
+%absolute-centered-tag {
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
 %bordered-container {
   border-radius: 4px;
   box-shadow: $glitter-gray 0 0 0 2px inset;
@@ -76,33 +85,8 @@ $isabelline-white: #efefef;
   position: absolute;
   transform: translate(-50%, -50%);
   z-index: 300;
-}
-
-%dashed-line {
-  width: 100%;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  border-bottom: 1px dashed $lavender-gray;
-  color: $space-cadet-black;
-  font-family: sans-serif;
-  -webkit-box-pack: justify;
-}
-
-%dashed-line-left {
-  min-width: 72px;
-  margin-bottom: -4px;
-  padding-right: 8px;
-  background: $white;
-  text-align: left;
-}
-
-%dashed-line-right {
-  min-width: 72px;
-  margin-bottom: -4px;
-  padding-left: 8px;
-  background: $white;
-  text-align: right;
+  border-radius: 4px;
+  padding: 16px 24px 24px;
 }
 
 %frame {
@@ -118,16 +102,6 @@ $isabelline-white: #efefef;
   font-family: "Larsseit Medium";
   font-size: 24px;
   text-transform: capitalize;
-}
-
-%loader {
-  width: 16px;
-  height: 16px;
-  border: 1px solid transparent; /* Light grey */
-  border-top: 1px solid $space-cadet-black; /* Blue */
-  border-radius: 50%;
-  margin-right: 4px;
-  animation: spin 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
 }
 
 %page-frame {

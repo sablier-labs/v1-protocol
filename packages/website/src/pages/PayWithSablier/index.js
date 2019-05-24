@@ -9,21 +9,28 @@ import { connect } from "react-redux";
 import { push } from "connected-react-router";
 import { withTranslation } from "react-i18next";
 
+import DashedLine from "../../components/DashedLine";
 import FaExclamationMark from "../../assets/images/fa-exclamation-mark.svg";
 import InputWithCurrencySuffix from "../../components/InputWithCurrencySuffix";
 import IntervalPanel from "./IntervalPanel";
 import PrimaryButton from "../../components/PrimaryButton";
 import SablierABI from "../../abi/sablier";
 import SablierDateTime from "./DateTime";
+import TokenApprovalModal from "../../components/TokenApprovalModal";
 import TokenPanel from "../../components/TokenPanel";
 
-import { acceptedTokens } from "../../constants/addresses";
-import { addPendingTx, selectors, watchBalance } from "../../redux/ducks/web3connect";
-import { getMinsForInterval, intervalToBlocks, isDayJs, timeToBlockNumber } from "../../helpers/time-utils";
-import { getTokenLabelForAddress } from "../../helpers/token-utils";
-import { intervalMins, intervalStringValues } from "../../constants/time";
-import { formatDuration, roundToDecimalPlaces } from "../../helpers/format-utils";
-import { retry } from "../../helpers/promise-utils";
+import { ACCEPTED_TOKENS, DEFAULT_TOKEN_SYMBOL } from "../../constants/addresses";
+import { addPendingTx, selectors, watchApprovals, watchBalance } from "../../redux/ducks/web3connect";
+import { formatDuration, roundToDecimalPoints } from "../../helpers/format-utils";
+import {
+  getBlockDeltaForInterval,
+  getBlockDeltaFromNow,
+  getMinutesForInterval,
+  isDayJs,
+  isIntervalShorterThanADay,
+  roundTime,
+} from "../../helpers/time-utils";
+import { INTERVAL_MINUTES, INTERVALS } from "../../constants/time";
 
 import "./pay-with-sablier.scss";
 
@@ -31,76 +38,93 @@ const initialState = {
   deposit: 0,
   duration: 0,
   interval: "",
-  minTime: {},
+  minTime: undefined,
   payment: null,
   paymentLabel: "",
-  recipient: "0x574B4756606715Fb35f112ae8283b8a16319c895",
-  token: "",
-  tokenName: "DAI",
-  startTime: {},
-  stopTime: {},
+  recipient: "",
+  tokenAddress: "",
+  tokenSymbol: DEFAULT_TOKEN_SYMBOL,
+  showTokenApprovalModal: false,
+  startTime: undefined,
+  stopTime: undefined,
   submitted: false,
-  submittedError: "",
+  submissionError: "",
 };
 class PayWithSablier extends Component {
   static propTypes = {
     account: PropTypes.string,
     addPendingTx: PropTypes.func.isRequired,
     balances: PropTypes.object.isRequired,
+    blockNumber: PropTypes.number.isRequired,
     isConnected: PropTypes.bool.isRequired,
-    networkId: PropTypes.number,
     push: PropTypes.func.isRequired,
     sablierAddress: PropTypes.string,
     selectors: PropTypes.func.isRequired,
     tokenAddresses: PropTypes.shape({
       addresses: PropTypes.array.isRequired,
     }).isRequired,
+    tokenAddressesToSymbols: PropTypes.object.isRequired,
+    watchApprovals: PropTypes.func.isRequired,
     watchBalance: PropTypes.func.isRequired,
     web3: PropTypes.object.isRequired,
   };
 
   state = { ...initialState };
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { account, isConnected, tokenAddresses, sablierAddress, watchApprovals, watchBalance } = nextProps;
+    const { tokenAddress, tokenSymbol } = prevState;
+
+    const defaultTokenAddress = tokenAddresses.addresses.find((address) => address[0] === DEFAULT_TOKEN_SYMBOL)[1];
+    const minTime = prevState.minTime || roundTime(dayjs());
+    const startTime = prevState.startTime || minTime;
+
+    if (isConnected) {
+      if (
+        (tokenSymbol === DEFAULT_TOKEN_SYMBOL && defaultTokenAddress !== tokenAddress) ||
+        minTime !== prevState.minTime ||
+        startTime !== prevState.startTime
+      ) {
+        watchBalance({ balanceOf: account, tokenAddress: defaultTokenAddress });
+        watchApprovals({ tokenAddress: defaultTokenAddress, tokenOwner: account, spender: sablierAddress });
+        return { minTime, startTime, tokenAddress: defaultTokenAddress };
+      }
+    }
+
+    return prevState;
+  }
+
   componentDidMount() {
     ReactGA.pageview(window.location.pathname + window.location.search);
-
-    const minTime = this.roundTime(dayjs());
-    this.setState({ minTime, startTime: minTime });
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
-    const { account, isConnected, tokenAddresses, watchBalance } = nextProps;
-    const { token, tokenName } = prevState;
-    const dai = tokenAddresses.addresses.find((address) => address[0] === "DAI")[1];
-    if (isConnected && tokenName === "DAI" && dai !== token) {
-      watchBalance({ balanceOf: account, tokenAddress: dai });
-      return { token: dai };
-    } else {
-      return prevState;
-    }
-  }
-
-  goToStream(txHash) {
+  // TODO: check if The Graph updates this at this stage. It's likely that there are delays on the mainnet.
+  goToStream(receipt) {
     const { push } = this.props;
-    push(`/stream/${txHash}`);
+    const rawStreamId = receipt.events.CreateStream.returnValues[0];
+    push(`/stream/${rawStreamId.toNumber()}`);
+  }
+
+  handleError(err) {
+    const { t } = this.props;
+    this.setState({ submitted: false, submissionError: err || err.toString() || t("error") });
   }
 
   isUnapproved() {
     const { account, sablierAddress, selectors } = this.props;
-    const { token } = this.state;
-    const inputValue = 0; // TODO
+    const { deposit, tokenAddress } = this.state;
 
-    if (!token || token === "ETH") {
+    if (!tokenAddress || tokenAddress === "ETH") {
       return false;
     }
 
-    const { value: allowance, label, decimals } = selectors().getApprovals(token, account, sablierAddress);
-
-    if (label && allowance.isLessThan(BN(inputValue * 10 ** decimals || 0))) {
-      return true;
+    const { value: allowance, symbol, decimals } = selectors().getApprovals(tokenAddress, account, sablierAddress);
+    const depositBN = new BN(deposit).multipliedBy(10 ** decimals);
+    if (!symbol || allowance.isGreaterThan(depositBN)) {
+      return false;
     }
 
-    return false;
+    return true;
   }
 
   onChangePayment(value, label) {
@@ -125,21 +149,22 @@ class PayWithSablier extends Component {
     this.setState({ stopTime }, () => this.recalcState());
   }
 
-  onSelectToken(token) {
-    const { account, networkId, watchBalance } = this.props;
-    const tokenName = getTokenLabelForAddress(networkId, token);
+  onSelectTokenAddress(tokenAddress) {
+    const { account, tokenAddressesToSymbols, watchBalance } = this.props;
+    const tokenSymbol = tokenAddressesToSymbols[tokenAddress];
 
-    watchBalance({ balanceOf: account, tokenAddress: token });
-    this.setState({ token, tokenName });
+    watchBalance({ balanceOf: account, tokenAddress });
+    this.setState({ tokenAddress, tokenSymbol });
   }
 
-  onSubmitError(err) {
-    this.setState({ submitted: false, submittedError: err.toString() });
-  }
+  onSubmit() {
+    const { account, addPendingTx, balances, blockNumber, sablierAddress, web3 } = this.props;
+    const { interval, payment, recipient, startTime, stopTime, tokenAddress } = this.state;
 
-  async onSubmit() {
-    const { account, addPendingTx, sablierAddress, selectors, web3 } = this.props;
-    const { interval, payment, recipient, startTime, stopTime, token } = this.state;
+    if (this.isUnapproved()) {
+      this.setState({ showTokenApprovalModal: true });
+      return;
+    }
 
     if (
       this.isTokenInvalid() ||
@@ -151,39 +176,31 @@ class PayWithSablier extends Component {
       return;
     }
 
-    let startBlock = 0;
-    let stopBlock = 0;
-    try {
-      [startBlock, stopBlock] = await retry(() => {
-        return Promise.all([timeToBlockNumber(web3, startTime), timeToBlockNumber(web3, stopTime)]);
-      });
-    } catch (err) {
-      this.onSubmitError(err);
-    }
-
-    const { decimals } = selectors().getBalance(account, token);
-    const paymentWei = new BN(payment).multipliedBy(10 ** decimals).toFixed(0);
-    const intervalBlocks = intervalToBlocks(interval);
+    let startBlock = getBlockDeltaFromNow(blockNumber, startTime);
+    let stopBlock = getBlockDeltaFromNow(blockNumber, stopTime);
+    const decimals = balances[tokenAddress][account].decimals;
+    const adjustedPayment = new BN(payment).multipliedBy(10 ** decimals).toFixed(0);
+    const blockDelta = getBlockDeltaForInterval(interval);
 
     new web3.eth.Contract(SablierABI, sablierAddress).methods
-      .createStream(account, recipient, token, startBlock, stopBlock, paymentWei, intervalBlocks)
+      .createStream(account, recipient, tokenAddress, startBlock, stopBlock, adjustedPayment, blockDelta)
       .send({ from: account })
-      .on("transactionHash", (transactionHash) => {
+      .once("transactionHash", (transactionHash) => {
         addPendingTx(transactionHash);
       })
-      .on("confirmation", (confirmationNumber, receipt) => {
-        this.goToStream(receipt.transactionHash);
+      .once("receipt", (receipt) => {
+        this.goToStream(receipt);
       })
-      .on("error", (err) => {
-        this.onSubmitError(err);
+      .once("error", (err) => {
+        this.handleError(err);
       });
   }
 
   recalcDeposit() {
-    const { duration, interval, payment, startTime, stopTime, token } = this.state;
-    if (interval && payment && token && isDayJs(startTime) && isDayJs(stopTime)) {
-      const minutes = intervalMins[interval];
-      const deposit = roundToDecimalPlaces((duration / minutes) * payment, 3);
+    const { duration, interval, payment, startTime, stopTime, tokenAddress } = this.state;
+    if (interval && payment && tokenAddress && isDayJs(startTime) && isDayJs(stopTime)) {
+      const minutes = INTERVAL_MINUTES[interval];
+      const deposit = roundToDecimalPoints((duration / minutes) * payment, 3);
       this.setState({ deposit });
     }
   }
@@ -193,12 +210,12 @@ class PayWithSablier extends Component {
   // by miners or the user simply is in idle mode for too long, the stream will be rejected because the
   // Ethereum network's current block number is higher than the a priori set value.
   recalcState() {
-    const { interval, payment, startTime, stopTime: previousStopTime, token } = this.state;
+    const { interval, payment, startTime, stopTime: previousStopTime, tokenAddress } = this.state;
 
     let stopTime = previousStopTime;
     let duration = 0;
     if (isDayJs(previousStopTime)) {
-      if (getMinsForInterval(interval) >= intervalMins.day) {
+      if (!isIntervalShorterThanADay(interval)) {
         const startTimeH = startTime.hour();
         const startTimeM = startTime.minute();
         stopTime = previousStopTime.hour(startTimeH).minute(startTimeM);
@@ -209,10 +226,10 @@ class PayWithSablier extends Component {
     }
 
     let deposit = 0;
-    if (interval && payment && token && isDayJs(startTime) && isDayJs(stopTime)) {
+    if (interval && payment && tokenAddress && isDayJs(startTime) && isDayJs(stopTime)) {
       const paymentValue = Math.max(payment, 0);
-      const minutes = intervalMins[interval];
-      deposit = roundToDecimalPlaces((duration / minutes) * paymentValue, 3);
+      const minutes = INTERVAL_MINUTES[interval];
+      deposit = roundToDecimalPoints((duration / minutes) * paymentValue, 3);
     }
 
     this.setState({ deposit, duration, startTime, stopTime });
@@ -222,28 +239,12 @@ class PayWithSablier extends Component {
     this.setState(initialState);
   }
 
-  // Round up to the closest interval, with the following caveat: we're actually offsetting ny
-  // 5 mins + the interval. That is, if the current interval ends in the following 5 mins, we just
-  // exclude it to avoid highly probable errors.
-  roundTime(time) {
-    const coefficient = 1000 * 60 * intervalMins.hour;
-    let roundedTime = dayjs(Math.ceil(time.valueOf() / coefficient) * coefficient);
-    if (
-      dayjs()
-        .add(5, "minute")
-        .isAfter(roundedTime)
-    ) {
-      roundedTime = roundedTime.add(coefficient, "millisecond");
-    }
-    return roundedTime;
-  }
-
   isDepositButtonDisabled() {
     const { web3 } = this.props;
-    const { token, interval, payment, startTime, stopTime, recipient } = this.state;
+    const { interval, payment, recipient, startTime, stopTime, tokenAddress } = this.state;
 
     if (
-      !token ||
+      !tokenAddress ||
       !payment ||
       interval === 0 ||
       !isDayJs(startTime) ||
@@ -258,13 +259,9 @@ class PayWithSablier extends Component {
 
   isTokenInvalid() {
     const { t } = this.props;
-    const { tokenName, submitted } = this.state;
+    const { tokenSymbol } = this.state;
 
-    if (!tokenName && !submitted) {
-      return false;
-    }
-
-    if (!acceptedTokens.includes(tokenName)) {
+    if (!ACCEPTED_TOKENS.includes(tokenSymbol)) {
       return t("errors.tokenNotAccepted");
     }
 
@@ -283,7 +280,7 @@ class PayWithSablier extends Component {
 
   renderToken() {
     const { t } = this.props;
-    const { token, tokenName } = this.state;
+    const { tokenAddress, tokenSymbol } = this.state;
 
     return (
       <div className="pay-with-sablier__form-item" style={{ marginTop: "0" }}>
@@ -292,24 +289,24 @@ class PayWithSablier extends Component {
         </label>
         {this.renderTokenError()}
         <TokenPanel
-          onSelectToken={(token) => this.onSelectToken(token)}
-          selectedTokens={[token]}
-          selectedTokenAddress={token}
-          tokenName={tokenName}
+          onSelectTokenAddress={(tokenAddress) => this.onSelectTokenAddress(tokenAddress)}
+          selectedTokens={[tokenAddress]}
+          selectedTokenAddress={tokenAddress}
+          tokenSymbol={tokenSymbol}
         />
       </div>
     );
   }
 
   isPaymentInvalid() {
-    const { t } = this.props;
-    const { payment, paymentLabel, submitted, tokenName } = this.state;
+    const { account, balances, t } = this.props;
+    const { deposit, payment, paymentLabel, submitted, tokenAddress, tokenSymbol } = this.state;
 
     if (submitted && !payment && !paymentLabel) {
       return t("errors.paymentInvalid");
     }
 
-    const paymentStr = paymentLabel.replace(" ", "").replace(tokenName, "");
+    const paymentStr = paymentLabel.replace(" ", "").replace(tokenSymbol, "");
     const parts = paymentStr.split(".");
 
     if (parts.length < 2) {
@@ -326,6 +323,16 @@ class PayWithSablier extends Component {
       }
     }
 
+    if (balances && balances[tokenAddress] && balances[tokenAddress][account]) {
+      const depositBN = new BN(deposit).multipliedBy(10 ** balances[tokenAddress][account].decimals);
+      if (depositBN.isGreaterThan(balances[tokenAddress][account].value)) {
+        return t("errors.paymentInsufficientBalance", {
+          balance: balances[tokenAddress][account].value.dividedBy(10 ** balances[tokenAddress][account].decimals),
+          tokenSymbol,
+        });
+      }
+    }
+
     return false;
   }
 
@@ -337,7 +344,7 @@ class PayWithSablier extends Component {
       return false;
     }
 
-    if (!Object.keys(intervalStringValues).includes(interval)) {
+    if (!Object.keys(INTERVALS).includes(interval)) {
       return t("errors.intervalInvalid");
     }
 
@@ -356,7 +363,7 @@ class PayWithSablier extends Component {
 
   renderRate() {
     const { t } = this.props;
-    const { interval, tokenName } = this.state;
+    const { interval, tokenSymbol } = this.state;
 
     return (
       <div className="pay-with-sablier__form-item">
@@ -367,19 +374,19 @@ class PayWithSablier extends Component {
         <div className="pay-with-sablier__horizontal-container">
           <div className="pay-with-sablier__input-container-halved">
             <InputWithCurrencySuffix
-              classNames={classnames("pay-with-sablier__input", {
+              className={classnames("pay-with-sablier__input", {
                 "pay-with-sablier__input--invalid": this.isPaymentInvalid(),
               })}
               id="payment"
               name="payment"
               onChange={(value, label) => this.onChangePayment(value, label)}
-              suffix={tokenName}
+              suffix={tokenSymbol}
               type="text"
             />
           </div>
           <span className="pay-with-sablier__horizontal-container__separator">{t("per")}</span>
           <IntervalPanel
-            classNames={classnames("pay-with-sablier__input-container-halved", {
+            className={classnames("pay-with-sablier__input-container-halved", {
               "pay-with-sablier__input--invalid": this.isIntervalInvalid(),
             })}
             interval={interval}
@@ -404,7 +411,7 @@ class PayWithSablier extends Component {
       }
     }
 
-    const minutes = getMinsForInterval(interval);
+    const minutes = getMinutesForInterval(interval);
     if (duration && duration < minutes) {
       return t("errors.durationLowerThanInterval");
     }
@@ -426,20 +433,20 @@ class PayWithSablier extends Component {
     const { t } = this.props;
     const { interval, minTime, startTime, stopTime } = this.state;
 
-    const minutes = getMinsForInterval(interval);
+    const minutes = getMinutesForInterval(interval);
     const stopTimeMinTime = isDayJs(startTime)
-      ? startTime.add(Math.max(minutes, intervalMins.hour), "minute")
+      ? startTime.add(Math.max(minutes, INTERVAL_MINUTES.hour), "minute")
       : startTime;
 
     return (
       <div className="pay-with-sablier__form-item">
         <label className="pay-with-sablier__form-item-label" htmlFor="startTime">
-          {t("input.dates")}
+          {t("input.times")}
         </label>
         {this.renderTimesError()}
         <div className="pay-with-sablier__horizontal-container">
           <SablierDateTime
-            classNames={classnames("pay-with-sablier__input-container-halved")}
+            className={classnames("pay-with-sablier__input-container-halved")}
             inputClassNames={classnames("pay-with-sablier__input", {
               "pay-with-sablier__input--invalid": this.isTimesInvalid(),
             })}
@@ -452,7 +459,7 @@ class PayWithSablier extends Component {
             selectedTime={startTime}
           />
           <SablierDateTime
-            classNames={classnames("pay-with-sablier__input-container-halved")}
+            className={classnames("pay-with-sablier__input-container-halved")}
             inputClassNames={classnames("pay-with-sablier__input", {
               "pay-with-sablier__input--invalid": this.isTimesInvalid(),
             })}
@@ -536,49 +543,76 @@ class PayWithSablier extends Component {
   }
 
   renderReceipt() {
-    const { t } = this.props;
-    const { deposit, duration, submittedError, tokenName } = this.state;
-
-    const depositLabel = deposit ? `${deposit.toLocaleString()} ${tokenName}` : `0 ${tokenName}`;
+    const { hasPendingTransactions, t } = this.props;
+    const { deposit, duration, submissionError, tokenSymbol } = this.state;
 
     return (
-      <div className="pay-with-sablier__receipt-container">
-        <span className="pay-with-sablier__receipt-top-label">{t("depositing")}</span>
-        <span className="pay-with-sablier__receipt-deposit-label">{depositLabel}</span>
-        <div className="pay-with-sablier__receipt-dashed-line" style={{ marginTop: "24px" }}>
-          <span className="pay-with-sablier__receipt-dashed-line-left">{t("duration")}</span>
-          <span className="pay-with-sablier__receipt-dashed-line-right">{formatDuration(t, duration)}</span>
-        </div>
-        <div className="pay-with-sablier__receipt-dashed-line">
-          <span className="pay-with-sablier__receipt-dashed-line-left">{t("ourFee")}</span>
-          <span className="pay-with-sablier__receipt-dashed-line-right">{t("none")}</span>
-        </div>
+      <div className="pay-with-sablier__receipt__container">
+        <span className="pay-with-sablier__receipt__top-label">{t("depositing")}</span>
+        <span className="pay-with-sablier__receipt__deposit-label">
+          {deposit.toLocaleString() || "0"} {tokenSymbol}
+        </span>
+        <DashedLine
+          className="pay-with-sablier__receipt__dashed-line"
+          leftLabel={t("duration")}
+          rightLabel={formatDuration(t, duration)}
+          style={{ marginTop: "24px" }}
+        />
+        <DashedLine className="pay-with-sablier__receipt__dashed-line" leftLabel={t("ourFee")} rightLabel={t("none")} />
         <PrimaryButton
-          classNames={classnames([
+          className={classnames([
             "pay-with-sablier__button",
-            "pay-with-sablier__receipt-warning-button",
+            "pay-with-sablier__receipt__warning-button",
             "primary-button--white",
           ])}
           disabled={true}
           icon={FaExclamationMark}
           label={t("betaWarning")}
-          labelClassNames={classnames("primary-button__label--black")}
+          labelClassName={classnames("primary-button__label--black")}
           onClick={() => {}}
         />
         <PrimaryButton
-          classNames={classnames("pay-with-sablier__button", "pay-with-sablier__receipt-deposit-button")}
+          className={classnames("pay-with-sablier__button", "pay-with-sablier__receipt__deposit-button")}
           disabled={this.isDepositButtonDisabled()}
           label={t("streamMoney")}
-          onClick={() => this.setState({ submitted: true, submittedError: "" }, () => this.onSubmit())}
+          loading={hasPendingTransactions}
+          onClick={() =>
+            this.setState(
+              {
+                submitted: true,
+                submissionError: "",
+              },
+              () => this.onSubmit(),
+            )
+          }
         />
         <div
-          className={classnames("pay-with-sablier__receipt-deposit-error-label", {
-            "pay-with-sablier__error-label": submittedError ? true : false,
+          className={classnames("pay-with-sablier__receipt__deposit-error-label", {
+            "pay-with-sablier__error-label": submissionError ? true : false,
           })}
         >
-          {submittedError || ""}
+          {submissionError || ""}
         </div>
       </div>
+    );
+  }
+
+  renderTokenApprovalModal() {
+    const { account } = this.props;
+    const { showTokenApprovalModal, tokenAddress, tokenSymbol } = this.state;
+
+    if (!showTokenApprovalModal) {
+      return null;
+    }
+
+    return (
+      <TokenApprovalModal
+        account={account}
+        onApproveToken={() => this.setState({ showTokenApprovalModal: false })}
+        onClose={() => this.setState({ showTokenApprovalModal: false })}
+        tokenAddress={tokenAddress}
+        tokenSymbol={tokenSymbol}
+      />
     );
   }
 
@@ -587,6 +621,7 @@ class PayWithSablier extends Component {
       <div className="pay-with-sablier">
         {this.renderForm()}
         {this.renderReceipt()}
+        {this.renderTokenApprovalModal()}
       </div>
     );
   }
@@ -597,17 +632,21 @@ export default connect(
     account: state.web3connect.account,
     addresses: state.addresses,
     balances: state.web3connect.balances,
+    blockNumber: state.web3connect.blockNumber,
+    hasPendingTransactions: !!state.web3connect.transactions.pending.length,
     // eslint-disable-next-line eqeqeq
     isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
-    networkId: state.web3connect.networkId,
     sablierAddress: state.addresses.sablierAddress,
     tokenAddresses: state.addresses.tokenAddresses,
+    tokenAddressesToSymbols: state.addresses.tokenAddressesToSymbols,
     web3: state.web3connect.web3,
   }),
   (dispatch) => ({
     addPendingTx: (id) => dispatch(addPendingTx(id)),
     push: (path) => dispatch(push(path)),
     selectors: () => dispatch(selectors()),
+    watchApprovals: ({ tokenAddress, tokenOwner, spender }) =>
+      dispatch(watchApprovals({ tokenAddress, tokenOwner, spender })),
     watchBalance: ({ balanceOf, tokenAddress }) => dispatch(watchBalance({ balanceOf, tokenAddress })),
   }),
 )(withTranslation()(PayWithSablier));

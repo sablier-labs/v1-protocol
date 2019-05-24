@@ -2,24 +2,15 @@
 
 .stream {
   @extend %page-frame, %row-nowrap;
-  justify-content: space-between;
 
-  &__action-container {
+  &__panel-container {
     @extend %col-nowrap, %frame;
     width: 100%;
-    height: 46%;
     padding: 24px;
   }
 
-  &__action-container-button {
+  &__panel-container-button {
     margin-top: 20px;
-  }
-
-  &__balance-container {
-    @extend %col-nowrap;
-    height: 100%;
-    justify-content: center;
-    margin-left: 32px;
   }
 
   &__button {
@@ -34,6 +25,7 @@
     width: 244px;
     height: 244px;
     margin-right: 32px;
+    position: relative;
   }
 
   &__circular-progress-bar-label {
@@ -47,10 +39,47 @@
     font-size: 44px;
   }
 
+  &__error-label {
+    margin-top: 16px;
+    color: $rusty-red;
+    text-align: center;
+  }
+
+  &__error-label:empty {
+    margin-top: 0px;
+  }
+
+  &__funds-container {
+    @extend %col-nowrap;
+    height: 100%;
+    justify-content: center;
+    margin-left: 32px;
+  }
+
   &__left-container {
     @extend %col-nowrap, %frame;
     width: 52%;
     height: 100%;
+  }
+
+  &__loader {
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 64px;
+    height: 64px;
+    border-width: 2px 0px 0px 2px;
+  }
+
+  &__no-data {
+    @extend %absolute-centered-tag;
+    color: $space-cadet-black;
+    font-family: sans-serif;
+    font-size: 20px;
+    text-transform: capitalize;
   }
 
   &__right-container {
@@ -64,22 +93,29 @@
     font-size: 24px;
   }
 
+  &__tooltip {
+    z-index: 200;
+    background-color: $space-cadet-black !important;
+    font-family: sans-serif;
+  }
+
   &__separator {
     width: 100%;
     height: 1px;
     background-color: $glitter-gray;
   }
 
-  &__social-container {
+  &__share-container {
     @extend %col-nowrap, %frame;
     width: 100%;
-    height: 35%;
-    margin-top: 44px;
+    margin-top: 40px;
     padding: 24px;
   }
 
   &__stats-container {
     @extend %col-nowrap;
+    flex-grow: 1;
+    justify-content: center;
   }
 
   &__stream-container {
@@ -92,7 +128,7 @@
   }
 }
 
-.stream__balance-item {
+.stream__funds-item {
   @extend %row-nowrap;
 
   &__label-container {
@@ -168,15 +204,15 @@
     @extend %uppercase-label;
   }
 
-  &__tooltip {
-    z-index: 200;
-  }
-
   &__value-label {
     margin-top: 6px;
     color: $space-cadet-black;
     font-size: 18px;
   }
+}
+
+.CircularProgressbar {
+  height: 100%;
 }
 
 .CircularProgressbar-path {

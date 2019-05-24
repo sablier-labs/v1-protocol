@@ -1,28 +1,15 @@
 @import "../../../styles/variables.scss";
 
 .withdraw-modal {
-  @extend %centered-modal, %frame;
-  justify-content: center;
-  padding: 16px 24px 24px;
-  border-radius: 4px;
+  @extend %frame, %centered-modal;
 
   &__button {
     width: 100%;
-    margin-top: 24px;
+    margin-top: 28px;
   }
 
   &__dashed-line {
-    @extend %dashed-line;
-    margin-top: 12px;
-    font-size: 15px;
-  }
-
-  &__dashed-line-left {
-    @extend %dashed-line-left;
-  }
-
-  &__dashed-line-right {
-    @extend %dashed-line-right;
+    margin-top: 10px;
   }
 
   &__separator {
@@ -37,7 +24,7 @@
     margin-top: 24px;
   }
 
-  &__stats-container {
+  &__funds-container {
     width: 100%;
     margin-top: 12px;
   }
@@ -45,6 +32,10 @@
   &__title-label {
     @extend %frame-title-label;
   }
+}
+
+.rc-slider-disabled {
+  background: transparent;
 }
 
 .rc-slider-handle {
@@ -58,15 +49,15 @@
 .rc-slider-handle:active,
 .rc-slider-handle:focus,
 .rc-slider-handle:hover {
-  border: solid 2px $denim-blue;
+  border: solid 2px $sandy-yellow;
 }
 
 .rc-slider-handle:active {
-  box-shadow: 0 0 5px $denim-blue;
+  box-shadow: 0 0 5px $sandy-yellow;
 }
 
 .rc-slider-handle:focus {
-  box-shadow: 0 0 0 5px $aero-blue;
+  box-shadow: 0 0 0 5px $lumber-yellow;
 }
 
 .rc-slider-rail {
@@ -76,5 +67,5 @@
 
 .rc-slider-track {
   height: 6px;
-  background-color: $denim-blue;
+  background-color: $sandy-yellow;
 }

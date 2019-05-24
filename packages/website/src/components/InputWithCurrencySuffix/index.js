@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 class InputWithCurrencySuffix extends Component {
   static propTypes = {
-    classNames: PropTypes.string,
+    className: PropTypes.string,
     id: PropTypes.string,
     name: PropTypes.string,
     onChange: PropTypes.func.isRequired,
@@ -77,13 +77,13 @@ class InputWithCurrencySuffix extends Component {
   }
 
   render() {
-    const { classNames, id, name, suffix, type } = this.props;
+    const { className, id, name, suffix, type } = this.props;
     const { label } = this.state;
 
     return (
       <input
         autoComplete="off"
-        className={classnames(classNames)}
+        className={classnames(className)}
         id={id}
         name={name}
         onChange={(e) => this.onChange(e)}
