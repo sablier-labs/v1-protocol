@@ -1,4 +1,4 @@
-## Dev utils
+## Dev Utils
 
 Dev utils to be shared across Sablier projects and packages.
 
