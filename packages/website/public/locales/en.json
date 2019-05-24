@@ -124,9 +124,9 @@
   "tomorrow": "Tomorrow",
   "tooltip": {
     "counterparty": "On Sablier, you can either be paid or pay.<br/>When you are paid, there is a \"From\" label on<br/>the left-hand side. Conversely, when you pay,<br/>there is a \"To\" label.",
-    "rate": "The rate at which the funds in the stream<br/>are distributed. As time passes, the recipient<br/>has the right to withdraw more money, while<br/>the payer's share decreases. Any party can<br/>terminate the stream at any time and funds will be<br/>distributed proportionally at termination time.",
-    "startTime": "The time at which Sablier will start<br/> paying the recipient using the funds deposited<br/>by the payer.",
-    "stopTime": "The time at which Sablier will stop<br/> paying the recipient using the funds deposited<br/>by the payer."
+    "rate": "The rate at which the funds in the stream<br/>are allocated. As time passes, the recipient<br/>has the right to withdraw more money, while<br/>the payer's share decreases. Any party can<br/>terminate the stream at any time and funds will be<br/>distributed proportionally at termination time.",
+    "startTime": "The time when Sablier will start<br/> paying the recipient using the funds deposited<br/>by the payer.",
+    "stopTime": "The time when Sablier will stop<br/> paying the recipient using the funds deposited<br/>by the payer."
   },
   "totalDeposit": "Total deposit",
   "tweetAboutSablier": "Tweet about Sablier",
