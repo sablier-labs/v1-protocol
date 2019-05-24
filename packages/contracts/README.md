@@ -1,10 +1,6 @@
-![Chronos Protocol Logo](https://chronosprotocol.org/assets/logo.png)
+## Contracts
 
----
-
-# Protocol
-
-This package contains the Ethereum smart contracts of the Sablier dApp. The contracts are written in solidity.
+This package contains the Ethereum smart contracts for Sablier. The contracts are written in solidity.
 
 ## Pre Requisites
 
