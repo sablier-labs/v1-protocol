@@ -107,7 +107,7 @@ class PayWithSablier extends Component {
 
   handleError(err) {
     const { t } = this.props;
-    this.setState({ submitted: false, submissionError: err || err.toString() || t("error") });
+    this.setState({ submitted: false, submissionError: err.toString() || t("error") });
   }
 
   isUnapproved() {
