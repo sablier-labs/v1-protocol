@@ -1,4 +1,4 @@
-pragma solidity >=0.5.0 <0.6.0;
+pragma solidity 0.5.8;
 
 import "./interfaces/IERC1620.sol";
 import "./zeppelin/IERC20.sol";
@@ -261,7 +261,18 @@ contract Sablier is IERC1620 {
 
         streams[_streamId].balance = streams[_streamId].balance.sub(_amount);
         emit WithdrawFromStream(_streamId, stream.recipient, _amount);
-        IERC20(stream.tokenAddress).transfer(stream.recipient, _amount);
+
+        // saving gas
+        uint256 deposit = depositOf(_streamId);
+        if (_amount == deposit) {
+            delete streams[_streamId];
+            updates[_streamId][stream.sender] = false;
+            updates[_streamId][stream.recipient] = false;
+        }
+
+        // saving gas by checking beforehand
+        if (_amount > 0)
+            IERC20(stream.tokenAddress).transfer(stream.recipient, _amount);
     }
 
     function redeemStream(uint256 _streamId)
@@ -279,6 +290,8 @@ contract Sablier is IERC1620 {
             senderAmount,
             recipientAmount
         );
+
+        // saving gas
         delete streams[_streamId];
         updates[_streamId][stream.sender] = false;
         updates[_streamId][stream.recipient] = false;

@@ -1,4 +1,4 @@
-pragma solidity >=0.5.0 <0.6.0;
+pragma solidity 0.5.8;
 
 /// @title ERC-1620 Money Streaming Standard
 /// @dev See https://github.com/ethereum/eips/issues/1620
@@ -20,8 +20,8 @@ interface IERC1620 {
 
     /// @dev This emits when the receiver of a stream withdraws a portion
     ///  or all of their available funds from an ongoing stream, without
-    ///  stopping it. Note that we don't keep track of both the sender and
-    ///  the recipient's balance because only the recipient can withdraw
+    ///  stopping it. Note that we don't emit both the sender and the
+    ///  recipient's balance because only the recipient can withdraw
     ///  while the stream is active.
     event WithdrawFromStream(
         uint256 indexed streamId,
@@ -100,7 +100,10 @@ interface IERC1620 {
     external;
 
     /// @notice Withdraws all or a fraction of the available funds
-    /// @dev Throws if `_streamId` doesn't point to a valid stream.
+    /// @dev If the stream ended and the recipient withdraws the deposit in full,
+    ///  the stream object gets deleted after this operation
+    ///  to save gas for the user and optimise contract storage.
+    ///  Throws if `_streamId` doesn't point to a valid stream.
     ///  Throws if `msg.sender` is not the recipient of the given `streamId`
     /// @param _streamId The stream to withdraw from
     /// @param _funds The amount of money to withdraw
@@ -111,7 +114,9 @@ interface IERC1620 {
     external;
 
     /// @notice Redeems the stream by distributing the funds to the sender and the recipient
-    /// @dev Throws if `_streamId` doesn't point to a valid stream.
+    /// @dev The stream object gets deleted after this operation
+    ///  to save gas for the user and optimise contract storage.
+    ///  Throws if `_streamId` doesn't point to a valid stream.
     ///  Throws unless `msg.sender` is either the sender or the recipient
     ///  of the given `streamId`.
     /// @param _streamId The stream to stop
