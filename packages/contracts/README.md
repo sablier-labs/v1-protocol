@@ -1,10 +1,12 @@
 ## Contracts
 
-This package contains the Ethereum smart contracts for Sablier. The contracts are written in solidity.
+This package contains the Ethereum smart contracts for Sablier. We use [Truffle](https://github.com/trufflesuite/truffle)
+as a development environment for compiling, testing, and deploying our contracts. They were written in [Solidity](https://github.com/ethereum/solidity).
+
+We ran an audit using [MythX](https://github.com/ConsenSys/truffle-security). Please find the report in the
+[`truffle-security-report.html`](/packages/contracts/truffle-security-report.html) file.
 
 ## Pre Requisites
-
-### Truffle
 
 ```bash
 $ yarn global add truffle
@@ -13,20 +15,17 @@ $ yarn global add ganache-cli
 
 ## Usage
 
-To venture out with the contracts, just compile and deploy them with truffle:
-
 ```bash
 truffle compile --all
 truffle migrate --network development
 ```
 
-Make sure to have a running ganache instance in the background.
+Make sure to have a running [Ganache](https://truffleframework.com/ganache) instance in the background.
 
 ## Contributing
 
-We strongly recommend that the community help us make improvements and determine the future direction of the protocol. To report bugs within this package, please create an issue in this repository.
-
-Please read our [contribution guidelines](../../CONTRIBUTING.md) before getting started.
+We highly encourage participation from the community to help shape the development of Sablier. If you are interested in
+contributing or have any questions, please ping us on [Twitter](https://twitter.com/SablierApp).
 
 ### Install Modules
 
@@ -50,4 +49,10 @@ $ yarn lint
 
 ```bash
 $ yarn test
+```
+
+### Coverage
+
+```bash
+$ yarn coverage
 ```

@@ -18,9 +18,8 @@ const sablierDevUtils = require("@sablier/dev-utils");
 
 ## Contributing
 
-We strongly recommend that the community help us make improvements and determine the future direction of the protocol. To report bugs within this package, please create an issue in this repository.
-
-Please read our [contribution guidelines](../../CONTRIBUTING.md) before getting started.
+We highly encourage participation from the community to help shape the development of Sablier. If you are interested in
+contributing or have any questions, please ping us on [Twitter](https://twitter.com/SablierApp).
 
 ### Install Modules
 
@@ -32,6 +31,12 @@ $ yarn install
 
 ```bash
 $ yarn build
+```
+
+### Lint
+
+```bash
+$ yarn lint
 ```
 
 ### Clean
