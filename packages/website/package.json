@@ -65,6 +65,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-import": "^2.16.0",
+    "fixpack": "^2.3.1",
     "lerna": "^3.13.1",
     "node-sass": "^4.11.0",
     "prettier": "^1.16.4",
