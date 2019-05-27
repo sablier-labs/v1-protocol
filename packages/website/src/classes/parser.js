@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { BigNumber as BN } from "bignumber.js";
 import { toChecksumAddress } from "web3-utils";
 
-import { BLOCK_TIME_AVERAGE } from "../constants/time";
+import { MAINNET_BLOCK_TIME_AVERAGE } from "../constants/time";
 import { formatDuration, formatTime, roundToDecimalPoints } from "../helpers/format-utils";
 import { getEtherscanTransactionLink } from "../helpers/web3-utils";
 import { getUnitValue } from "../helpers/token-utils";
@@ -88,7 +88,7 @@ export class Parser {
   }
 
   getSecondsForBlockDelta(blockDelta) {
-    return blockDelta.multipliedBy(BLOCK_TIME_AVERAGE);
+    return blockDelta.multipliedBy(MAINNET_BLOCK_TIME_AVERAGE);
   }
 
   getTimeForBlockDelta(blockDelta, forPast = true) {
@@ -219,7 +219,7 @@ export class Parser {
     const { rawStream } = stream;
 
     // TODO: use the Etherscan API for calculating time and be loose with off-by-one errors.
-    // At the moment, the string interval won't be resolved lest the BLOCK_TIME_AVERAGE is
+    // At the moment, the string interval won't be resolved lest the MAINNET_BLOCK_TIME_AVERAGE is
     // 15 seconds.
     const paymentBN = new BN(rawStream.payment);
     const payment = getUnitValue(paymentBN, rawStream.token.decimals);

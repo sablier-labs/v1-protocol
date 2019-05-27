@@ -82,7 +82,6 @@
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "lint": "eslint --ignore-path ../../.eslintignore .",
-    "start": "react-scripts start",
-    "test": "react-scripts test"
+    "start": "react-scripts start"
   }
 }

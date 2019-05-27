@@ -12,8 +12,8 @@ export const SABLIER_FORMAT_HOUR = "DD MMM YYYY @ h:00a";
  * @see https://twitter.com/PaulRBerg/status/1132368476918702080?
  * @see https://twitter.com/PaulRBerg/status/1123139665647808512
  */
-export const BLOCK_TIME_AVERAGE =
-  process.env.NODE_ENV === "production" ? BN(14) : BN(process.env.BLOCK_TIME_AVERAGE || 15);
+export const MAINNET_BLOCK_TIME_AVERAGE =
+  process.env.NODE_ENV === "production" ? BN(14) : BN(process.env.MAINNET_BLOCK_TIME_AVERAGE || 15);
 
 export const INTERVALS = {
   minute: "Minute",

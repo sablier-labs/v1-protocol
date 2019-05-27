@@ -25,7 +25,7 @@ import { addPendingTx, selectors, watchApprovals, watchBalance } from "../../red
 import { formatDuration, roundToDecimalPoints } from "../../helpers/format-utils";
 import { GET_LAST_RAW_STREAM } from "../../apollo/subscriptions";
 import { getMinStartTime, getMinutesForInterval, isDayJs, isIntervalShorterThanADay } from "../../helpers/time-utils";
-import { BLOCK_TIME_AVERAGE, INTERVAL_MINUTES, INTERVALS } from "../../constants/time";
+import { MAINNET_BLOCK_TIME_AVERAGE, INTERVAL_MINUTES, INTERVALS } from "../../constants/time";
 
 import "./pay-with-sablier.scss";
 
@@ -104,7 +104,7 @@ class PayWithSablier extends Component {
 
   getBlockDeltaForInterval(interval) {
     const minutes = getMinutesForInterval(interval);
-    const blockTimeAverageMinutes = BLOCK_TIME_AVERAGE.dividedBy(BN(60));
+    const blockTimeAverageMinutes = MAINNET_BLOCK_TIME_AVERAGE.dividedBy(BN(60));
     return BN(minutes.dividedBy(blockTimeAverageMinutes).toFixed(0));
   }
 
@@ -113,7 +113,7 @@ class PayWithSablier extends Component {
     const now = block.timestamp.unix();
     const delta = Math.abs(time.subtract(now, "second").unix());
     const deltaBN = BN(delta);
-    return BN(block.number.plus(deltaBN.dividedBy(BLOCK_TIME_AVERAGE)).toFixed(0));
+    return BN(block.number.plus(deltaBN.dividedBy(MAINNET_BLOCK_TIME_AVERAGE)).toFixed(0));
   }
 
   getStartAndStopBlock() {

@@ -19,7 +19,6 @@ export const UPDATE_TOKEN_BALANCE = "web3connect/updateTokenBalance";
 export const UPDATE_ACCOUNT = "web3connect/updateAccount";
 export const UPDATE_APPROVALS = "web3connect/updateApprovals";
 export const UPDATE_BLOCK = "web3connect/updateBlock";
-export const UPDATE_BLOCK_TIME_AVERAGE = "web3connect/updateBlockTimeAverage";
 export const UPDATE_NETWORK_ID = "web3connect/updateNetworkId";
 export const WATCH_APPROVALS = "web3connect/watchApprovals";
 export const WATCH_ETH_BALANCE = "web3connect/watchEthBalance";
@@ -41,7 +40,6 @@ const initialState = {
     number: BN(0),
     timestamp: {},
   },
-  blockTimeAverage: BN(0),
   contracts: {},
   initialized: false,
   networkId: 0,
@@ -235,7 +233,6 @@ export const sync = () => async (dispatch, getState) => {
   const {
     account,
     block,
-    blockTimeAverage,
     contracts,
     networkId,
     transactions: { pending },
@@ -269,24 +266,6 @@ export const sync = () => async (dispatch, getState) => {
           number: currentBlock.number,
           timestamp: currentBlock.timestamp,
         },
-      });
-    }
-
-    // Sync Block Time Average
-    if (!block.number.isEqualTo(currentBlock.number) && blockTimeAverage.isEqualTo(BN(0))) {
-      const recentBlockNumber = currentBlock.number.minus(BN(1)).toNumber();
-      const { timestamp: recentTimestamp } = await web3.eth.getBlock(recentBlockNumber);
-      const oldBlockNumber = currentBlock.number.minus(BN(1001)).toNumber();
-      const { timestamp: olderTimestamp } = await web3.eth.getBlock(oldBlockNumber);
-
-      const delta = dayjs
-        .unix(recentTimestamp)
-        .subtract(dayjs.unix(olderTimestamp))
-        .unix();
-      const deltaBN = BN(delta / 1000);
-      dispatch({
-        type: UPDATE_BLOCK_TIME_AVERAGE,
-        payload: deltaBN,
       });
     }
   }
@@ -524,11 +503,6 @@ export default function web3connectReducer(state = initialState, { type, payload
           number: payload.number,
           timestamp: payload.timestamp,
         },
-      };
-    case UPDATE_BLOCK_TIME_AVERAGE:
-      return {
-        ...state,
-        blockTimeAverage: payload,
       };
     case UPDATE_ETH_BALANCE:
       return {
