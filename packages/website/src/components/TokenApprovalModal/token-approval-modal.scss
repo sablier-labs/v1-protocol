@@ -11,6 +11,7 @@
     margin-top: 24px;
     padding: 18px;
     background-color: $glitter-gray;
+    border-radius: 4px;
     color: $independence-black;
     font-size: 16px;
   }
@@ -22,6 +23,11 @@
   &__button {
     width: 100%;
     margin-top: 28px;
+  }
+
+  &__error-label {
+    margin-top: 12px;
+    color: $rusty-red;
   }
 
   &__image-container {

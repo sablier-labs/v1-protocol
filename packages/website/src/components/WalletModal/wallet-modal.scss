@@ -1,16 +1,22 @@
 @import "../../styles/variables.scss";
 
-.network-modal {
+.wallet-modal {
   @extend %col-nowrap, %frame, %centered-modal;
   padding: 24px 24px 36px;
   border-radius: 4px;
 
+  &__image-container {
+    @extend %row-nowrap;
+    justify-content: center;
+  }
+
   &__image {
-    width: 132px;
-    height: 132px;
+    width: 108px;
+    height: 108px;
     padding: 16px;
     background-color: rgba($glitter-gray, 0.75);
     border-radius: 50%;
+    cursor: pointer;
     object-fit: contain;
   }
 
@@ -36,11 +42,11 @@
   }
 }
 
-.network-modal-appear {
+.wallet-modal-appear {
   opacity: 0.01;
 }
 
-.network-modal-appear.network-modal-appear-active {
+.wallet-modal-appear.wallet-modal-appear-active {
   opacity: 1;
   transition: opacity 200ms ease-in-out;
 }

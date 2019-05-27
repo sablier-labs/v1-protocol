@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
 
-import DatePicker from "../../../components/MyReactDatePicker";
+import DatePicker from "../MyReactDatePicker";
 import Modal from "../../../components/Modal";
 
 import { formatTime } from "../../../helpers/format-utils";

@@ -8,25 +8,64 @@ import { withTranslation } from "react-i18next";
 import DashedLine from "../../../components/DashedLine";
 import Modal from "../../../components/Modal";
 import PrimaryButton from "../../../components/PrimaryButton";
+import SablierABI from "../../../abi/sablier";
+
+import { addPendingTx } from "../../../redux/ducks/web3connect";
 
 import "./redeem-modal.scss";
 
+const initialState = {
+  submitted: false,
+  submissionError: "",
+};
+
 class RedeemModal extends Component {
   static propTypes = {
+    account: PropTypes.string,
     onClose: PropTypes.func.isRequired,
-    onSubmit: PropTypes.func.isRequired,
+    onRedeemSuccess: PropTypes.func.isRequired,
     stream: PropTypes.object.isRequired,
+    web3: PropTypes.object.isRequired,
   };
 
-  onClickRedeem() {
+  state = {
+    ...initialState,
+  };
+
+  componentDidUpdate(prevProps, prevState) {
     const { stream } = this.props;
-    const senderAmount = stream.funds.remaining;
-    const recipientAmount = stream.funds.paid;
-    this.props.onSubmit(senderAmount, recipientAmount);
+    if (this.state.submitted && !this.state.submissionError && !this.props.hasPendingTransactions) {
+      const senderAmount = stream.funds.remaining;
+      const recipientAmount = stream.funds.paid;
+      this.props.onRedeemSuccess(senderAmount, recipientAmount);
+    }
+  }
+
+  handleError(err) {
+    const { t } = this.props;
+    this.setState({
+      submitted: false,
+      submissionError: err.toString() || t("error"),
+    });
   }
 
   onClose() {
     this.props.onClose();
+  }
+
+  onSubmitRedeem() {
+    const { account, addPendingTx, sablierAddress, stream, web3 } = this.props;
+
+    new web3.eth.Contract(SablierABI, sablierAddress).methods
+      .redeemStream(stream.rawStreamId)
+      .send({ from: account })
+      .once("transactionHash", (transactionHash) => {
+        addPendingTx(transactionHash);
+        this.setState({ submitted: true });
+      })
+      .once("error", (err) => {
+        this.handleError(err);
+      });
   }
 
   render() {
@@ -66,11 +105,14 @@ class RedeemModal extends Component {
             />
           </div>
           <PrimaryButton
-            className={classnames(["redeem-modal__button", "primary-button--yellow"], {
-              "primary-button--disabled": hasPendingTransactions,
-            })}
+            className={classnames(["redeem-modal__button", "primary-button--yellow"])}
             disabled={hasPendingTransactions}
-            onClick={() => this.onClickRedeem()}
+            disabledWhileLoading={true}
+            onClick={() => {
+              this.setState({ submissionError: "" }, () => {
+                this.onSubmitRedeem();
+              });
+            }}
             label={t("redeem.verbatim")}
             loading={hasPendingTransactions}
           />
@@ -80,6 +122,15 @@ class RedeemModal extends Component {
   }
 }
 
-export default connect((state) => ({
-  hasPendingTransactions: !!state.web3connect.transactions.pending.length,
-}))(withTranslation()(RedeemModal));
+export default connect(
+  (state) => ({
+    account: state.web3connect.account,
+    addPendingTx: PropTypes.func.isRequired,
+    hasPendingTransactions: !!state.web3connect.transactions.pending.length,
+    sablierAddress: state.addresses.sablierAddress,
+    web3: state.web3connect.web3,
+  }),
+  (dispatch) => ({
+    addPendingTx: (path) => dispatch(addPendingTx(path)),
+  }),
+)(withTranslation()(RedeemModal));

@@ -10,6 +10,7 @@ module.exports = {
   wallets: {
     brave: {
       android: "https://play.google.com/store/apps/details?id=com.brave.browser",
+      desktop: "https://brave.com/download/",
       ios: "https://itunes.apple.com/us/app/brave-browser-fast-adblocker/id1052879175",
     },
     coinbase: {

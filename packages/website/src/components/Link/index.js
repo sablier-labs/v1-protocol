@@ -3,7 +3,6 @@ import * as React from "react";
 import { Link as LinkImport } from "react-router-dom";
 import validator from "validator";
 
-const Link = ({ to, ...otherProps }) =>
-  validator.isURL(to) ? <a href={to} {...otherProps} /> : <LinkImport to={to} {...otherProps} />;
-
-export default Link;
+export default ({ to, ...otherProps }) => {
+  return validator.isURL(to) ? <a href={to} {...otherProps} /> : <LinkImport to={to} {...otherProps} />;
+};

@@ -5,9 +5,8 @@ import ReactGA from "react-ga";
 import ReactTable from "react-table";
 
 import { connect } from "react-redux";
-// import { CSVLink, CSVDownload } from "react-csv";
-import { Query } from "react-apollo";
 import { push } from "connected-react-router";
+import { Query } from "react-apollo";
 import { withTranslation } from "react-i18next";
 
 import FaExternalLink from "../../assets/images/fa-external-link.svg";
@@ -27,7 +26,10 @@ import "./dashboard.scss";
 class Dashboard extends Component {
   static propTypes = {
     account: PropTypes.string,
-    blockNumber: PropTypes.number.isRequired,
+    block: PropTypes.shape({
+      number: PropTypes.object.isRequired,
+      timestamp: PropTypes.object.isRequired,
+    }),
     push: PropTypes.func.isRequired,
     selectors: PropTypes.func.isRequired,
     watchBalance: PropTypes.func.isRequired,
@@ -37,21 +39,13 @@ class Dashboard extends Component {
     ReactGA.pageview(window.location.pathname + window.location.search);
   }
 
-  goToStream(rawStreamId) {
-    this.props.push(`/stream/${rawStreamId}`);
-  }
-
   renderTable(streams) {
-    const { account, blockNumber, t } = this.props;
+    const { account, block, t } = this.props;
 
-    const cellData = streams
-      .sort((a, b) => {
-        return Number(b.rawStream.startBlock) - Number(a.rawStream.startBlock);
-      })
-      .map((stream) => {
-        const parser = new Parser(stream, account, blockNumber, t);
-        return parser.parse();
-      });
+    const cellData = streams.map((stream) => {
+      const parser = new Parser(stream, account, block, t);
+      return parser.parse();
+    });
 
     return (
       <ReactTable
@@ -186,7 +180,7 @@ class Dashboard extends Component {
             onClick: (e, handleOriginal) => {
               if (column.id !== "link") {
                 const cellDataItem = cellData[rowInfo.index];
-                this.goToStream(cellDataItem.rawStreamId);
+                this.props.push(`/stream/${cellDataItem.rawStreamId}`);
               }
             },
           };
@@ -230,7 +224,7 @@ class Dashboard extends Component {
 export default connect(
   (state) => ({
     account: state.web3connect.account,
-    blockNumber: state.web3connect.blockNumber,
+    block: state.web3connect.block,
   }),
   (dispatch) => ({
     push: (path) => dispatch(push(path)),

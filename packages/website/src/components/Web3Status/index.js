@@ -89,9 +89,10 @@ class Web3Status extends Component {
     return <img className="web3-status__icon" src={FaUserCircle} alt="Ethereum Wallet" />;
   }
 
-  renderLabel(text, disconnectedText) {
+  renderLabel(text) {
+    const { t } = this.props;
     if (!text || text.length < 42 || !isHexStrict(text)) {
-      return <span className="web3-status__label">disconnectedText</span>;
+      return <span className="web3-status__label">{t("disconnected")}</span>;
     }
 
     const address = toChecksumAddress(text);
@@ -133,9 +134,7 @@ class Web3Status extends Component {
             "web3-status__container--pending": hasPendingTransactions,
           })}
         >
-          {hasPendingTransactions
-            ? this.renderPendingContainer(pending, t("pending"))
-            : this.renderLabel(address, t("disconnected"))}
+          {hasPendingTransactions ? this.renderPendingContainer(pending, t("pending")) : this.renderLabel(address)}
           {this.renderModal()}
         </div>
       </div>

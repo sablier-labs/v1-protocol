@@ -4,13 +4,12 @@ import PropTypes from "prop-types";
 import ReactGA from "react-ga";
 import ReactTooltip from "react-tooltip";
 
-import { BigNumber as BN } from "bignumber.js";
 import { connect } from "react-redux";
 import { push } from "connected-react-router";
 import { Query } from "react-apollo";
 import { withTranslation } from "react-i18next";
 
-import CustomCircularProgressBar from "../../components/CustomCircularProgressBar";
+import CustomCircularProgressBar from "./CustomCircularProgressBar";
 import FaArrowCircleDown from "../../assets/images/fa-arrow-circle-down.svg";
 import FaArrowCircleUp from "../../assets/images/fa-arrow-circle-up.svg";
 import FaCalendarAlt from "../../assets/images/fa-calendar-alt.svg";
@@ -31,11 +30,9 @@ import Loader from "../../components/Loader";
 import ModalWithImage from "../../components/ModalWithImage";
 import PrimaryButton from "../../components/PrimaryButton";
 import RedeemModal from "./RedeemModal";
-import SablierABI from "../../abi/sablier";
 import TokenLogo from "../../components/TokenLogo";
 import WithdrawModal from "./WithdrawModal";
 
-import { addPendingTx, selectors } from "../../redux/ducks/web3connect";
 import { GET_STREAM } from "../../apollo/queries";
 import { getEtherscanAddressLink } from "../../helpers/web3-utils";
 import { Parser } from "../../classes/parser";
@@ -83,10 +80,7 @@ const Funds = ({ downLabel, stream, topLabel }) => (
     <div className="stream__funds-item">
       <div className="stream__funds-item__separator" />
       <div className="stream__funds-item__label-container">
-        <span className="stream__funds-item__title-label">
-          {topLabel}
-          {/* {stream.flow === StreamFlow.IN.name ? t("earnedSoFar") : t("paidSoFar")} */}
-        </span>
+        <span className="stream__funds-item__title-label">{topLabel}</span>
         <div className="stream__funds-item__value-container">
           <span className="stream__funds-item__value-label">
             {stream.funds.paid.toLocaleString()} {stream.token.symbol}
@@ -112,8 +106,8 @@ const Funds = ({ downLabel, stream, topLabel }) => (
 
 const initialState = {
   hasShownRedeemWarning: false,
-  lastRedeemalSenderAmount: 0,
   lastWithdrawalAmount: 0,
+  redemptionSenderAmount: 0,
   showRedeemModal: false,
   showRedeemSuccessModal: false,
   showRedeemWarningModal: false,
@@ -125,11 +119,11 @@ const initialState = {
 class Stream extends Component {
   static propTypes = {
     account: PropTypes.string,
-    addPendingTx: PropTypes.func.isRequired,
-    blockNumber: PropTypes.number.isRequired,
+    block: PropTypes.shape({
+      number: PropTypes.object.isRequired,
+      timestamp: PropTypes.object.isRequired,
+    }),
     push: PropTypes.func.isRequired,
-    sablierAddress: PropTypes.string,
-    selectors: PropTypes.func.isRequired,
     web3: PropTypes.object.isRequired,
   };
 
@@ -137,14 +131,6 @@ class Stream extends Component {
 
   componentDidMount() {
     ReactGA.pageview(window.location.pathname + window.location.search);
-  }
-
-  goToDashboard() {
-    this.props.push("/dashboard");
-  }
-
-  goToNewStream() {
-    this.props.push("/");
   }
 
   onClickCopyLink() {
@@ -156,10 +142,6 @@ class Stream extends Component {
     setTimeout(() => {
       ReactTooltip.hide(this.copyLinkButtonContainerRef);
     }, 2000);
-  }
-
-  onClickGoToDashboard() {
-    this.goToDashboard();
   }
 
   onClickInviteYourFriends() {
@@ -184,59 +166,26 @@ class Stream extends Component {
     this.setState({ showWithdrawModal: true, submissionError: "" });
   }
 
-  onSubmitWithdraw(amount, decimals, refetch) {
-    const { account, addPendingTx, match, sablierAddress, t, web3 } = this.props;
-
-    const adjustedAmount = new BN(amount).multipliedBy(10 ** decimals).toFixed(0);
-    const rawStreamId = match.params.rawStreamId;
-    new web3.eth.Contract(SablierABI, sablierAddress).methods
-      .withdrawFromStream(rawStreamId, adjustedAmount)
-      .send({ from: account })
-      .once("transactionHash", (transactionHash) => {
-        addPendingTx(transactionHash);
-      })
-      .once("receipt", (receipt) => {
-        // TODO: check if The Graph updates this at this stage. It's likely that there are delays on the mainnet.
-        // Worst case scenario is that the UI doesn't get updates and the user is prompted to send a failing
-        // transaction, in case they wish to perform a second withdrawal.
-        this.setState(
-          {
-            lastWithdrawalAmount: amount,
-            showWithdrawModal: false,
-            showWithdrawSuccessModal: true,
-          },
-          () => refetch(),
-        );
-      })
-      .once("error", (err) => {
-        this.setState({ submissionError: err.toString() || t("error") });
-      });
+  onRedeemSuccess(senderAmount, refetch) {
+    this.setState(
+      {
+        redemptionSenderAmount: senderAmount,
+        showRedeemModal: false,
+        showRedeemSuccessModal: true,
+      },
+      () => refetch(),
+    );
   }
 
-  onSubmitRedeem(senderAmount, refetch) {
-    const { account, addPendingTx, match, sablierAddress, t, web3 } = this.props;
-
-    const rawStreamId = match.params.rawStreamId;
-    new web3.eth.Contract(SablierABI, sablierAddress).methods
-      .redeemStream(rawStreamId)
-      .send({ from: account })
-      .once("transactionHash", (transactionHash) => {
-        addPendingTx(transactionHash);
-      })
-      .once("receipt", (receipt) => {
-        // TODO: check if The Graph updates this at this stage. It's likely that there are delays on the mainnet.
-        this.setState(
-          {
-            lastRedeemalSenderAmount: senderAmount,
-            showRedeemModal: false,
-            showRedeemSuccessModal: true,
-          },
-          () => refetch(),
-        );
-      })
-      .once("error", (err) => {
-        this.setState({ submissionError: err.toString() || t("error") });
-      });
+  onWithdrawSuccess(amount, refetch) {
+    this.setState(
+      {
+        lastWithdrawalAmount: amount,
+        showWithdrawModal: false,
+        showWithdrawSuccessModal: true,
+      },
+      () => refetch(),
+    );
   }
 
   renderLeftContainer(stream) {
@@ -328,13 +277,13 @@ class Stream extends Component {
             icon={FaTachometer}
             label={t("goDashboard")}
             labelClassName={classnames("primary-button__label--black")}
-            onClick={() => this.onClickGoToDashboard()}
+            onClick={() => this.props.push("/dashboard")}
           />
           <PrimaryButton
             className={classnames(["stream__panel-container-button", "stream__button"])}
             icon={FaPlus}
             label={t("newStream")}
-            onClick={() => this.goToNewStream()}
+            onClick={() => this.props.push("/")}
           />
           <LastPanelButton
             onClickRedeem={() => this.onClickRedeem()}
@@ -342,12 +291,12 @@ class Stream extends Component {
             stream={stream}
           />
         </div>
-        <div className={classnames("stream__error-label")}>{submissionError}</div>
+        {!submissionError ? null : <div className={classnames("stream__error-label")}>{submissionError}</div>}
       </div>
     );
   }
 
-  renderShare(stream) {
+  renderShare() {
     const { t } = this.props;
 
     return (
@@ -398,12 +347,12 @@ class Stream extends Component {
     return (
       <div className="stream__right-container">
         {this.renderPanel(stream)}
-        {this.renderShare(stream)}
+        {this.renderShare()}
       </div>
     );
   }
 
-  renderRedeemModal(data, stream, refetch) {
+  renderRedeemModal(stream, refetch) {
     const { t } = this.props;
     const { showRedeemModal, showRedeemSuccessModal } = this.state;
 
@@ -412,7 +361,7 @@ class Stream extends Component {
         {!showRedeemModal ? null : (
           <RedeemModal
             onClose={() => this.setState({ showRedeemModal: false })}
-            onSubmit={(senderAmount, recipientAmount) => this.onSubmitRedeem(senderAmount, refetch)}
+            onRedeemSuccess={(senderAmount, recipientAmount) => this.onRedeemSuccess(senderAmount, refetch)}
             stream={stream}
           />
         )}
@@ -421,12 +370,12 @@ class Stream extends Component {
             buttonLabel={t("goBack")}
             image={FaShieldCheck}
             label={t("redeem.success", {
-              senderAmount: this.state.lastRedeemalSenderAmount,
-              tokenSymbol: data.stream.rawStream.token.symbol,
+              senderAmount: this.state.redemptionSenderAmount,
+              tokenSymbol: stream.token.symbol,
             })}
             onClose={() =>
               this.setState({
-                lastRedeemalSenderAmount: 0,
+                redemptionSenderAmount: 0,
                 showRedeemSuccessModal: false,
               })
             }
@@ -464,7 +413,7 @@ class Stream extends Component {
     );
   }
 
-  renderWithdrawModal(data, stream, refetch) {
+  renderWithdrawModal(stream, refetch) {
     const { t } = this.props;
     const { showWithdrawModal, showWithdrawSuccessModal } = this.state;
 
@@ -473,7 +422,7 @@ class Stream extends Component {
         {!showWithdrawModal ? null : (
           <WithdrawModal
             onClose={() => this.setState({ showWithdrawModal: false })}
-            onSubmit={(amount) => this.onSubmitWithdraw(amount, data.stream.rawStream.token.decimals, refetch)}
+            onWithdrawSuccess={(amount) => this.onWithdrawSuccess(amount, refetch)}
             stream={stream}
           />
         )}
@@ -483,7 +432,7 @@ class Stream extends Component {
             image={FaShieldCheck}
             label={t("withdraw.success", {
               amount: this.state.lastWithdrawalAmount,
-              tokenSymbol: data.stream.rawStream.token.symbol,
+              tokenSymbol: stream.token.symbol,
             })}
             onClose={() =>
               this.setState({
@@ -498,7 +447,7 @@ class Stream extends Component {
   }
 
   render() {
-    const { account, blockNumber, match, t } = this.props;
+    const { account, block, match, t } = this.props;
     const streamId = `${account.toLowerCase()}/${match.params.rawStreamId}`;
 
     // Note that we are not polling the GraphQL server (we could do it by setting the `pollInterval` prop).
@@ -507,23 +456,23 @@ class Stream extends Component {
     // is computed in the client, which could lead to inconsistencies when withdrawing or redeeming (although unlikely).
     // @see https://github.com/apollographql/react-apollo/issues/1931
     return (
-      <Query query={GET_STREAM} variables={{ streamId }} notifyOnNetworkStatusChange={false}>
+      <Query query={GET_STREAM} variables={{ streamId }}>
         {({ loading, error, data, refetch }) => {
-          if (loading) return <Loader className="stream__loader" delay={100} />;
+          // @see https://github.com/apollographql/react-apollo/issues/2575
+          if (loading && !data.stream) return <Loader className="stream__loader" delay={100} />;
           if (error) return <div className="stream__no-data">{t("error")}</div>;
           if (!data || !data.stream) return <div className="stream__no-data">{t("noData")}</div>;
 
-          const parser = new Parser(data.stream, account, blockNumber, t);
+          const parser = new Parser(data.stream, account, block, t);
           const stream = parser.parse();
-
           return (
             <div className="stream">
               {this.renderLeftContainer(stream)}
               <div className="spacer" />
               {this.renderRightContainer(stream)}
-              {this.renderRedeemModal(data, stream, refetch)}
+              {this.renderRedeemModal(stream, refetch)}
               {this.renderRedeemWarning(stream)}
-              {this.renderWithdrawModal(data, stream, refetch)}
+              {this.renderWithdrawModal(stream, refetch)}
             </div>
           );
         }}
@@ -535,15 +484,12 @@ class Stream extends Component {
 export default connect(
   (state) => ({
     account: state.web3connect.account,
-    blockNumber: state.web3connect.blockNumber,
+    block: state.web3connect.block,
     // eslint-disable-next-line eqeqeq
     isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
-    sablierAddress: state.addresses.sablierAddress,
     web3: state.web3connect.web3,
   }),
   (dispatch) => ({
-    addPendingTx: (id) => dispatch(addPendingTx(id)),
     push: (path) => dispatch(push(path)),
-    selectors: () => dispatch(selectors()),
   }),
 )(withTranslation()(Stream));

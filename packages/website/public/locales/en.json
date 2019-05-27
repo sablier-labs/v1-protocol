@@ -20,10 +20,12 @@
   "earnedSoFar": "Earned so far",
   "ended": "Ended",
   "ends": "Ends",
+  "error": "Error",
   "errors": {
+    "default": "Unknown error occurred.",
     "durationLowerThanInterval": "Duration between times cannot be lower than the selected interval",
     "intervalInvalid": "Please select an interval",
-    "paymentDecimals": "Maximum 3 decimal places allowed",
+    "paymentDecimals": "Maximum 3 decimal points allowed",
     "paymentInsufficientBalance": "Insufficient balance. You only have {{ balance }} {{ tokenSymbol }} in your Ethereum wallet.",
     "paymentInvalid": "Payment field cannot be left empty",
     "paymentZero": "Payment rate cannot be 0",
@@ -77,7 +79,11 @@
   "none": "None",
   "noToken": "No token found",
   "notice": "Notice",
-  "noWallet": "No Ethereum wallet found",
+  "noWallet": {
+    "desktop": "Please visit us after installing Metamask on Chrome or Brave.",
+    "mobile": "Please visit us from a web3-enabled mobile browser such as Trust Wallet or Coinbase Wallet.",
+    "title": "No Ethereum wallet found"
+  },
   "okay": "Okay",
   "ourFee": "Our Fee",
   "out": "Out",
@@ -92,7 +98,7 @@
   "rate": "Rate",
   "recipient": "Recipient",
   "redeem": {
-    "confirm": "Are you sure? This action will stop the stream and redeem the remaining {{ remaining }} {{ tokenSymbol }} to your Ethereum wallet. If you do continue, the recipient will only receive {{ paid }} {{ tokenSymbol }}, instead of the initial amount of {{ deposit }} {{ tokenSymbol }}.",
+    "confirm": "Are you sure? You will stop the stream and redeem the remaining {{ remaining }} {{ tokenSymbol }} to your Ethereum wallet. The recipient will only receive {{ paid }} {{ tokenSymbol }}, instead of the initial amount of {{ deposit }} {{ tokenSymbol }}.",
     "success": "You successfully redeemed {{ senderAmount }} {{ tokenSymbol }} to your Ethereum wallet.",
     "verbatim": "Redeem",
     "warning": "This stream was redeemed on {{ redemptionTime }}, which means that the payer withdrew a portion or all of their funds back to their Ethereum wallet. If the redemption occurred after the stream started, your funds were automatically withdrawn to your wallet. The exact amount is shown under \"Earned\"."
@@ -138,11 +144,12 @@
   },
   "withdrawn": "Withdrawn",
   "withdrawnSoFar": "Withdrawn so far",
-  "whoops": "Whoops",
-  "wrongNetwork": "You are on the wrong network",
+  "wrongNetwork": {
+    "title": "Wrong Network",
+    "subtitle": "You are connected to the wrong Ethereum network. Please switch to the {{ networkName }}."
+  },
   "year": "Year",
   "year_plural": "Years",
   "you": "You",
-  "youAreOnTheWrongNetwork": "You are on the wrong network. Please switch to the Main Ethereum Network.",
   "youCanWithdrawUpTo": "You can withdraw up to"
 }

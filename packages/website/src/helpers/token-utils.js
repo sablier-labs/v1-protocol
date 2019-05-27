@@ -6,7 +6,7 @@ import { roundToDecimalPoints } from "./format-utils";
  * @param {number} BN value to be converted
  * @param {number} ERC20 decimals
  */
-export function getUnitValue(value, decimals, opts = {}) {
+export function getUnitValue(value, decimals, opts = { decimalPoints: 3 }) {
   if (!BN.isBigNumber(value)) {
     throw new Error(`Expected ${value} to be an instance of BN`);
   }

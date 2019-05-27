@@ -3,16 +3,6 @@
 .stream {
   @extend %page-frame, %row-nowrap;
 
-  &__panel-container {
-    @extend %col-nowrap, %frame;
-    width: 100%;
-    padding: 24px;
-  }
-
-  &__panel-container-button {
-    margin-top: 20px;
-  }
-
   &__button {
     width: 100%;
   }
@@ -80,6 +70,16 @@
     font-family: sans-serif;
     font-size: 20px;
     text-transform: capitalize;
+  }
+
+  &__panel-container {
+    @extend %col-nowrap, %frame;
+    width: 100%;
+    padding: 24px;
+  }
+
+  &__panel-container-button {
+    margin-top: 20px;
   }
 
   &__right-container {

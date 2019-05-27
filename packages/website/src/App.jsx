@@ -10,6 +10,7 @@ import Header from "./components/Header";
 import NetworkModal from "./components/NetworkModal";
 import PayWithSablier from "./pages/PayWithSablier";
 import Stream from "./pages/Stream";
+import WalletModal from "./components/WalletModal";
 
 import { history } from "./redux/store";
 import { setAddresses } from "./redux/ducks/addresses";
@@ -37,10 +38,14 @@ class App extends Component {
   }
 
   render() {
-    if (!this.props.initialized) {
+    const { initialized, networkId, web3 } = this.props;
+    if (!initialized) {
       return <noscript />;
     }
 
+    const hasSetNetworkId = this.hasSetNetworkId;
+    // eslint-disable-next-line eqeqeq
+    const hasCorrectNetworkId = networkId == (process.env.REACT_APP_NETWORK_ID || 1);
     return (
       <div id="app-container">
         <Web3Connect />
@@ -52,7 +57,8 @@ class App extends Component {
             <Route exact path="/stream/:rawStreamId?" component={Stream} />
             <Redirect exact to="/" />
           </Switch>
-          {this.props.networkId && !this.props.isConnected ? <NetworkModal /> : null}
+          {initialized && web3 && hasSetNetworkId && !hasCorrectNetworkId ? <NetworkModal /> : null}
+          {initialized && !web3 ? <WalletModal /> : null}
         </ConnectedRouter>
       </div>
     );
@@ -64,7 +70,6 @@ export default connect(
     account: state.web3connect.account,
     initialized: state.web3connect.initialized,
     // eslint-disable-next-line eqeqeq
-    isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
     networkId: state.web3connect.networkId,
     web3: state.web3connect.web3,
   }),

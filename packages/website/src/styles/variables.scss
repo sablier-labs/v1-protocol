@@ -69,7 +69,7 @@ $smoke-white: #f6f6fa;
   font-family: sans-serif;
   outline: none;
 
-  &:placeholder {
+  &::placeholder {
     color: $lavender-gray;
     opacity: 1;
   }

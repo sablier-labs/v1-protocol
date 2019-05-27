@@ -3,10 +3,11 @@ import dayjs from "dayjs";
 import { BigNumber as BN } from "bignumber.js";
 import { toChecksumAddress } from "web3-utils";
 
+import { BLOCK_TIME_AVERAGE } from "../constants/time";
 import { formatDuration, formatTime, roundToDecimalPoints } from "../helpers/format-utils";
 import { getEtherscanTransactionLink } from "../helpers/web3-utils";
-import { getMinutesForBlockDelta, getTimeForBlockDelta } from "../helpers/time-utils";
 import { getUnitValue } from "../helpers/token-utils";
+import { roundTimeAroundHour } from "../helpers/time-utils";
 import { StreamFlow, StreamStatus } from "./stream";
 
 export const initialState = {
@@ -38,15 +39,15 @@ export const initialState = {
  * Class to handle actions related to streams stored in the subgraph
  */
 export class Parser {
-  constructor(stream, account, blockNumber, translations) {
+  constructor(stream, account, block, translations) {
     this.account = toChecksumAddress(account);
-    this.blockNumber = new BN(blockNumber);
+    this.block = block;
     this.translations = translations;
 
     // See the following
     // - https://stackoverflow.com/questions/13104494/does-javascript-pass-by-reference
     // - https://stackoverflow.com/questions/122102/what-is-the-most-efficient-way-to-deep-clone-an-object-in-javascript/5344074#5344074
-    this.stream = stream; //JSON.parse(JSON.stringify(stream));
+    this.stream = JSON.parse(JSON.stringify(stream));
     this.stream.rawStream.interval = new BN(stream.rawStream.interval);
     this.stream.rawStream.payment = new BN(stream.rawStream.payment);
     this.stream.rawStream.recipient = toChecksumAddress(stream.rawStream.recipient);
@@ -59,11 +60,11 @@ export class Parser {
     // Therefore, it is up to the client to compute the status based on the current block number.
     let status = StreamStatus.UNDEFINED.name;
     if (!stream.rawStream.redemption) {
-      if (this.blockNumber.isLessThan(this.stream.rawStream.startBlock)) {
+      if (block.number.isLessThan(this.stream.rawStream.startBlock)) {
         status = StreamStatus.CREATED.name;
       } else if (
-        this.blockNumber.isGreaterThanOrEqualTo(this.stream.rawStream.startBlock) &&
-        this.blockNumber.isLessThanOrEqualTo(this.stream.rawStream.stopBlock)
+        block.number.isGreaterThanOrEqualTo(this.stream.rawStream.startBlock) &&
+        block.number.isLessThanOrEqualTo(this.stream.rawStream.stopBlock)
       ) {
         status = StreamStatus.ACTIVE.name;
       } else {
@@ -79,6 +80,26 @@ export class Parser {
       }
     }
     this.stream.rawStream.status = status;
+  }
+
+  getMinutesForBlockDelta(blockDelta) {
+    const seconds = this.getSecondsForBlockDelta(blockDelta);
+    return BN(seconds.dividedBy(BN(60)).toFixed(0));
+  }
+
+  getSecondsForBlockDelta(blockDelta) {
+    return blockDelta.multipliedBy(BLOCK_TIME_AVERAGE);
+  }
+
+  getTimeForBlockDelta(blockDelta, forPast = true) {
+    const seconds = this.getSecondsForBlockDelta(blockDelta);
+    let time = dayjs();
+    if (forPast) {
+      time = time.subtract(seconds, "second");
+    } else {
+      time = time.add(seconds, "second");
+    }
+    return roundTimeAroundHour(time);
   }
 
   parseAddresses() {
@@ -125,13 +146,13 @@ export class Parser {
   }
 
   parseFunds() {
-    const { stream, blockNumber } = this;
+    const { stream, block } = this;
     const { rawStream } = stream;
     const { interval, payment, startBlock, stopBlock, token, withdrawals } = rawStream;
 
     const totalBlockDeltaBN = stopBlock.minus(startBlock);
     const depositBN = totalBlockDeltaBN.dividedBy(interval).multipliedBy(payment);
-    const depositValue = getUnitValue(depositBN, token.decimals, { decimalPoints: 2 });
+    const depositValue = getUnitValue(depositBN, token.decimals);
 
     if (rawStream.status === StreamStatus.CREATED.name || rawStream.status === StreamStatus.UNDEFINED.name) {
     }
@@ -139,7 +160,7 @@ export class Parser {
     let blockDeltaBN;
     switch (rawStream.status) {
       case StreamStatus.ACTIVE.name:
-        blockDeltaBN = blockNumber.minus(startBlock);
+        blockDeltaBN = block.number.minus(startBlock);
         const modulusBN = blockDeltaBN.modulo(interval);
         blockDeltaBN = blockDeltaBN.minus(modulusBN);
         break;
@@ -167,9 +188,9 @@ export class Parser {
     }
 
     const paidBN = blockDeltaBN.dividedBy(interval).multipliedBy(payment);
-    const paidValue = getUnitValue(paidBN, token.decimals, { decimalPoints: 2 });
+    const paidValue = getUnitValue(paidBN, token.decimals);
     const remainingBN = depositBN.minus(paidBN);
-    const remainingValue = getUnitValue(remainingBN, token.decimals, { decimalPoints: 2 });
+    const remainingValue = getUnitValue(remainingBN, token.decimals);
 
     const ratioBN = paidBN.dividedBy(depositBN).multipliedBy(new BN(100));
     const ratioValue = roundToDecimalPoints(ratioBN.toNumber(), 0);
@@ -178,10 +199,10 @@ export class Parser {
     withdrawals.forEach((withdrawal) => {
       withdrawnBN = withdrawnBN.plus(new BN(withdrawal.amount));
     });
-    let withdrawnValue = getUnitValue(withdrawnBN, token.decimals, { decimalPoints: 2 });
+    let withdrawnValue = getUnitValue(withdrawnBN, token.decimals);
 
     let withdrawableBN = paidBN.minus(withdrawnBN);
-    let withdrawableValue = getUnitValue(withdrawableBN, token.decimals, { decimalPoints: 2 });
+    let withdrawableValue = getUnitValue(withdrawableBN, token.decimals);
 
     return {
       deposit: depositValue,
@@ -201,8 +222,8 @@ export class Parser {
     // At the moment, the string interval won't be resolved lest the BLOCK_TIME_AVERAGE is
     // 15 seconds.
     const paymentBN = new BN(rawStream.payment);
-    const payment = getUnitValue(paymentBN, rawStream.token.decimals, { decimalPoints: 2 });
-    const minutes = getMinutesForBlockDelta(rawStream.interval);
+    const payment = getUnitValue(paymentBN, rawStream.token.decimals);
+    const minutes = this.getMinutesForBlockDelta(rawStream.interval);
 
     let formattedInterval = formatDuration(translations, minutes)
       .replace(`1 ${translations("month")}`, translations("month"))
@@ -230,45 +251,45 @@ export class Parser {
   }
 
   parseTimes() {
-    const { stream, blockNumber, translations } = this;
+    const { stream, block, translations } = this;
     const { rawStream } = stream;
     const { startBlock, stopBlock } = rawStream;
 
-    const blockNumberBN = new BN(blockNumber);
-    const intervalInMinutes = getMinutesForBlockDelta(rawStream.interval);
+    const blockNumberBN = new BN(block.number);
+    const intervalInMinutes = this.getMinutesForBlockDelta(rawStream.interval);
     let startTime, stopTime;
 
     // Not using the `status` here because start and stop times are independent of it
     // Before the start of the stream
-    if (blockNumber.isLessThanOrEqualTo(startBlock)) {
-      const startBlockDelta = startBlock.minus(blockNumber).toNumber();
-      const startDate = getTimeForBlockDelta(startBlockDelta, false);
+    if (block.number.isLessThanOrEqualTo(startBlock)) {
+      const startBlockDelta = startBlock.minus(block.number);
+      const startDate = this.getTimeForBlockDelta(startBlockDelta, false);
       startTime = formatTime(translations, startDate, { minimumInterval: intervalInMinutes, prettyPrint: true });
 
-      const stopBlockDelta = stopBlock.minus(blockNumber).toNumber();
-      const stopDate = getTimeForBlockDelta(stopBlockDelta, false);
+      const stopBlockDelta = stopBlock.minus(block.number);
+      const stopDate = this.getTimeForBlockDelta(stopBlockDelta, false);
       stopTime = formatTime(translations, stopDate, { minimumInterval: intervalInMinutes, prettyPrint: true });
     }
     // During the stream
-    else if (blockNumber.isLessThanOrEqualTo(stopBlock)) {
-      const startBlockDelta = blockNumberBN.minus(startBlock).toNumber();
-      const startMinutes = getMinutesForBlockDelta(startBlockDelta);
+    else if (block.number.isLessThanOrEqualTo(stopBlock)) {
+      const startBlockDelta = blockNumberBN.minus(startBlock);
+      const startMinutes = this.getMinutesForBlockDelta(startBlockDelta);
       const startDuration = formatDuration(translations, startMinutes, intervalInMinutes).toLowerCase();
       startTime = `${startDuration} ${translations("ago").toLowerCase()}`;
 
-      const stopBlockDelta = stopBlock.minus(blockNumber).toNumber();
-      const stopMinutes = getMinutesForBlockDelta(stopBlockDelta);
+      const stopBlockDelta = stopBlock.minus(block.number);
+      const stopMinutes = this.getMinutesForBlockDelta(stopBlockDelta);
       const stopDuration = formatDuration(translations, stopMinutes, intervalInMinutes).toLowerCase();
       stopTime = `${stopDuration} ${translations("left").toLowerCase()}`;
     }
     // After the end of the stream
     else {
-      const startBlockDelta = blockNumberBN.minus(startBlock).toNumber();
-      const startDate = getTimeForBlockDelta(startBlockDelta, true);
+      const startBlockDelta = blockNumberBN.minus(startBlock);
+      const startDate = this.getTimeForBlockDelta(startBlockDelta, true);
       startTime = formatTime(translations, startDate, { minimumInterval: intervalInMinutes, prettyPrint: true });
 
-      const stopBlockDelta = blockNumberBN.minus(stopBlock).toNumber();
-      const stopDate = getTimeForBlockDelta(stopBlockDelta, true);
+      const stopBlockDelta = blockNumberBN.minus(stopBlock);
+      const stopDate = this.getTimeForBlockDelta(stopBlockDelta, true);
       stopTime = formatTime(translations, stopDate, { minimumInterval: intervalInMinutes, prettyPrint: true });
     }
 
@@ -278,7 +299,7 @@ export class Parser {
   parse() {
     const { stream } = this;
     const { flow, rawStream } = stream;
-    const { token, txs } = rawStream;
+    const { id, status, token, txs } = rawStream;
 
     const funds = this.parseFunds();
     const { from, to } = this.parseAddresses();
@@ -294,14 +315,15 @@ export class Parser {
       funds,
       link,
       rate,
-      rawStreamId: rawStream.id,
+      rawStreamId: id,
       redemption,
       to,
       startTime,
-      status: rawStream.status,
+      status,
       stopTime,
       token: {
         address: tokenAddress,
+        decimals: token.decimals,
         symbol: token.symbol,
       },
     };

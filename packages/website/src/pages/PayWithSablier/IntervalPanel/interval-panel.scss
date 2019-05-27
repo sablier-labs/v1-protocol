@@ -55,7 +55,7 @@
     &--selected {
       background-color: $concrete-gray;
       border: 1px solid $mercury-gray;
-      border-radius: 8px;
+      border-radius: 4px;
     }
 
     &:hover {
@@ -63,14 +63,3 @@
     }
   }
 }
-
-// TODO: add animation via CSSTransitionGroup
-//
-// .interval-panel__menu-container-appear {
-//   opacity: 0.01;
-// }
-
-// .interval-panel__menu-container-appear.interval-panel__menu-container-appear-active {
-//   opacity: 1;
-//   transition: opacity 150ms ease-in-out
-// }

@@ -10,6 +10,7 @@ class PrimaryButton extends Component {
   static propTypes = {
     className: PropTypes.string,
     disabled: PropTypes.bool,
+    disabledWhileLoading: PropTypes.bool,
     icon: PropTypes.string,
     label: PropTypes.string.isRequired,
     labelClassName: PropTypes.string,
@@ -17,6 +18,10 @@ class PrimaryButton extends Component {
     onClick: PropTypes.func.isRequired,
   };
 
+  static defaultProps = {
+    disabledWhileLoading: false,
+  };
+  
   renderIcon() {
     const { icon, label } = this.props;
 
@@ -28,11 +33,13 @@ class PrimaryButton extends Component {
   }
 
   render() {
-    const { disabled, label, loading, onClick } = this.props;
+    const { disabled, disabledWhileLoading, label, loading, onClick } = this.props;
 
     return (
       <button
-        className={classnames(["primary-button", this.props.className])}
+        className={classnames(["primary-button", this.props.className], {
+          "primary-button--disabled": disabledWhileLoading && loading,
+        })}
         disabled={disabled || loading}
         onClick={() => onClick()}
       >

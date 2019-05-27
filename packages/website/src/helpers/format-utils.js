@@ -1,11 +1,11 @@
 import dayjs from "dayjs";
 
-import {
-  INTERVAL_MINUTES,
-  SABLIER_FORMAT,
-  SABLIER_FORMAT_HOUR,
-  SABLIER_FORMAT_MONTH,
-} from "../constants/time";
+import { INTERVAL_MINUTES, SABLIER_FORMAT, SABLIER_FORMAT_HOUR, SABLIER_FORMAT_MONTH } from "../constants/time";
+
+export function countDecimalPoints(value) {
+  if (value % 1 !== 0) return value.toString().split(".")[1].length;
+  return 0;
+}
 
 /**
  * @param translations( the i18n object
@@ -94,6 +94,6 @@ export function formatTime(translations, time, opts = {}) {
   return formattedTime;
 }
 
-export function roundToDecimalPoints(num, places) {
-  return +(Math.round(num + "e+" + places) + "e-" + places);
+export function roundToDecimalPoints(num, points = 3) {
+  return Number(Math.round(num + "e+" + points) + "e-" + points);
 }

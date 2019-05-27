@@ -2,7 +2,7 @@ import gql from "graphql-tag";
 
 export const GET_STREAMS = gql`
   query Streams($owner: String!) {
-    streams(orderBy: timestamp, orderDirection: desc, where: { owner: $owner }) {
+    streams(first: 100, orderBy: timestamp, orderDirection: desc, where: { owner: $owner }) {
       id
       flow
       owner

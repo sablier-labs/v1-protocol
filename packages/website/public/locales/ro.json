@@ -1,9 +1,0 @@
-{
-  "noWallet": "Niciun portofel Ethereum găsit",
-  "wrongNetwork": "Nu ești conectat la rețeaua corectă",
-  "switchNetwork": "Conectează-te te rog la {{ correctNetwork }}",
-  "installWeb3MobileBrowser": "Incearcă să vizitezi această pagina folosind un browser precum Trust Wallet sau Coinbase Wallet.",
-  "installMetamask": "Vizitează această pagină din nou după ce instalezi MetaMask în Chrome sau Brave",
-  "disconnected": "Deconectat",
-  "selectToken": "Selectează o valută"
-}

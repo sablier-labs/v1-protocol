@@ -3,11 +3,11 @@
 .pay-with-sablier {
   @extend %frame, %row-nowrap;
   width: calc(100vw - 240px);
-  height: calc(100vh - 228px);
+  height: calc(100vh - 240px);
   position: absolute;
   top: 144px;
   right: 120px;
-  bottom: 84px;
+  bottom: 96px;
   left: 120px;
   color: $space-cadet-black;
 

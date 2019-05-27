@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import dayjs from "dayjs";
 import PropTypes from "prop-types";
 import Web3 from "web3";
 
@@ -17,7 +18,8 @@ export const UPDATE_ETH_BALANCE = "web3connect/updateEthBalance";
 export const UPDATE_TOKEN_BALANCE = "web3connect/updateTokenBalance";
 export const UPDATE_ACCOUNT = "web3connect/updateAccount";
 export const UPDATE_APPROVALS = "web3connect/updateApprovals";
-export const UPDATE_BLOCK_NUMBER = "web3connect/updateBlockNumber";
+export const UPDATE_BLOCK = "web3connect/updateBlock";
+export const UPDATE_BLOCK_TIME_AVERAGE = "web3connect/updateBlockTimeAverage";
 export const UPDATE_NETWORK_ID = "web3connect/updateNetworkId";
 export const WATCH_APPROVALS = "web3connect/watchApprovals";
 export const WATCH_ETH_BALANCE = "web3connect/watchEthBalance";
@@ -35,7 +37,11 @@ const initialState = {
   balances: {
     ethereum: {},
   },
-  blockNumber: 0,
+  block: {
+    number: BN(0),
+    timestamp: {},
+  },
+  blockTimeAverage: BN(0),
   contracts: {},
   initialized: false,
   networkId: 0,
@@ -54,21 +60,23 @@ const initialState = {
 
 // selectors
 export const selectors = () => (dispatch, getState) => {
-  const state = getState().web3connect;
+  const { approvals, balances } = getState().web3connect;
 
-  const getTokenBalance = (tokenAddress, address) => {
-    const tokenBalances = state.balances[tokenAddress] || {};
-    const balance = tokenBalances[address];
-    if (!balance) {
-      dispatch(watchBalance({ balanceOf: address, tokenAddress }));
+  const getApprovals = (tokenAddress, tokenOwner, spender) => {
+    const token = approvals[tokenAddress] || {};
+    const owner = token[tokenOwner] || {};
+
+    if (!owner[spender]) {
+      dispatch(watchApprovals({ tokenAddress, tokenOwner, spender }));
       return Balance(0);
     }
-    return balance;
+
+    return owner[spender];
   };
 
   const getBalance = (address, tokenAddress) => {
     if (!tokenAddress || tokenAddress === "ETH") {
-      const balance = state.balances.ethereum[address];
+      const balance = balances.ethereum[address];
       if (!balance) {
         dispatch(watchBalance({ balanceOf: address }));
         return Balance(0, "ETH");
@@ -81,22 +89,20 @@ export const selectors = () => (dispatch, getState) => {
     return Balance(NaN);
   };
 
-  const getApprovals = (tokenAddress, tokenOwner, spender) => {
-    const token = state.approvals[tokenAddress] || {};
-    const owner = token[tokenOwner] || {};
-
-    if (!owner[spender]) {
-      dispatch(watchApprovals({ tokenAddress, tokenOwner, spender }));
+  const getTokenBalance = (tokenAddress, address) => {
+    const tokenBalances = balances[tokenAddress] || {};
+    const balance = tokenBalances[address];
+    if (!balance) {
+      dispatch(watchBalance({ balanceOf: address, tokenAddress }));
       return Balance(0);
     }
-
-    return owner[spender];
+    return balance;
   };
 
   return {
+    getApprovals,
     getBalance,
     getTokenBalance,
-    getApprovals,
   };
 };
 
@@ -117,7 +123,7 @@ export const initialize = () => (dispatch, getState) => {
       return;
     }
 
-    // See https://github.com/ethereum/web3.js/issues/2601#issuecomment-493752483
+    // @see https://github.com/ethereum/web3.js/issues/2601#issuecomment-493752483
     const options = !process.env.REACT_APP_NETWORK_ID
       ? {}
       : {
@@ -228,19 +234,20 @@ export const sync = () => async (dispatch, getState) => {
   const web3 = await dispatch(initialize());
   const {
     account,
-    blockNumber,
+    block,
+    blockTimeAverage,
     contracts,
     networkId,
     transactions: { pending },
     watched,
   } = getState().web3connect;
 
-  // Sync Account
-  const accounts = await web3.eth.getAccounts();
-  if (account !== accounts[0]) {
-    dispatch({ type: UPDATE_ACCOUNT, payload: accounts[0] });
-    dispatch(watchBalance({ balanceOf: accounts[0] }));
-  }
+    // Sync Account
+    const accounts = await web3.eth.getAccounts();
+    if (account !== accounts[0]) {
+      dispatch({ type: UPDATE_ACCOUNT, payload: accounts[0] });
+      dispatch(watchBalance({ balanceOf: accounts[0] }));
+    }
 
   // Sync Network Id
   if (!networkId) {
@@ -250,13 +257,38 @@ export const sync = () => async (dispatch, getState) => {
     });
   }
 
-  // Sync Block Number
-  const currentBlockNumber = await web3.eth.getBlockNumber();
-  if (blockNumber !== currentBlockNumber) {
-    dispatch({
-      type: UPDATE_BLOCK_NUMBER,
-      payload: currentBlockNumber,
-    });
+  // Sync Block
+  const currentBlock = await web3.eth.getBlock("latest");
+  if (currentBlock) {
+    currentBlock.number = BN(currentBlock.number || 0);
+    currentBlock.timestamp = dayjs.unix(currentBlock.timestamp || 0);
+    if (!block.number.isEqualTo(currentBlock.number)) {
+      dispatch({
+        type: UPDATE_BLOCK,
+        payload: {
+          number: currentBlock.number,
+          timestamp: currentBlock.timestamp,
+        },
+      });
+    }
+
+    // Sync Block Time Average
+    if (!block.number.isEqualTo(currentBlock.number) && blockTimeAverage.isEqualTo(BN(0))) {
+      const recentBlockNumber = currentBlock.number.minus(BN(1)).toNumber();
+      const { timestamp: recentTimestamp } = await web3.eth.getBlock(recentBlockNumber);
+      const oldBlockNumber = currentBlock.number.minus(BN(1001)).toNumber();
+      const { timestamp: olderTimestamp } = await web3.eth.getBlock(oldBlockNumber);
+
+      const delta = dayjs
+        .unix(recentTimestamp)
+        .subtract(dayjs.unix(olderTimestamp))
+        .unix();
+      const deltaBN = BN(delta / 1000);
+      dispatch({
+        type: UPDATE_BLOCK_TIME_AVERAGE,
+        payload: deltaBN,
+      });
+    }
   }
 
   // Sync Ethereum Balances
@@ -484,10 +516,19 @@ export default function web3connectReducer(state = initialState, { type, payload
           },
         },
       };
-    case UPDATE_BLOCK_NUMBER:
+    case UPDATE_BLOCK:
       return {
         ...state,
-        blockNumber: payload,
+        block: {
+          ...state.block,
+          number: payload.number,
+          timestamp: payload.timestamp,
+        },
+      };
+    case UPDATE_BLOCK_TIME_AVERAGE:
+      return {
+        ...state,
+        blockTimeAverage: payload,
       };
     case UPDATE_ETH_BALANCE:
       return {

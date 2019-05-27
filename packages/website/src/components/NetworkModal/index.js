@@ -1,28 +1,29 @@
-import React, { Component } from "react";
+import React from "react";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 import EthereumLogo from "../../assets/images/ethereum-logo.svg";
 import Modal from "../Modal";
 
 import "./network-modal.scss";
 
-class NetworkModal extends Component {
-  render() {
-    const { t } = this.props;
+export default () => {
+  const { t } = useTranslation();
+  const networkName = process.env.REACT_APP_NETWORK_NAME || "Main Ethereum Network";
 
-    return (
-      <Modal onClose={() => {}}>
-        <div className="network-modal">
-          <img className="network-modal__image" alt="Warning" src={EthereumLogo} />
-          <div className="network-modal__label-container">
-            <span className="network-modal__title">{t("whoops")}</span>
-            <span className="network-modal__subtitle">{t("youAreOnTheWrongNetwork")}</span>
-          </div>
+  return (
+    <Modal onClose={() => {}}>
+      <div className="network-modal">
+        <img className="network-modal__image" alt="Warning" src={EthereumLogo} />
+        <div className="network-modal__label-container">
+          <span className="network-modal__title">{t("wrongNetwork.title")}</span>
+          <span className="network-modal__subtitle">
+            {t("wrongNetwork.subtitle", {
+              networkName,
+            })}
+          </span>
         </div>
-      </Modal>
-    );
-  }
-}
-
-export default withTranslation()(NetworkModal);
+      </div>
+    </Modal>
+  );
+};

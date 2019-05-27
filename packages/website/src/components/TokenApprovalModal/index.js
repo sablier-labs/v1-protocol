@@ -16,7 +16,8 @@ import { getEtherscanAddressLink } from "../../helpers/web3-utils";
 import "./token-approval-modal.scss";
 
 const initialState = {
-  error: "",
+  submissionError: "",
+  submitted: false,
 };
 
 class TokenApprovalModal extends Component {
@@ -24,7 +25,7 @@ class TokenApprovalModal extends Component {
     account: PropTypes.string,
     addPendingTx: PropTypes.func.isRequired,
     hasPendingTransactions: PropTypes.bool.isRequired,
-    onApproveToken: PropTypes.func.isRequired,
+    onApproveTokenSuccess: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
     sablierAddress: PropTypes.string,
     tokenAddress: PropTypes.string.isRequired,
@@ -36,28 +37,39 @@ class TokenApprovalModal extends Component {
     ...initialState,
   };
 
-  onSubmit() {
-    const { account, addPendingTx, onApproveToken, sablierAddress, t, tokenAddress, web3 } = this.props;
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.submitted && !this.state.submissionError && !this.props.hasPendingTransactions) {
+      this.props.onApproveTokenSuccess();
+    }
+  }
 
-    // Set allowance to one tEther (10 * 31) so that we don't have to ask the user again
-    const allowance = "1000000000000000000000000000000";
+  handleError(err) {
+    const { t } = this.props;
+    this.setState({
+      submissionError: err.toString() || t("error"),
+      submitted: false,
+    });
+  }
+
+  onSubmit() {
+    const { account, addPendingTx, sablierAddress, tokenAddress, web3 } = this.props;
+    // Set allowance to maximum value possible so that we don't have to ask the user again
+    const allowance = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
     new web3.eth.Contract(ERC20ABI, tokenAddress).methods
       .approve(sablierAddress, allowance)
       .send({ from: account })
       .once("transactionHash", (transactionHash) => {
         addPendingTx(transactionHash);
-      })
-      .once("receipt", (receipt) => {
-        onApproveToken();
+        this.setState({ submitted: true });
       })
       .once("error", (err) => {
-        this.setState({ errorMessage: err.toString() || t("error") });
+        this.handleError(err);
       });
   }
 
   render() {
     const { account, hasPendingTransactions, t, tokenSymbol } = this.props;
-    const { error } = this.state;
+    const { submissionError } = this.state;
 
     return (
       <Modal
@@ -78,7 +90,7 @@ class TokenApprovalModal extends Component {
           >
             {account}
           </Link>
-          {!error ? null : <span className="token-approval-modal__error-label">error</span>}
+          {!submissionError ? null : <span className="token-approval-modal__error-label">{submissionError}</span>}
           <PrimaryButton
             className={classnames("token-approval-modal__button", {
               "primary-button--disabled": hasPendingTransactions,
@@ -86,7 +98,7 @@ class TokenApprovalModal extends Component {
             disabled={hasPendingTransactions}
             label={t("approve")}
             loading={hasPendingTransactions}
-            onClick={() => this.setState(initialState, () => this.onSubmit())}
+            onClick={() => this.setState({ submissionError: "" }, () => this.onSubmit())}
           />
         </div>
       </Modal>
