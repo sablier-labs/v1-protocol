@@ -21,7 +21,7 @@ class PrimaryButton extends Component {
   static defaultProps = {
     disabledWhileLoading: false,
   };
-  
+
   renderIcon() {
     const { icon, label } = this.props;
 

@@ -242,12 +242,12 @@ export const sync = () => async (dispatch, getState) => {
     watched,
   } = getState().web3connect;
 
-    // Sync Account
-    const accounts = await web3.eth.getAccounts();
-    if (account !== accounts[0]) {
-      dispatch({ type: UPDATE_ACCOUNT, payload: accounts[0] });
-      dispatch(watchBalance({ balanceOf: accounts[0] }));
-    }
+  // Sync Account
+  const accounts = await web3.eth.getAccounts();
+  if (account !== accounts[0]) {
+    dispatch({ type: UPDATE_ACCOUNT, payload: accounts[0] });
+    dispatch(watchBalance({ balanceOf: accounts[0] }));
+  }
 
   // Sync Network Id
   if (!networkId) {

@@ -80,7 +80,7 @@ class TokenPanel extends Component {
     });
 
     this.props.onSelectTokenAddress(address);
-  };
+  }
 
   renderTokenList() {
     const tokens = this.createTokenList();
