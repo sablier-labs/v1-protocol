@@ -25,7 +25,7 @@ web3.utils.advanceBlock = async (count) => {
   await Promise.all(promises);
 };
 
-after("generate coverage report", async () => {
+after("Generate coverage report", async () => {
   if (process.env.MODE === "profiler") {
     await global.profilerSubprovider.writeCoverageAsync();
   } else if (process.env.MODE === "coverage") {

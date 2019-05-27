@@ -1,3 +1,4 @@
+/* eslint-disable no-duplicate-case */
 require("dotenv").config();
 const { CoverageSubprovider } = require("@0x/sol-coverage");
 const { ProfilerSubprovider } = require("@0x/sol-profiler");
@@ -19,7 +20,7 @@ async function getFirstAddress() {
 
 // You must specify MNEMONIC and INFURA_API_KEY in a .env file
 function createProvider(network) {
-  if (process.env.CIRCLECI) {
+  if (process.env.CI) {
     return {};
   }
   if (!process.env.MNEMONIC) {
@@ -31,10 +32,7 @@ function createProvider(network) {
     process.exit(1);
   }
   return () => {
-    return new HDWalletProvider(
-      process.env.PRIVATE_KEY || process.env.MNEMONIC,
-      `https://${network}.infura.io/v3/` + process.env.INFURA_API_KEY,
-    );
+    return new HDWalletProvider(process.env.MNEMONIC, `https://${network}.infura.io/v3/` + process.env.INFURA_API_KEY);
   };
 }
 
@@ -42,21 +40,19 @@ const defaultFromAddress = getFirstAddress();
 const isVerbose = true;
 const coverageSubproviderConfig = {
   isVerbose,
-  ignoreFilesGlobs: ["**/node_modules/**", "**/interfaces/**", "**/mocks/**", "**/test/**"],
+  ignoreFilesGlobs: [
+    "**/Migrations.sol",
+    "**/interfaces/**",
+    "**/mocks/**",
+    "**/node_modules/**",
+    "**/test/**",
+    "**/zeppelin/**",
+  ],
 };
 
 const projectRoot = "";
 const artifactAdapter = new TruffleArtifactAdapter(projectRoot, compilerConfig.solcVersion);
-
 const provider = new ProviderEngine();
-let ganacheSubprovider = new GanacheSubprovider();
-provider.addProvider(ganacheSubprovider);
-provider.start((err) => {
-  if (err !== undefined) {
-    console.log(err);
-    process.exit(1);
-  }
-});
 
 let kovanProvider;
 let rinkebyProvider;
@@ -82,11 +78,20 @@ switch (process.env.MODE) {
   default:
     // Due to some strange error, contracts do not get deployed when using the ganache subprovider
     // required by the 0x tools
-    ganacheSubprovider = undefined;
     kovanProvider = createProvider("kovan");
     rinkebyProvider = createProvider("rinkeby");
     ropstenProvider = createProvider("ropsten");
     break;
+}
+
+if (process.env.MODE) {
+  provider.addProvider(new GanacheSubprovider());
+  provider.start((err) => {
+    if (err !== undefined) {
+      console.log(err);
+      process.exit(1);
+    }
+  });
 }
 
 /**
@@ -95,22 +100,34 @@ switch (process.env.MODE) {
  */
 provider.send = provider.sendAsync.bind(provider);
 
-const developmentOptions = ganacheSubprovider ? { provider } : { host: "127.0.0.1" };
+const truffleOptions = {};
+const compilerSettings = { optimizer: {} };
+
+if (process.env.MODE) {
+  truffleOptions.provider = provider;
+  compilerSettings.optimizer.enabled = false;
+} else {
+  truffleOptions.host = "127.0.0.1";
+  compilerSettings.optimizer.enabled = true;
+}
 
 module.exports = {
   compilers: {
     solc: {
       version: compilerConfig.solcVersion,
-      settings: compilerConfig.compilerSettings,
+      settings: {
+        ...compilerConfig.compilerSettings,
+        ...compilerSettings,
+      },
     },
   },
   mocha: {
     bail: true,
-    timeout: 100000,
+    enableTimeouts: false,
   },
   networks: {
     development: {
-      ...developmentOptions,
+      ...truffleOptions,
       gas: 6000000,
       gasPrice: toHex(toWei("1", "gwei")),
       network_id: "*", // eslint-disable-line camelcase

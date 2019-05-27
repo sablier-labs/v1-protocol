@@ -1,29 +1,5 @@
 {
   "artifactsDir": "./artifacts",
-  "compilerSettings": {
-    "evmVersion": "petersburg",
-    "optimizer": {
-      "enabled": true,
-      "runs": 200,
-      "details": {
-        "constantOptimizer": true,
-        "cse": true,
-        "deduplicate": true
-      }
-    },
-    "outputSelection": {
-      "*": {
-        "*": [
-          "abi",
-          "evm.bytecode.object",
-          "evm.bytecode.sourceMap",
-          "evm.deployedBytecode.object",
-          "evm.deployedBytecode.sourceMap"
-        ]
-      }
-    }
-  },
   "contractsDir": "./contracts",
-  "isOfflineMode": false,
   "solcVersion": "0.5.8"
 }
