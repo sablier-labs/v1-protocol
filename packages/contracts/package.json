@@ -7,7 +7,7 @@
     "url": "https://paulrberg.com"
   },
   "bugs": {
-    "url": "https://github.com/PaulRBerg/sablier/issues"
+    "url": "https://github.com/SablierApp/sablier/issues"
   },
   "devDependencies": {
     "@0x/sol-coverage": "^3.0.2",
@@ -22,6 +22,7 @@
     "dotenv": "^7.0.0",
     "fixpack": "^2.3.1",
     "ganache-cli": "^6.4.1",
+    "istanbul": "^0.4.5",
     "shx": "^0.3.2",
     "solc": "^0.5.8",
     "solhint": "^2.0.0",
@@ -35,11 +36,11 @@
   "files": [
     "/contracts"
   ],
-  "homepage": "https://github.com/PaulRBerg/sablier#readme",
+  "homepage": "https://github.com/SablierApp/sablier#readme",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PaulRBerg/sablier.git"
+    "url": "git+https://github.com/SablierApp/sablier.git"
   },
   "scripts": {
     "clean": "shx rm -rf ./.0x-artifacts ./coverage.json ./build ./coverage ./coverageEnv ./export",
