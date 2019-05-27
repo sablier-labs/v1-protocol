@@ -146,7 +146,7 @@
   "withdrawnSoFar": "Withdrawn so far",
   "wrongNetwork": {
     "title": "Wrong Network",
-    "subtitle": "You are connected to the wrong Ethereum network. Please switch to the {{ networkName }}."
+    "subtitle": "You are connected to the wrong network. Please switch to the {{ networkName }}."
   },
   "year": "Year",
   "year_plural": "Years",
