@@ -16,20 +16,19 @@
     "@0x/subproviders": "^4.0.4",
     "@sablier/dev-utils": "0.0.1",
     "bignumber.js": "^8.1.1",
-    "bindings": "^1.3.1",
-    "bitcore-lib": "^0.16.0",
-    "bn.js": "^4.11.8",
     "chai": "^4.2.0",
     "chai-bignumber": "^3.0.0",
     "coveralls": "3.0.3",
     "dotenv": "^7.0.0",
+    "fixpack": "^2.3.1",
     "ganache-cli": "^6.4.1",
     "shx": "^0.3.2",
-    "solc": "^0.5.7",
+    "solc": "^0.5.8",
     "solhint": "^2.0.0",
-    "truffle": "^5.0.10",
+    "truffle": "^5.0.19",
     "truffle-assertions": "^0.8.2",
     "truffle-hdwallet-provider": "^1.0.6",
+    "truffle-security": "^1.4.4",
     "web3": "1.0.0-beta.55",
     "web3-utils": "1.0.0-beta.55"
   },
@@ -50,6 +49,7 @@
     "lint:sol": "solhint --config ../../.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
     "profile": "scripts/profile.sh",
     "test": "scripts/test.sh",
-    "trace": "scripts/trace.sh"
+    "trace": "scripts/trace.sh",
+    "verify": "truffle run verify contracts/Sablier.sol:Sablier contracts/interfaces/IERC1620.sol:IERC1620"
   }
 }
