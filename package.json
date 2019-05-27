@@ -24,6 +24,7 @@
     "shx": "^0.3.2",
     "wsrun": "^3.6.4"
   },
+  "license": "LGPL-3.0",
   "private": true,
   "scripts": {
     "build": "lerna link && yarn wsrun --package $PKG --recursive --stages -c build",

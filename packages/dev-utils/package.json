@@ -30,7 +30,7 @@
     "/lib"
   ],
   "homepage": "https://github.com/SablierApp/sablier/tree/master/packages/dev-utils#readme",
-  "license": "MIT",
+  "license": "LGPL-3.0",
   "main": "./lib",
   "publishConfig": {
     "access": "public"
