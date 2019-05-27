@@ -28,6 +28,7 @@
   "scripts": {
     "build": "lerna link && yarn wsrun --package $PKG --recursive --stages -c build",
     "clean": "yarn wsrun --package $PKG --parallel -c clean",
+    "clean_node_modules": "lerna clean --yes; shx rm -rf node_modules",
     "commit": "git-cz",
     "fixpack": "lerna exec --parallel -- yarn fixpack; fixpack",
     "install:all": "yarn install",
@@ -36,8 +37,8 @@
     "prettier": "prettier --config .prettierrc --write '**/*.{js,jsx,ts,tsx,json,md}'",
     "prettier:ci": "prettier --config .prettierrc --list-different '**/*.{js,jsx,ts,tsx,json,md}'",
     "rebuild": "run-s clean build",
-    "remove_node_modules": "lerna clean --yes; shx rm -rf node_modules",
     "test": "yarn wsrun --package $PKG --serial -c test",
+    "watch": "yarn wsrun --package $PKG --parallel -c watch",
     "wsrun": "wsrun --exclude-missing --fast-exit"
   },
   "workspaces": [
