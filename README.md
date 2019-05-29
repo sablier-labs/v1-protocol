@@ -3,8 +3,8 @@
 <p align="center">Sablier is a decentralised app for continuous payments on Ethereum. Read this <a href="https://twitter.com/SablierApp" target="_blank">article</a> to find our more about our mission. Check out a demo video <a href="https://youtu.be/GEFb6JgX4TU" target="_blank">here</a>.</p>
 
 <p align="center">
-  <a href="https://app.netlify.com/sites/kind-hypatia-292f09/deploys">
-    <img src="https://api.netlify.com/api/v1/badges/0da07551-15df-439d-9c18-6bd1ea9472bb/deploy-status">
+  <a href="https://app.netlify.com/sites/infallible-visvesvaraya-6d594e/deploys">
+    <img src="https://api.netlify.com/api/v1/badges/7a05c307-d1c2-43c0-b914-691dc1fa3104/deploy-status">
   </a>
   <a href="https://prettier.io">
     <img src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg" alt="Styled with Prettier">
