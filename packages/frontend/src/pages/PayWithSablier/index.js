@@ -283,7 +283,9 @@ class PayWithSablier extends Component {
       })
       .subscribe({
         next({ data }) {
-          push(`/stream/${data.rawStreams[0].id}`);
+          if (data && data.rawStreams) {
+            push(`/stream/${data.rawStreams[0].id}`);
+          }
         },
         error(err) {
           this.setState({

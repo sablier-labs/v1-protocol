@@ -7,7 +7,10 @@ import { WebSocketLink } from "apollo-link-ws";
 
 // Create an Http link
 const httpLink = new HttpLink({
-  uri: "https://api.thegraph.com/subgraphs/name/paulrberg/sablier",
+  uri:
+    process.env.NODE_ENV !== "production"
+      ? "https://api.thegraph.com/subgraphs/name/paulrberg/sablier-dev"
+      : "https://api.thegraph.com/subgraphs/name/paulrberg/sablier",
 });
 
 // Create a WebSocket link:
@@ -15,7 +18,10 @@ const wsLink = new WebSocketLink({
   options: {
     reconnect: true,
   },
-  uri: "wss://api.thegraph.com/subgraphs/name/paulrberg/sablier",
+  uri:
+    process.env.NODE_ENV !== "production"
+      ? "wss://api.thegraph.com/subgraphs/name/paulrberg/sablier-dev"
+      : "wss://api.thegraph.com/subgraphs/name/paulrberg/sablier",
 });
 
 // Using the ability to split links, you can send data to each link

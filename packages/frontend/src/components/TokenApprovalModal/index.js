@@ -12,6 +12,7 @@ import PrimaryButton from "../PrimaryButton";
 
 import { addPendingTx } from "../../redux/ducks/web3connect";
 import { getEtherscanAddressLink } from "../../helpers/web3-utils";
+import { selectors } from "../../redux/ducks/web3connect";
 
 import "./token-approval-modal.scss";
 
@@ -24,10 +25,12 @@ class TokenApprovalModal extends Component {
   static defaultProps = {
     account: PropTypes.string,
     addPendingTx: PropTypes.func.isRequired,
+    approvals: PropTypes.object.isRequired,
     hasPendingTransactions: PropTypes.bool.isRequired,
     onApproveTokenSuccess: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
     sablierAddress: PropTypes.string,
+    selectors: PropTypes.func.isRequired,
     tokenAddress: PropTypes.string.isRequired,
     tokenSymbol: PropTypes.string.isRequired,
     web3: PropTypes.object.isRequired,
@@ -38,7 +41,9 @@ class TokenApprovalModal extends Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.submitted && !this.state.submissionError && !this.props.hasPendingTransactions) {
+    // Trick: we added the redux `approvals` object in the props so that this function
+    // gets called when the user gets approved
+    if (this.state.submitted && !this.state.submissionError && !this.isUnapproved()) {
       this.props.onApproveTokenSuccess();
     }
   }
@@ -49,6 +54,17 @@ class TokenApprovalModal extends Component {
       submissionError: err.toString() || t("error"),
       submitted: false,
     });
+  }
+
+  isUnapproved() {
+    const { account, sablierAddress, selectors, tokenAddress } = this.props;
+
+    const { value: allowance } = selectors().getApprovals(tokenAddress, account, sablierAddress);
+    if (allowance.isGreaterThan(0)) {
+      return false;
+    }
+
+    return true;
   }
 
   onSubmit() {
@@ -68,13 +84,13 @@ class TokenApprovalModal extends Component {
   }
 
   render() {
-    const { account, hasPendingTransactions, t, tokenSymbol } = this.props;
-    const { submissionError } = this.state;
+    const { account, t, tokenSymbol } = this.props;
+    const { submitted, submissionError } = this.state;
 
     return (
       <Modal
         onClose={() => {
-          if (!hasPendingTransactions) {
+          if (!submitted) {
             this.props.onClose();
           }
         }}
@@ -93,11 +109,11 @@ class TokenApprovalModal extends Component {
           {!submissionError ? null : <span className="token-approval-modal__error-label">{submissionError}</span>}
           <PrimaryButton
             className={classnames("token-approval-modal__button", {
-              "primary-button--disabled": hasPendingTransactions,
+              "primary-button--disabled": submitted,
             })}
-            disabled={hasPendingTransactions}
+            disabled={submitted}
             label={t("approve")}
-            loading={hasPendingTransactions}
+            loading={submitted}
             onClick={() => this.setState({ submissionError: "" }, () => this.onSubmit())}
           />
         </div>
@@ -109,11 +125,13 @@ class TokenApprovalModal extends Component {
 export default connect(
   (state) => ({
     account: state.web3connect.account,
+    approvals: state.web3connect.approvals,
     hasPendingTransactions: !!state.web3connect.transactions.pending.length,
     sablierAddress: state.addresses.sablierAddress,
     web3: state.web3connect.web3,
   }),
   (dispatch) => ({
     addPendingTx: (id) => dispatch(addPendingTx(id)),
+    selectors: () => dispatch(selectors()),
   }),
 )(withTranslation()(TokenApprovalModal));
