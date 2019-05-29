@@ -38,6 +38,9 @@
   ],
   "homepage": "https://github.com/SablierApp/sablier#readme",
   "license": "LGPL-3.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SablierApp/sablier.git"
