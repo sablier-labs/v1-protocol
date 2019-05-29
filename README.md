@@ -1,6 +1,6 @@
 <p align="center"><img src="https://i.imgur.com/CGFvZW3.png" width="280px"/></p>
 
-<p align="center">Sablier is a decentralised app for continuous payments on Ethereum. Read this <a href="https://twitter.com/SablierApp" target="_blank">article</a> to find our more about our mission. Check out a demo video <a href="https://youtu.be/GEFb6JgX4TU" target="_blank">HERE</a>.</p>
+<p align="center">Sablier is a decentralised app for continuous payments on Ethereum. Read this <a href="https://twitter.com/SablierApp" target="_blank">article</a> to find our more about our mission. Check out a demo video <a href="https://youtu.be/GEFb6JgX4TU" target="_blank">here</a>.</p>
 
 <p align="center">
   <a href="https://app.netlify.com/sites/kind-hypatia-292f09/deploys">
@@ -50,8 +50,8 @@ $ cd packages/frontend
 $ yarn install
 ```
 
-Now, if you want to test Sablier on Rinkeby, make sure to create a `.env` file and mirror the contents of
-`.env.example`. In that file, you can also include any other variables and they will be put in `process.env`.
+If you want to test Sablier on Rinkeby, make sure to create a `.env` file and mirror the contents of
+`.env.example`. In that file, you can also include any other variables and they will be set in `process.env`.
 
 Finally:
 
