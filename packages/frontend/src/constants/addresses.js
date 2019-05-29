@@ -21,7 +21,7 @@ export const RINKEBY = {
   tokenAddressesToSymbols: {
     "0x8ad3aA5d5ff084307d28C8f514D7a193B2Bfe725": "DAI",
   },
-  sablierAddress: "0x32Ef6010D97fc0D10f0D0AB842C141CbD266C98D",
+  sablierAddress: "0xEC8232ae71f054AEFF4f3EAdD4c8d334732Cbe4b",
 };
 
 export const ACCEPTED_TOKENS = ["DAI", "GUSD", "USDC"];
