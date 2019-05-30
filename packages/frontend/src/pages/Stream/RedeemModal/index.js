@@ -109,15 +109,15 @@ class RedeemModal extends Component {
             className={classnames(["redeem-modal__button", "primary-button--yellow"])}
             disabled={hasPendingTransactions}
             disabledWhileLoading={true}
+            label={t("redeem.verbatim")}
+            loading={hasPendingTransactions}
             onClick={() => {
               this.setState({ submissionError: "" }, () => {
                 this.onSubmitRedeem();
               });
             }}
-            label={t("redeem.verbatim")}
-            loading={hasPendingTransactions}
           />
-          {!submissionError ? null : <div className={classnames("withdraw-modal__error-label")}>{submissionError}</div>}
+          {!submissionError ? null : <div className={classnames("redeem-modal__error-label")}>{submissionError}</div>}
         </div>
       </Modal>
     );

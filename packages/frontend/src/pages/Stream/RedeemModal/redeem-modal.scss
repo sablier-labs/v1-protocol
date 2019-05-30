@@ -12,6 +12,16 @@
     margin-top: 10px;
   }
 
+  &__error-label {
+    margin-top: 16px;
+    color: $rusty-red;
+    text-align: center;
+  }
+
+  &__error-label:empty {
+    margin-top: 0px;
+  }
+
   &__label {
     margin-top: 24px;
     color: $space-cadet-black;

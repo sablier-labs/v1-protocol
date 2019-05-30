@@ -465,6 +465,7 @@ class Stream extends Component {
 
           const parser = new Parser(data.stream, account, block, t);
           const stream = parser.parse();
+          console.log({ data, stream })
           return (
             <div className="stream">
               {this.renderLeftContainer(stream)}

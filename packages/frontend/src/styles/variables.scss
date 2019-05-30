@@ -77,6 +77,7 @@ $smoke-white: #f6f6fa;
 
 %centered-modal {
   width: 560px;
+  max-width: 88%;
   align-items: center;
   display: flex;
   flex-flow: column nowrap;
