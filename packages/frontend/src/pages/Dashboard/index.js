@@ -115,7 +115,7 @@ class Dashboard extends Component {
           },
           {
             accessor: "funds.paid",
-            maxWidth: 70,
+            maxWidth: 85,
             Header: () => {
               return <span className="dashboard__header-label">{t("funds")}</span>;
             },
@@ -136,7 +136,7 @@ class Dashboard extends Component {
           },
           {
             accessor: "startTime",
-            minWidth: 140,
+            minWidth: 130,
             Header: () => {
               return <span className="dashboard__header-label">{t("startTime")}</span>;
             },
@@ -148,7 +148,7 @@ class Dashboard extends Component {
           },
           {
             accessor: "stopTime",
-            minWidth: 140,
+            minWidth: 135,
             Header: () => {
               return <span className="dashboard__header-label">{t("stopTime")}</span>;
             },
@@ -160,7 +160,7 @@ class Dashboard extends Component {
           },
           {
             accessor: "link",
-            maxWidth: 100,
+            maxWidth: 105,
             Header: () => {
               return <span className="dashboard__header-label">{t("link")}</span>;
             },
