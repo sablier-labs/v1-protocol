@@ -4,7 +4,7 @@ This package contains the Ethereum smart contracts for Sablier. We use [Truffle]
 as a development environment for compiling, testing, and deploying our contracts. They were written in [Solidity](https://github.com/ethereum/solidity).
 
 We ran an audit using [MythX](https://github.com/ConsenSys/truffle-security). Please find the report in the
-[`truffle-security-report.html`](/packages/contracts/truffle-security-report.html) file.
+[`truffle-security-report.txt`](/packages/contracts/truffle-security-report.txt) file.
 
 ## Pre Requisites
 

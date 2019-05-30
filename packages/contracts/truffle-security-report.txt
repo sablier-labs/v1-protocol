@@ -1,0 +1,22 @@
+║ Line     │ Column   │ Type     │ Message                                                │ Rule ID              ║
+╟──────────┼──────────┼──────────┼────────────────────────────────────────────────────────┼──────────────────────╢
+║ 328      │ 12       │ warning  │ Potential use of a weak source of randomness           │ SWC-120              ║
+║          │          │          │ "block.number".                                        │                      ║
+║ 386      │ 12       │ warning  │ Potential use of a weak source of randomness           │ SWC-120              ║
+║          │          │          │ "block.number".                                        │                      ║
+║ 390      │ 12       │ warning  │ Potential use of a weak source of randomness           │ SWC-120              ║
+║          │          │          │ "block.number".                                        │                      ║
+║ 391      │ 19       │ warning  │ Potential use of a weak source of randomness           │ SWC-120              ║
+║          │          │          │ "block.number".                                        │                      ║
+║ 445      │ 27       │ warning  │ Potential use of a weak source of randomness           │ SWC-120              ║
+║          │          │          │ "block.number".                                        │                      ║
+║ 481      │ 43       │ warning  │ Potential use of a weak source of randomness           │ SWC-120              ║
+║          │          │          │ "block.number".                                        │                      ║
+║ 500      │ 12       │ warning  │ Potential use of a weak source of randomness           │ SWC-120              ║
+║          │          │          │ "block.number".                                        │                      ║
+
+╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 0 Errors                                                                                                       ║
+╟────────────────────────────────────────────────────────────────────────────────────────────────────────────────╢
+║ 7 Warnings                                                                                                     ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
