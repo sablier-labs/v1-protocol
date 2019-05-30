@@ -8,7 +8,7 @@ import { WebSocketLink } from "apollo-link-ws";
 // Create an Http link
 const httpLink = new HttpLink({
   uri:
-    process.env.NODE_ENV !== "production"
+    process.env.REACT_APP_NETWORK_ID !== 1
       ? "https://api.thegraph.com/subgraphs/name/paulrberg/sablier-dev"
       : "https://api.thegraph.com/subgraphs/name/paulrberg/sablier",
 });
@@ -19,7 +19,7 @@ const wsLink = new WebSocketLink({
     reconnect: true,
   },
   uri:
-    process.env.NODE_ENV !== "production"
+    process.env.REACT_APP_NETWORK_ID !== 1
       ? "wss://api.thegraph.com/subgraphs/name/paulrberg/sablier-dev"
       : "wss://api.thegraph.com/subgraphs/name/paulrberg/sablier",
 });

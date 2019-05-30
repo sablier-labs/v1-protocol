@@ -31,11 +31,11 @@ function getCoinbaseWalletLink() {
   const os = ua.getOS();
 
   if (os.name === "Android") {
-    return wallets.coinbaseWallet.android;
+    return wallets.coinbase.android;
   }
 
   if (os.name === "iOS") {
-    return wallets.coinbaseWallet.ios;
+    return wallets.coinbase.ios;
   }
 }
 

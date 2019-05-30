@@ -4,9 +4,12 @@ import { connect } from "react-redux";
 import { ConnectedRouter } from "connected-react-router";
 import { Redirect } from "react-router-dom";
 import { Route, Switch } from "react-router";
+import { withTranslation } from "react-i18next";
 
 import Dashboard from "./pages/Dashboard";
+import FaBan from "./assets/images/fa-ban.svg";
 import Header from "./components/Header";
+import MediaQuery from "react-responsive";
 import NetworkModal from "./components/NetworkModal";
 import PayWithSablier from "./pages/PayWithSablier";
 import Stream from "./pages/Stream";
@@ -15,6 +18,7 @@ import WalletModal from "./components/WalletModal";
 import { history } from "./redux/store";
 import { setAddresses } from "./redux/ducks/addresses";
 import { Web3Connect, startWatching, initialize } from "./redux/ducks/web3connect";
+import ModalWithImage from "./components/ModalWithImage";
 
 class App extends Component {
   componentDidMount() {
@@ -38,7 +42,7 @@ class App extends Component {
   }
 
   render() {
-    const { initialized, networkId, web3 } = this.props;
+    const { initialized, networkId, t, web3 } = this.props;
     if (!initialized) {
       return <noscript />;
     }
@@ -48,18 +52,23 @@ class App extends Component {
     const hasCorrectNetworkId = networkId == (process.env.REACT_APP_NETWORK_ID || 1);
     return (
       <div id="app-container">
-        <Web3Connect />
-        <ConnectedRouter className="app-container" history={history}>
-          <Header />
-          <Switch>
-            <Route exact path="/" component={PayWithSablier} />
-            <Route exact path="/dashboard" component={Dashboard} />
-            <Route exact path="/stream/:rawStreamId?" component={Stream} />
-            <Redirect exact to="/" />
-          </Switch>
-          {initialized && web3 && hasSetNetworkId && !hasCorrectNetworkId ? <NetworkModal /> : null}
-          {initialized && !web3 ? <WalletModal /> : null}
-        </ConnectedRouter>
+        <MediaQuery query="(min-width: 812px)">
+          <Web3Connect />
+          <ConnectedRouter className="app-container" history={history}>
+            <Header />
+            <Switch>
+              <Route exact path="/" component={PayWithSablier} />
+              <Route exact path="/dashboard" component={Dashboard} />
+              <Route exact path="/stream/:rawStreamId?" component={Stream} />
+              <Redirect exact to="/" />
+            </Switch>
+            {initialized && web3 && hasSetNetworkId && !hasCorrectNetworkId ? <NetworkModal /> : null}
+            {initialized && !web3 ? <WalletModal /> : null}
+          </ConnectedRouter>
+        </MediaQuery>
+        <MediaQuery query="(max-width: 812px)">
+          <ModalWithImage buttonLabel={t("okay")} image={FaBan} label={t("mobileBan")} onClose={() => {}} />
+        </MediaQuery>
       </div>
     );
   }
@@ -78,4 +87,4 @@ export default connect(
     initialize: () => dispatch(initialize()),
     startWatching: () => dispatch(startWatching()),
   }),
-)(App);
+)(withTranslation()(App));

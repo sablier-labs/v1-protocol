@@ -45,6 +45,7 @@
     "react-i18next": "^10.10.0",
     "react-onclickoutside": "^6.8.0",
     "react-redux": "^6.0.1",
+    "react-responsive": "^6.1.2",
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
     "react-table": "^6.10.0",

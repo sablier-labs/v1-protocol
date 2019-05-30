@@ -202,8 +202,9 @@ class Dashboard extends Component {
         <Link className="dashboard__plus-icon-container" to={"/"}>
           <img className="dashboard__plus-icon" alt="New Stream" src={FaPlus} />
         </Link>
-        <Query query={GET_STREAMS} variables={{ owner: account }}>
+        <Query query={GET_STREAMS} variables={{ owner: account.toLowerCase() }}>
           {({ loading, error, data }) => {
+            console.log({ loading, error, data });
             return (
               <div>
                 {!loading ? null : <Loader className="dashboard__loader" delay={100} />}
