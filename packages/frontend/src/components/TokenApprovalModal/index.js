@@ -67,13 +67,17 @@ class TokenApprovalModal extends Component {
     return true;
   }
 
-  onSubmit() {
+  async onSubmit() {
     const { account, addPendingTx, sablierAddress, tokenAddress, web3 } = this.props;
     // Set allowance to maximum value possible so that we don't have to ask the user again
     const allowance = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+    let gasPrice = "8000000000";
+    try {
+      gasPrice = await web3.eth.getGasPrice();
+    } catch {}
     new web3.eth.Contract(ERC20ABI, tokenAddress).methods
       .approve(sablierAddress, allowance)
-      .send({ from: account })
+      .send({ from: account, gasPrice })
       .once("transactionHash", (transactionHash) => {
         addPendingTx(transactionHash);
         this.setState({ submitted: true });

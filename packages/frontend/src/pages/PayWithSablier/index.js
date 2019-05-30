@@ -188,7 +188,7 @@ class PayWithSablier extends Component {
     this.setState({ tokenAddress, tokenSymbol });
   }
 
-  onSubmit() {
+  async onSubmit() {
     const { account, addPendingTx, balances, sablierAddress, t, web3 } = this.props;
     const { interval, payment, recipient, tokenAddress } = this.state;
 
@@ -217,9 +217,13 @@ class PayWithSablier extends Component {
     const adjustedPayment = new BN(payment).multipliedBy(10 ** decimals).toFixed(0);
     const intervalInBlocks = this.getBlockDeltaForInterval(interval).toNumber();
 
+    let gasPrice = "8000000000";
+    try {
+      gasPrice = await web3.eth.getGasPrice();
+    } catch {}
     new web3.eth.Contract(SablierABI, sablierAddress).methods
       .createStream(account, recipient, tokenAddress, startBlock, stopBlock, adjustedPayment, intervalInBlocks)
-      .send({ from: account })
+      .send({ from: account, gasPrice })
       .once("transactionHash", (transactionHash) => {
         addPendingTx(transactionHash);
         this.subscribeToRawStreamId();

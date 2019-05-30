@@ -53,12 +53,16 @@ class RedeemModal extends Component {
     this.props.onClose();
   }
 
-  onSubmitRedeem() {
+  async onSubmitRedeem() {
     const { account, addPendingTx, sablierAddress, stream, web3 } = this.props;
 
+    let gasPrice = "8000000000";
+    try {
+      gasPrice = await web3.eth.getGasPrice();
+    } catch {}
     new web3.eth.Contract(SablierABI, sablierAddress).methods
       .redeemStream(stream.rawStreamId)
-      .send({ from: account })
+      .send({ from: account, gasPrice })
       .once("transactionHash", (transactionHash) => {
         addPendingTx(transactionHash);
         this.setState({ submitted: true });

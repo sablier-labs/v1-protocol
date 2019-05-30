@@ -83,14 +83,18 @@ class WithdrawModal extends Component {
     this.props.onClose();
   }
 
-  onSubmitWithdraw() {
+  async onSubmitWithdraw() {
     const { account, addPendingTx, sablierAddress, stream, web3 } = this.props;
     const { amountToWithdraw } = this.state;
 
     const adjustedAmount = new BN(amountToWithdraw).multipliedBy(10 ** stream.token.decimals).toFixed(0);
+    let gasPrice = "8000000000";
+    try {
+      gasPrice = await web3.eth.getGasPrice();
+    } catch {}
     new web3.eth.Contract(SablierABI, sablierAddress).methods
       .withdrawFromStream(stream.rawStreamId, adjustedAmount)
-      .send({ from: account })
+      .send({ from: account, gasPrice })
       .once("transactionHash", (transactionHash) => {
         addPendingTx(transactionHash);
         this.setState({ submitted: true });
