@@ -70,6 +70,7 @@ class RedeemModal extends Component {
 
   render() {
     const { hasPendingTransactions, stream, t } = this.props;
+    const { submissionError } = this.state;
 
     return (
       <Modal
@@ -116,6 +117,7 @@ class RedeemModal extends Component {
             label={t("redeem.verbatim")}
             loading={hasPendingTransactions}
           />
+          {!submissionError ? null : <div className={classnames("withdraw-modal__error-label")}>{submissionError}</div>}
         </div>
       </Modal>
     );

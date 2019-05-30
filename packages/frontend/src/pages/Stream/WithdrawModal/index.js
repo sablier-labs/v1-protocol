@@ -102,7 +102,7 @@ class WithdrawModal extends Component {
 
   render() {
     const { hasPendingTransactions, stream, t } = this.props;
-    const { amountToWithdraw, error } = this.state;
+    const { amountToWithdraw, submissionError } = this.state;
 
     const isWithdrawable = stream.funds.withdrawable !== 0;
     const disabled = !isWithdrawable || hasPendingTransactions;
@@ -156,8 +156,8 @@ class WithdrawModal extends Component {
               })
             }
           />
+          {!submissionError ? null : <div className={classnames("withdraw-modal__error-label")}>{submissionError}</div>}
         </div>
-        {!error ? null : <div className={classnames("withdraw-modal__error-label")}>{error}</div>}
       </Modal>
     );
   }
