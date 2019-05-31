@@ -10,6 +10,7 @@
   bottom: 96px;
   left: 120px;
   color: $space-cadet-black;
+  overflow-y: auto;
 
   &__button {
     width: 100%;
@@ -26,6 +27,7 @@
     width: 54%;
     height: 100%;
     padding: 72px 32px 52px 72px;
+    overflow-y: auto;
   }
 
   &__form-item {
@@ -95,18 +97,16 @@
 }
 
 .pay-with-sablier__receipt {
-  &__container {
-    @extend %col-nowrap;
-    max-width: 40%;
-    max-height: 720px;
-    align-items: center;
-    flex-grow: 1;
-    box-shadow: $glitter-gray 0 0 0 2px inset;
-    border-radius: 4px;
-    margin: 106px 56px auto 32px;
-    padding: 28px 20px;
-    text-align: center;
-  }
+  @extend %col-nowrap;
+  max-width: 40%;
+  max-height: 720px;
+  align-items: center;
+  flex-grow: 1;
+  box-shadow: $glitter-gray 0 0 0 2px inset;
+  border-radius: 4px;
+  margin: 106px 56px auto 32px;
+  padding: 28px 20px;
+  text-align: center;
 
   &__deposit-button {
     margin-top: 16px;

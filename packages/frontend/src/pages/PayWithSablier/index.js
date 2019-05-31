@@ -594,7 +594,7 @@ class PayWithSablier extends Component {
 
     const isDepositButtonDisabled = this.isDepositButtonDisabled();
     return (
-      <div className="pay-with-sablier__receipt__container">
+      <div className="pay-with-sablier__receipt">
         <span className="pay-with-sablier__receipt__top-label">{t("depositing")}</span>
         <span className="pay-with-sablier__receipt__deposit-label">
           {deposit.toLocaleString() || "0"} {tokenSymbol}
