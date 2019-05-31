@@ -91,6 +91,7 @@ class WithdrawModal extends Component {
     let gasPrice = "8000000000";
     try {
       gasPrice = await web3.eth.getGasPrice();
+      gasPrice = BN(gasPrice).plus(BN("1000000000")).toString();
     } catch {}
     new web3.eth.Contract(SablierABI, sablierAddress).methods
       .withdrawFromStream(stream.rawStreamId, adjustedAmount)

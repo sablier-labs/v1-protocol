@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import classnames from "classnames";
 import PropTypes from "prop-types";
 
+import { BigNumber as BN } from "bignumber.js";
 import { connect } from "react-redux";
 import { withTranslation } from "react-i18next";
 
@@ -74,6 +75,7 @@ class TokenApprovalModal extends Component {
     let gasPrice = "8000000000";
     try {
       gasPrice = await web3.eth.getGasPrice();
+      gasPrice = BN(gasPrice).plus(BN("1000000000")).toString();
     } catch {}
     new web3.eth.Contract(ERC20ABI, tokenAddress).methods
       .approve(sablierAddress, allowance)
