@@ -4,11 +4,11 @@
   @extend %frame, %row-nowrap;
   width: calc(100vw - 240px);
   height: calc(100vh - 240px);
-  position: absolute;
-  top: 144px;
-  right: 120px;
   bottom: 96px;
   left: 120px;
+  position: absolute;
+  right: 120px;
+  top: 144px;
   color: $space-cadet-black;
   overflow-y: auto;
 
@@ -93,6 +93,12 @@
 
   &__recipient-icon {
     margin-right: 16px;
+  }
+
+    @media only screen and (max-height: 900px) {
+    height: calc(100vh - 144px);
+    bottom: 44px;
+    top: 100px;
   }
 }
 
