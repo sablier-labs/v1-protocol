@@ -41,15 +41,27 @@ class App extends Component {
     });
   }
 
+  renderModals() {
+    const { initialized, networkId, t, web3 } = this.props;
+    const hasSetNetworkId = this.hasSetNetworkId;
+    // eslint-disable-next-line eqeqeq
+    const hasCorrectNetworkId = networkId == (process.env.REACT_APP_NETWORK_ID || 1);
+
+    if (initialized && web3 && hasSetNetworkId && !hasCorrectNetworkId) {
+      return <NetworkModal />;
+    }
+    if (initialized && !web3) {
+      return <WalletModal />;
+    }
+    return null;
+  }
+
   render() {
     const { initialized, networkId, t, web3 } = this.props;
     if (!initialized) {
       return <noscript />;
     }
 
-    const hasSetNetworkId = this.hasSetNetworkId;
-    // eslint-disable-next-line eqeqeq
-    const hasCorrectNetworkId = networkId == (process.env.REACT_APP_NETWORK_ID || 1);
     return (
       <div id="app-container">
         <MediaQuery query="(min-width: 812px)">
@@ -62,8 +74,7 @@ class App extends Component {
               <Route exact path="/stream/:rawStreamId?" component={Stream} />
               <Redirect exact to="/" />
             </Switch>
-            {initialized && web3 && hasSetNetworkId && !hasCorrectNetworkId ? <NetworkModal /> : null}
-            {initialized && !web3 ? <WalletModal /> : null}
+            {this.renderModals()}
           </ConnectedRouter>
         </MediaQuery>
         <MediaQuery query="(max-width: 812px)">
