@@ -135,9 +135,9 @@ class PayWithSablier extends Component {
     this.setState({ submitted: false, submissionError: err.toString() || t("error") });
   }
 
-  isDepositButtonDisabled() {
+  isDepositInvalid() {
     const { web3 } = this.props;
-    const { interval, payment, recipient, startTime, stopTime, tokenAddress } = this.state;
+    const { deposit, interval, payment, recipient, startTime, stopTime, tokenAddress } = this.state;
 
     if (
       !tokenAddress ||
@@ -145,7 +145,8 @@ class PayWithSablier extends Component {
       interval === 0 ||
       !isDayJs(startTime) ||
       !isDayJs(stopTime) ||
-      !web3.utils.isAddress(recipient)
+      !web3.utils.isAddress(recipient) ||
+      !deposit
     ) {
       return true;
     } else {
@@ -202,7 +203,8 @@ class PayWithSablier extends Component {
       this.isPaymentInvalid() ||
       this.isIntervalInvalid() ||
       this.isTimesInvalid() ||
-      this.isRecipientInvalid()
+      this.isRecipientInvalid() ||
+      this.isDepositInvalid()
     ) {
       return;
     }
@@ -598,7 +600,7 @@ class PayWithSablier extends Component {
     const { hasPendingTransactions, t } = this.props;
     const { deposit, duration, submitted, submissionError, tokenSymbol } = this.state;
 
-    const isDepositButtonDisabled = this.isDepositButtonDisabled();
+    const isDepositInvalid = this.isDepositInvalid();
     return (
       <div className="pay-with-sablier__receipt">
         <span className="pay-with-sablier__receipt__top-label">{t("depositing")}</span>
@@ -626,7 +628,7 @@ class PayWithSablier extends Component {
         />
         <PrimaryButton
           className={classnames("pay-with-sablier__button", "pay-with-sablier__receipt__deposit-button")}
-          disabled={isDepositButtonDisabled}
+          disabled={isDepositInvalid}
           label={t("streamMoney")}
           loading={hasPendingTransactions && submitted}
           onClick={() =>
