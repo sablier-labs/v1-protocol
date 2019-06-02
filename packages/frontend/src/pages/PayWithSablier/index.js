@@ -105,15 +105,15 @@ class PayWithSablier extends Component {
   getBlockDeltaForInterval(interval) {
     const minutes = getMinutesForInterval(interval);
     const blockTimeAverageMinutes = MAINNET_BLOCK_TIME_AVERAGE.dividedBy(BN(60));
-    return BN(minutes.dividedBy(blockTimeAverageMinutes).toFixed(0));
+    return minutes.dividedBy(blockTimeAverageMinutes);
   }
 
   getBlockDeltaFromNow(time) {
     const { block } = this.props;
     const now = block.timestamp.unix();
     const delta = Math.abs(time.subtract(now, "second").unix());
-    const deltaBN = BN(delta);
-    return BN(block.number.plus(deltaBN.dividedBy(MAINNET_BLOCK_TIME_AVERAGE)).toFixed(0));
+    const deltaInBlocks = BN(delta).dividedBy(MAINNET_BLOCK_TIME_AVERAGE);
+    return BN(block.number.plus(deltaInBlocks).toFixed(0));
   }
 
   getStartAndStopBlock() {
@@ -215,12 +215,18 @@ class PayWithSablier extends Component {
     const { startBlock, stopBlock } = this.getStartAndStopBlock();
     const decimals = balances[tokenAddress][account].decimals;
     const adjustedPayment = new BN(payment).multipliedBy(10 ** decimals).toFixed(0);
-    const intervalInBlocks = this.getBlockDeltaForInterval(interval).toNumber();
+    const intervalInBlocks = this.getBlockDeltaForInterval(interval)
+      .toNumber()
+      .toFixed(0);
+
+    console.log({ startBlock, stopBlock, decimals, adjustedPayment, intervalInBlocks });
 
     let gasPrice = "8000000000";
     try {
       gasPrice = await web3.eth.getGasPrice();
-      gasPrice = BN(gasPrice).plus(BN("1000000000")).toString();
+      gasPrice = BN(gasPrice || "0")
+        .plus(BN("1000000000"))
+        .toString();
     } catch {}
     new web3.eth.Contract(SablierABI, sablierAddress).methods
       .createStream(account, recipient, tokenAddress, startBlock, stopBlock, adjustedPayment, intervalInBlocks)
