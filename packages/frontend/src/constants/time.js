@@ -6,13 +6,13 @@ export const SABLIER_FORMAT_MONTH = "MMM YYYY";
 export const SABLIER_FORMAT_HOUR = "DD MMM YYYY @ h:00a";
 
 /**
- * We gauge time using blocks which, on Ethereum, are mined once per 15 seconds.
- * We use that interval as the fundamental time unit of Sablier.
+ * We gauge time using blocks which, on Ethereum, are mined roughly once per 15 seconds.
+ * We use that interval as the most basic time unit of Sablier.
  *
  * @see https://twitter.com/PaulRBerg/status/1132368476918702080?
  * @see https://twitter.com/PaulRBerg/status/1123139665647808512
  */
-export const MAINNET_BLOCK_TIME_AVERAGE = BN(14);
+export const MAINNET_BLOCK_TIME_AVERAGE = BN(15);
 
 export const INTERVALS = {
   minute: "Minute",
