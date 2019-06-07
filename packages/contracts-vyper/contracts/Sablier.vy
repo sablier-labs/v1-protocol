@@ -1,6 +1,11 @@
 import IERC1620 as foobar
 from vyper.interfaces import ERC20
 
+#   @title Sablier - ERC Money Streaming Implementation
+#   @author Paul Berg - <hello@paulrberg.com>
+
+
+#    Types     
 
 struct Timeframe: 
      start: uint256
@@ -16,6 +21,9 @@ struct Stream:
      rate: Rate
      balanceStream: uint256
 
+#   Events
+
+
 CreateStream: event({streamId: indexed(uint256), sender: indexed(address), recipient: indexed(address), tokenAddress: address, startBlock: uint256, stopBlock: uint256, payment: uint256, interval: uint256, deposit: uint256})
 
 WithdrawFromStream: event({streamId: indexed(uint256), recipient: indexed(address), amount: uint256})
@@ -29,12 +37,16 @@ newPayment: uint256, newInterval: uint256})
 
 ExecuteUpdate: event({ streamId: indexed(uint256), sender: indexed(address), recipient: indexed(address), newTokenAddress: address, newStopBlock: uint256, newPayment: uint256, newInterval: uint256})
 
+#    Storage
+
 
 streams: map(uint256, Stream)
 streamNonce: uint256
 updates: map(uint256, map(address, bool))
 
 ERC20_contract: ERC20
+
+#   Functions
 
 @public
 def __init__():
