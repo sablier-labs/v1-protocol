@@ -162,9 +162,9 @@ class PayWithSablier extends Component {
       return false;
     }
 
-    const { value: allowance, symbol, decimals } = selectors().getApprovals(tokenAddress, account, sablierAddress);
+    const { value: allowance, decimals } = selectors().getApprovals(tokenAddress, account, sablierAddress);
     const depositBN = new BN(deposit).multipliedBy(10 ** decimals);
-    if (!symbol || allowance.isGreaterThan(depositBN)) {
+    if (allowance.isGreaterThan(depositBN)) {
       return false;
     }
 
@@ -193,11 +193,6 @@ class PayWithSablier extends Component {
     const { account, addPendingTx, balances, sablierAddress, t, web3 } = this.props;
     const { interval, payment, recipient, tokenAddress } = this.state;
 
-    if (this.isUnapproved()) {
-      this.setState({ showTokenApprovalModal: true });
-      return;
-    }
-
     if (
       this.isTokenInvalid() ||
       this.isPaymentInvalid() ||
@@ -206,6 +201,11 @@ class PayWithSablier extends Component {
       this.isRecipientInvalid() ||
       this.isDepositInvalid()
     ) {
+      return;
+    }
+
+    if (this.isUnapproved()) {
+      this.setState({ showTokenApprovalModal: true });
       return;
     }
 
@@ -220,8 +220,6 @@ class PayWithSablier extends Component {
     const intervalInBlocks = this.getBlockDeltaForInterval(interval)
       .toNumber()
       .toFixed(0);
-
-    console.log({ startBlock, stopBlock, decimals, adjustedPayment, intervalInBlocks });
 
     let gasPrice = "8000000000";
     try {
