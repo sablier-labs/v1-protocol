@@ -25,12 +25,10 @@
     "clean_node_modules": "lerna clean --yes; shx rm -rf node_modules",
     "commit": "git-cz",
     "fixpack": "lerna exec --parallel -- yarn fixpack; fixpack",
-    "install:all": "yarn install",
     "lerna": "lerna",
     "lint": "yarn wsrun --package $PKG --parallel -c lint",
     "prettier": "prettier --config .prettierrc --write '**/*.{js,jsx,ts,tsx,json,md}'",
     "prettier:ci": "prettier --config .prettierrc --list-different '**/*.{js,jsx,ts,tsx,json,md}'",
-    "rebuild": "run-s clean build",
     "test": "yarn wsrun --package $PKG --serial -c test",
     "watch": "yarn wsrun --package $PKG --parallel -c watch",
     "wsrun": "wsrun --exclude-missing --fast-exit"
