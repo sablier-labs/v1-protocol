@@ -10,7 +10,7 @@
     "url": "https://github.com/SablierApp/sablier/issues"
   },
   "devDependencies": {
-    "@0x/sol-coverage": "^3.0.2",
+    "@0x/sol-coverage": "^3.0.5",
     "@0x/sol-profiler": "^3.1.4",
     "@0x/sol-trace": "^2.0.10",
     "@0x/subproviders": "^4.0.4",
@@ -26,7 +26,7 @@
     "shx": "^0.3.2",
     "solc": "^0.5.8",
     "solhint": "^2.0.0",
-    "truffle": "^5.0.19",
+    "truffle": "^5.0.21",
     "truffle-assertions": "^0.8.2",
     "truffle-hdwallet-provider": "^1.0.6",
     "truffle-security": "^1.4.4",
