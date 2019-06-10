@@ -71,7 +71,6 @@ def verifyTerms(_tokenAddress: address, _startBlock: uint256, _stopBlock: uint25
 def onlyNewTerms(_streamId: uint256, _tokenAddress: address, _stopBlock: uint256, _payment: uint256, _interval:uint256) -> bool:
 
 	    assert self.streams[_streamId].tokenAddress != _tokenAddress or  self.streams[_streamId].timeframe.stopTime != _stopBlock or \
-
             self.streams[_streamId].rate.payment != _payment or self.streams[_streamId].rate.interval != _interval, \
             "stream has these terms already"
 	    return True

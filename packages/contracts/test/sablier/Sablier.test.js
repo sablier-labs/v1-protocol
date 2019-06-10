@@ -292,11 +292,11 @@ contract("Sablier", function([_, sender, recipient, malicious, innocent]) {
       await shouldRedeemStream();
 
       // while the stream is ongoing
-      await createStream();
-      await web3.utils.advanceBlock(vars.offset);
-      await shouldRedeemStream();
+     await createStream();
+     await web3.utils.advanceBlock(vars.offset);
+     await shouldRedeemStream();
 
-      // after the blockchain passed the stop block
+     // after the blockchain passed the stop block
       await createStream();
       await web3.utils.advanceBlock(vars.delta + vars.offset);
       await shouldRedeemStream();
