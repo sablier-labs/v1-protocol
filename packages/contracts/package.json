@@ -1,7 +1,7 @@
 {
   "name": "@sablier/contracts",
   "description": "Ethereum contracts for the Sablier dApp",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": {
     "name": "Paul Berg",
     "url": "https://paulrberg.com"
@@ -24,7 +24,7 @@
     "ganache-cli": "^6.4.1",
     "istanbul": "^0.4.5",
     "shx": "^0.3.2",
-    "solc": "^0.5.8",
+    "solc": "^0.5.9",
     "solhint": "^2.0.0",
     "truffle": "^5.0.19",
     "truffle-assertions": "^0.8.2",

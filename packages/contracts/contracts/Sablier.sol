@@ -1,4 +1,4 @@
-pragma solidity 0.5.8;
+pragma solidity 0.5.9;
 
 import "./interfaces/IERC1620.sol";
 import "./zeppelin/IERC20.sol";
@@ -244,7 +244,7 @@ contract Sablier is IERC1620 {
         streamNonce = streamNonce.add(1);
 
         // apply Checks-Effects-Interactions
-        tokenContract.transferFrom(_sender, address(this), deposit);
+        require(tokenContract.transferFrom(_sender, address(this), deposit), "initial deposit failed");
     }
 
     function withdrawFromStream(
@@ -263,8 +263,7 @@ contract Sablier is IERC1620 {
         emit WithdrawFromStream(_streamId, stream.recipient, _amount);
 
         // saving gas
-        uint256 deposit = depositOf(_streamId);
-        if (_amount == deposit) {
+        if (streams[_streamId].balance == 0) {
             delete streams[_streamId];
             updates[_streamId][stream.sender] = false;
             updates[_streamId][stream.recipient] = false;
@@ -272,7 +271,7 @@ contract Sablier is IERC1620 {
 
         // saving gas by checking beforehand
         if (_amount > 0)
-            IERC20(stream.tokenAddress).transfer(stream.recipient, _amount);
+            require(IERC20(stream.tokenAddress).transfer(stream.recipient, _amount), "erc20 transfer failed");
     }
 
     function redeemStream(uint256 _streamId)
@@ -296,13 +295,12 @@ contract Sablier is IERC1620 {
         updates[_streamId][stream.sender] = false;
         updates[_streamId][stream.recipient] = false;
 
-        // reverts when the token address is not an ERC20 contract
         IERC20 tokenContract = IERC20(stream.tokenAddress);
         // saving gas by checking beforehand
         if (recipientAmount > 0)
-            tokenContract.transfer(stream.recipient, recipientAmount);
+            require(tokenContract.transfer(stream.recipient, recipientAmount), "erc20 transfer failed");
         if (senderAmount > 0)
-            tokenContract.transfer(stream.sender, senderAmount);
+            require(tokenContract.transfer(stream.sender, senderAmount), "erc20 transfer failed");
     }
 
     function confirmUpdate(

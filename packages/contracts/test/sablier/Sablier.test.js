@@ -219,6 +219,10 @@ contract("Sablier", function([_, sender, recipient, malicious, innocent]) {
         `wallet balance of ${recipient} is not ${expectedWalletBalance}`,
       );
 
+      if (previousContractBalance === fundsToWithdraw) {
+        return { walletBalance, contractBalance: 0 };
+      }
+
       // contract balance
       const blockNumber = await web3.eth.getBlockNumber();
       const contractBalance = new BigNumber(
