@@ -1,6 +1,6 @@
 <p align="center"><img src="https://i.imgur.com/CGFvZW3.png" width="280px"/></p>
 
-<p align="center">Sablier is a decentralised app for continuous payments on Ethereum. Read this <a href="https://twitter.com/SablierApp" target="_blank">article</a> to find our more about our mission. Check out a demo video <a href="https://youtu.be/GEFb6JgX4TU" target="_blank">here</a>.</p>
+<p align="center">Sablier is a decentralised app for continuous payments on Ethereum. Read this <a href="https://medium.com/sablier-app/introducing-sablier-continuous-payments-on-ethereum-c2bf04446d31" target="_blank">article</a> to find our more about our mission. Check out a demo video <a href="https://www.youtube.com/watch?v=2onYeCwAY3c" target="_blank">here</a>.</p>
 
 <p align="center">
   <a href="https://app.netlify.com/sites/infallible-visvesvaraya-6d594e/deploys">
