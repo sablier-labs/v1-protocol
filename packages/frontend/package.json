@@ -62,7 +62,6 @@
   },
   "devDependencies": {
     "commitizen": "^3.0.7",
-    "eslint": "^5.15.3",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-import": "^2.16.0",
@@ -70,7 +69,7 @@
     "lerna": "^3.13.1",
     "node-sass": "^4.11.0",
     "prettier": "^1.16.4",
-    "react-scripts": "2.1.8",
+    "react-scripts": "3.0.1",
     "wsrun": "^3.6.4"
   },
   "eslintConfig": {
