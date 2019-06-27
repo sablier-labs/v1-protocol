@@ -20,6 +20,10 @@ indent_size=2
 [*.graphql]
 indent_size=2
 
+# HTML
+[*.html]
+indent_size=2
+
 # JavaScript
 [*.js]
 indent_size=2
