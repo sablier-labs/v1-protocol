@@ -1,6 +1,11 @@
 {
   "name": "@sablier/landing",
+  "description": "Sablier landing page",
   "version": "0.0.1",
+  "author": {
+    "name": "Paul Berg",
+    "url": "https://paulrberg.com"
+  },
   "private": true,
   "dependencies": {
     "classnames": "^2.2.6",
@@ -23,6 +28,7 @@
   "eslintConfig": {
     "extends": "react-app"
   },
+  "homepage": "https://sablier.app",
   "browserslist": {
     "production": [
       ">0.2%",
