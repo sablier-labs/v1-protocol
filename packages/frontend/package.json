@@ -1,6 +1,6 @@
 {
   "name": "@sablier/frontend",
-  "description": "Sablier frontend",
+  "description": "Sablier beta app",
   "version": "0.0.1",
   "author": {
     "name": "Paul Berg",
@@ -75,7 +75,7 @@
   "eslintConfig": {
     "extends": "react-app"
   },
-  "homepage": "https://sablier.app",
+  "homepage": "https://beta.sablier.app",
   "license": "LGPL-3.0",
   "private": true,
   "scripts": {

@@ -1,11 +1,11 @@
 module.exports = {
   menu: {
-    docs: "https://sablier.app",
+    docs: "https://beta.sablier.app",
     github: "https://github.com/SablierApp/sablier",
     twitter: "https://twitter.com/SablierApp",
   },
   share: {
-    sablier: "https://sablier.app",
+    sablier: "https://beta.sablier.app",
   },
   wallets: {
     brave: {
@@ -22,9 +22,9 @@ module.exports = {
     },
     trust: {
       android:
-        "https://links.trustwalletapp.com/a/key_live_lfvIpVeI9TFWxPCqwU8rZnogFqhnzs4D?&event=openURL&url=https://sablier.app",
+        "https://links.trustwalletapp.com/a/key_live_lfvIpVeI9TFWxPCqwU8rZnogFqhnzs4D?&event=openURL&url=https://beta.sablier.app",
       ios:
-        "https://links.trustwalletapp.com/a/key_live_lfvIpVeI9TFWxPCqwU8rZnogFqhnzs4D?&event=openURL&url=https://sablier.app",
+        "https://links.trustwalletapp.com/a/key_live_lfvIpVeI9TFWxPCqwU8rZnogFqhnzs4D?&event=openURL&url=https://beta.sablier.app",
     },
   },
 };
