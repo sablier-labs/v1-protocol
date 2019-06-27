@@ -1,0 +1,231 @@
+@import "../../styles/variables.scss";
+
+.landing {
+  display: flex;
+  width: 100vw;
+  min-height: 100vh;
+  flex-flow: column nowrap;
+  padding: 12px 200px 24px 188px;
+  background: $anti-flash-white;
+
+  &__content-container {
+    height: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    flex-grow: 1;
+  }
+
+  &__email-input {
+    flex-grow: 1;
+    padding-left: 16px;
+    background: $white;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    font-size: 15px;
+  }
+
+  &__email-input::placeholder {
+    color: $rhythm-gray;
+  }
+
+  &__error-container {
+    width: 520px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: #f2dede;
+    border-radius: 8px;
+    color: $pale-carmine-red;
+    font-size: 15px;
+  }
+
+  &__error-container--disabled {
+    display: none;
+  }
+
+  &__form-container {
+    margin-top: 40px;
+  }
+
+  &__header-container {
+    height: 64px;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+  }
+
+  &__header-container__logo {
+    width: 132px;
+    object-fit: cover;
+    margin-left: -16px;
+  }
+
+  &__label-container {
+    display: flex;
+    flex-flow: column nowrap;
+    margin-top: 188px;
+  }
+
+  &__loader {
+    width: 22px;
+    height: 22px;
+    border-left-color: $raisin-black;
+    border-top-color: $raisin-black;
+  }
+
+  &__registration-container {
+    height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    margin-right: 16px;
+  }
+
+  &__menu-container {
+    margin-left: 8px;
+    margin-top: 3px;
+  }
+
+  &__menu-item {
+    margin-left: 40px;
+    color: $rhythm-gray;
+    font-size: 15px;
+  }
+
+  &__menu-item:hover {
+    opacity: 0.85;
+    text-decoration: underline;
+  }
+
+  &__spacer {
+    flex-grow: 1;
+  }
+
+  &__submit-container {
+    width: 520px;
+    height: 56px;
+    display: flex;
+    flex-flow: row nowrap;
+  }
+
+  &__submit-button {
+    width: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $sandy-yellow;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    color: $raisin-black;
+    font-size: 15px;
+    text-align: center;
+  }
+
+  &__submit-button:hover {
+    cursor: pointer;
+  }
+
+  &__subtitle-label {
+    max-width: 80%;
+    margin-left: 4px;
+    margin-top: 20px;
+    font-size: 19px;
+    color: $rhythm-gray;
+    line-height: 32px;
+  }
+
+  &__title-label {
+    font-size: 64px;
+    font-family: "Financier Display Semibold";
+    color: $space-cadet-black;
+    line-height: 68px;
+  }
+}
+
+@media (max-width: 812px) {
+  .landing {
+    min-height: 100vh;
+    padding: 8px 12px;
+
+    &__content-container {
+      flex-flow: column nowrap;
+    }
+
+    &__error-container {
+      width: 85%;
+      height: 56px;
+    }
+
+    &__header-container {
+      justify-content: center;
+    }
+
+    &__label-container {
+      align-items: center;
+      margin-top: 56px;
+    }
+
+    &__menu-container {
+      display: none;
+    }
+
+    &__registration-container {
+      align-items: center;
+      justify-content: center;
+      margin-right: 0px;
+    }
+
+    &__submit-button {
+      font-size: 15px;
+    }
+
+    &__submit-container {
+      width: 90%;
+    }
+
+    &__title-label {
+      font-size: 52px;
+      line-height: 52px;
+      text-align: center;
+    }
+
+    &__subtitle-label {
+      width: 100%;
+      max-width: none;
+      margin: 24px 24px 12px;
+      font-size: 16px;
+      line-height: 28px;
+      text-align: center;
+    }
+  }
+}
+
+/* Device */
+
+.landing__device-container {
+  height: 100%;
+  align-items: center;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+}
+
+.device-iphone-x {
+  width: 392px;
+  height: 800px;
+  margin-bottom: 24px;
+}
+
+.device-iphone-x .device-content {
+  width: 338px;
+  height: 736px;
+}
+
+.device-iphone-x .device-frame {
+  width: 392px;
+  height: 800px;
+}
+
+@media (max-width: 812px) {
+  .landing__device-container {
+    display: none;
+  }
+}
