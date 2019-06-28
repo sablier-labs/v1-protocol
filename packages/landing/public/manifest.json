@@ -1,0 +1,13 @@
+{
+  "short_name": "Sablier",
+  "name": "Sablier: Continuous Salaries",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "440x440"
+    }
+  ],
+  "background_color": "#f3f3f8",
+  "theme_color": "#f4a261"
+}
