@@ -1778,7 +1778,7 @@ var Month = (function(_React$Component) {
         className: this.getClassNames(),
         onMouseLeave: this.handleMouseLeave,
         role: "listbox",
-        "aria-label": "month-" + formatDate(this.props.day, "YYYY-MM"),
+        "aria-label": "month-" + formatDate(this.props.day, "yyyy-MM"),
       },
       showMonthYearPicker ? this.renderMonths() : this.renderWeeks(),
     );
