@@ -38,6 +38,7 @@ Sablier is maintained as a monorepo with multiple sub packages. Please find a co
 | Package                                   | Description  |
 | ----------------------------------------- | ------------ |
 | [`@sablier/frontend`](/packages/frontend) | Frontend app |
+| [`@sablier/landing`](/packages/landing)   | Landing page |
 
 ## Usage :hammer_and_pick:
 
