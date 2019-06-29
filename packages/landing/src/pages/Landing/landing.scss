@@ -107,7 +107,7 @@
   }
 
   &__submit-button {
-    width: 140px;
+    width: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -149,9 +149,17 @@
       flex-flow: column nowrap;
     }
 
+    &__email-input {
+      height: 56px;
+    }
+
     &__error-container {
       width: 85%;
       height: 56px;
+    }
+
+    &__form-container {
+      width: 88%;
     }
 
     &__header-container {
@@ -174,11 +182,13 @@
     }
 
     &__submit-button {
+      height: 56px;
       font-size: 15px;
     }
 
     &__submit-container {
-      width: 90%;
+      width: 100%;
+      height: auto;
     }
 
     &__title-label {

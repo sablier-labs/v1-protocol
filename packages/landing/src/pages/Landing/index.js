@@ -36,6 +36,11 @@ class Landing extends Component {
 
   onSubmit(e) {
     e.preventDefault();
+
+    if (this.state.loading) {
+      return;
+    }
+
     if (!validator.isEmail(this.state.email)) {
       this.setState({
         error: "Please enter your email address",
@@ -69,6 +74,9 @@ class Landing extends Component {
               target="_blank"
             >
               About
+            </a>
+            <a className="landing__menu-item" href="https://beta.sablier.app" rel="noopener noreferrer" target="_blank">
+              Beta
             </a>
             <a
               className="landing__menu-item"
