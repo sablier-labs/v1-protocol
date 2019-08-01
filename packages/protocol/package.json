@@ -1,5 +1,5 @@
 {
-  "name": "@sablier/contracts",
+  "name": "@sablier/protocol",
   "description": "Ethereum contracts for the Sablier dApp",
   "version": "0.0.2",
   "author": {
