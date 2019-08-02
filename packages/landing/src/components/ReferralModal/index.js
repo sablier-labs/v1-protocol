@@ -31,7 +31,7 @@ class ReferralModal extends Component {
   }
 
   onClickTwitter() {
-    const text = "Get early access to @SablierApp";
+    const text = "Get early access to @SablierHQ";
     const intent = `https://twitter.com/intent/tweet?url=${this.props.referralUrl}&text=${text}`;
     window.open(intent, "_blank");
   }

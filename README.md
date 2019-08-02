@@ -12,7 +12,7 @@
   <a href="http://commitizen.github.io/cz-cli/">
     <img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen Friendly">
   </a>
-  <a href="https://twitter.com/SablierApp">
+  <a href="https://twitter.com/SablierHQ">
     <img src="https://img.shields.io/badge/chat-twitter-38A1F3.svg?style=flat" alt="Twitter"/>
   </a>
   <a href="https://www.gnu.org/licenses/lgpl-3.0">
@@ -67,7 +67,7 @@ For all other commands, check out the contribution guide below.
 ## Contributing :raising_hand_woman:
 
 We highly encourage participation from the community to help shape the development of Sablier. If you are interested in
-contributing or have any questions, please ping us on [Twitter](https://twitter.com/SablierApp).
+contributing or have any questions, please ping us on [Twitter](https://twitter.com/SablierHQ).
 
 We use [Yarn](https://yarnpkg.com/) as a dependency manager and [Truffle](https://github.com/trufflesuite/truffle)
 as a development environment for compiling, testing, and deploying our contracts. The contracts were written in [Solidity](https://github.com/ethereum/solidity).

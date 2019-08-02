@@ -80,7 +80,7 @@ class Landing extends Component {
             </a>
             <a
               className="landing__menu-item"
-              href="https://twitter.com/SablierApp"
+              href="https://twitter.com/SablierHQ"
               rel="noopener noreferrer"
               target="_blank"
             >

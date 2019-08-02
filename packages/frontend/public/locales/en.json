@@ -67,7 +67,7 @@
     "subject": "Sablier App ⏳",
     "body": "I thought you might be interested in Sablier: a decentralized app for continuous payments on Ethereum. Check it out at https://beta.sablier.app!"
   },
-  "mobileBan": "Sablier is currently not available on mobile. Follow us on Twitter @SablierApp to be the first to know when it will be available.",
+  "mobileBan": "Sablier is currently not available on mobile. Follow us on Twitter @SablierHQ to be the first to know when it will be available.",
   "min": "Min",
   "min_plural": "Mins",
   "minute": "Minute",
@@ -112,7 +112,7 @@
   "selectAmount": "Select amount",
   "selectToken": "Select a token",
   "share": "Share",
-  "shareTwitterText": "Check out @SablierApp for continuous payments on Ethereum 💸",
+  "shareTwitterText": "Check out @SablierHQ for continuous payments on Ethereum 💸",
   "social": "Social",
   "soFar": "So far",
   "started": "Started",

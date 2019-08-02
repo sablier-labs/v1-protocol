@@ -7,7 +7,7 @@
     "url": "https://paulrberg.com"
   },
   "bugs": {
-    "url": "https://github.com/SablierApp/sablier/issues"
+    "url": "https://github.com/sablierhq/sablier/issues"
   },
   "devDependencies": {
     "@0x/sol-coverage": "^3.0.2",
@@ -35,14 +35,14 @@
   "files": [
     "/contracts"
   ],
-  "homepage": "https://github.com/SablierApp/sablier#readme",
+  "homepage": "https://github.com/sablierhq/sablier#readme",
   "license": "LGPL-3.0",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SablierApp/sablier.git"
+    "url": "git+https://github.com/sablierhq/sablier.git"
   },
   "scripts": {
     "clean": "shx rm -rf ./.0x-artifacts ./coverage.json ./build ./coverage ./coverageEnv ./export",
