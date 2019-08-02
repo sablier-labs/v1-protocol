@@ -30,8 +30,8 @@ Sablier is maintained as a monorepo with multiple sub packages. Please find a co
 
 | Package                                     | Version                                                                                                         | Description                                                 |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| [`@sablier/contracts`](/packages/contracts) | [![npm](https://img.shields.io/npm/v/@sablier/contracts.svg)](https://www.npmjs.com/package/@sablier/contracts) | Sablier solidity smart contracts & tests                    |
 | [`@sablier/dev-utils`](/packages/dev-utils) | [![npm](https://img.shields.io/npm/v/@sablier/dev-utils.svg)](https://www.npmjs.com/package/@sablier/dev-utils) | Dev utils to be shared across Sablier projects and packages |
+| [`@sablier/protocol`](/packages/protocol)   | [![npm](https://img.shields.io/npm/v/@sablier/protocol.svg)](https://www.npmjs.com/package/@sablier/protocol)   | Sablier solidity smart contracts & tests                    |
 
 ### Private Packages
 
@@ -42,9 +42,9 @@ Sablier is maintained as a monorepo with multiple sub packages. Please find a co
 
 ## Usage :hammer_and_pick:
 
-This is a dApp, so if you just want to use it, you should head to the production-ready version at [sablier.app](https://sablier.app)!
+If you simply want to check out the beta dapp, you should head to [beta.sablier.app](https://beta.sablier.app)!
 
-However, if you want to run it locally:
+If you want to run it locally:
 
 ```bash
 $ cd packages/frontend
@@ -111,7 +111,7 @@ $ yarn clean
 To clean a specific package:
 
 ```bash
-$ PKG=@sablier/contracts yarn clean
+$ PKG=@sablier/protocol yarn clean
 ```
 
 ### Lint
@@ -125,7 +125,7 @@ $ yarn lint
 To lint a specific package:
 
 ```bash
-$ PKG=@sablier/contracts yarn lint
+$ PKG=@sablier/protocol yarn lint
 ```
 
 ### Test
@@ -139,5 +139,5 @@ $ yarn test
 To run tests in a specific package:
 
 ```bash
-$ PKG=@sablier/contracts yarn test
+$ PKG=@sablier/protocol yarn test
 ```
