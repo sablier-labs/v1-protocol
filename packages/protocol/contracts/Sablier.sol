@@ -1,8 +1,9 @@
 pragma solidity 0.5.10;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+
 import "./interfaces/IERC1620.sol";
-import "./zeppelin/IERC20.sol";
-import "./zeppelin/SafeMath.sol";
 
 /// @title Sablier - ERC Money Streaming Implementation
 /// @author Paul Berg - <hello@paulrberg.com>

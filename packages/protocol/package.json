@@ -29,8 +29,8 @@
     "truffle": "^5.0.30",
     "truffle-assertions": "^0.8.2",
     "truffle-hdwallet-provider": "^1.0.15",
-    "web3": "1.0.0-beta.55",
-    "web3-utils": "1.0.0-beta.55"
+    "web3": "1.2.0",
+    "web3-utils": "1.2.0"
   },
   "files": [
     "/contracts"
@@ -54,5 +54,8 @@
     "test": "scripts/test.sh",
     "trace": "scripts/trace.sh",
     "verify": "truffle run verify contracts/Sablier.sol:Sablier contracts/interfaces/IERC1620.sol:IERC1620"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "2.3.0"
   }
 }

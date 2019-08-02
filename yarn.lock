@@ -2721,6 +2721,11 @@
     universal-user-agent "^2.0.0"
     url-template "^2.0.8"
 
+"@openzeppelin/contracts@2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-2.3.0.tgz#043961a6e37b87e0eb80647c7528a7c62c41361f"
+  integrity sha512-lf8C3oULQAnsu3OTRP4tP5/ddfil6l65Lg3JQCwAIgc99vZ1jz5qeBoETGGGmczxt+bIyMI06WPP2apC74EZag==
+
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
@@ -18920,7 +18925,7 @@ web3@1.0.0-beta.55:
     web3-shh "1.0.0-beta.55"
     web3-utils "1.0.0-beta.55"
 
-web3@^1.2.0:
+web3@1.2.0, web3@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/web3/-/web3-1.2.0.tgz#ef9c43a99eac348a85c09179690290d45a96a5f2"
   integrity sha512-iFrVAexsopX97x0ofBU/7HrCxzovf624qBkjBUeHZDf/G3Sb4tMQtjkCRc5lgVvzureq5SCqDiFDcqnw7eJ0bA==
