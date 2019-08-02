@@ -156,5 +156,4 @@ module.exports = {
       skipDryRun: true,
     },
   },
-  plugins: ["truffle-security"],
 };

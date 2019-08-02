@@ -29,7 +29,6 @@
     "truffle": "^5.0.19",
     "truffle-assertions": "^0.8.2",
     "truffle-hdwallet-provider": "^1.0.6",
-    "truffle-security": "^1.4.4",
     "web3": "1.0.0-beta.55",
     "web3-utils": "1.0.0-beta.55"
   },
