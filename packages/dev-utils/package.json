@@ -24,7 +24,7 @@
   "files": [
     "/lib"
   ],
-  "homepage": "https://github.com/sablierhq/sablier/tree/develop/packages/dev-utils#readme",
+  "homepage": "https://github.com/sablierhq/sablier/tree/master/packages/dev-utils#readme",
   "license": "LGPL-3.0",
   "main": "./lib",
   "publishConfig": {
