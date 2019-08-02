@@ -28,7 +28,7 @@
     "react-tooltip": "^3.10.0",
     "react-transition-group": "1.x",
     "sanitize.css": "^8.0.0",
-    "validator": "^11.0.0"
+    "validator": "^11.1.0"
   },
   "eslintConfig": {
     "extends": "react-app"
