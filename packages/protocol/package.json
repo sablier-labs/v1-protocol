@@ -24,7 +24,7 @@
     "ganache-cli": "^6.5.1",
     "istanbul": "^0.4.5",
     "shx": "^0.3.2",
-    "solc": "^0.5.9",
+    "solc": "^0.5.10",
     "solhint": "^2.1.2",
     "truffle": "^5.0.30",
     "truffle-assertions": "^0.8.2",

@@ -16400,7 +16400,7 @@ socks@~2.3.2:
     ip "^1.1.5"
     smart-buffer "4.0.2"
 
-solc@^0.5.5, solc@^0.5.9:
+solc@^0.5.10, solc@^0.5.5:
   version "0.5.10"
   resolved "https://registry.yarnpkg.com/solc/-/solc-0.5.10.tgz#e57d789b1028f3d35f7989e5134d6ddc0e3b32aa"
   integrity sha512-Stdrh/MDkopsXYPRzPehTNYuV80Grr2CnQMuFvWj+EeRVbe3piGHxW47KebWn1sGdmK8FLaMfUehccqJP0KovQ==
@@ -19095,7 +19095,6 @@ websocket@^1.0.28:
 
 "websocket@github:frozeman/WebSocket-Node#browserifyCompatible":
   version "1.0.26"
-  uid "6c72925e3f8aaaea8dc8450f97627e85263999f2"
   resolved "https://codeload.github.com/frozeman/WebSocket-Node/tar.gz/6c72925e3f8aaaea8dc8450f97627e85263999f2"
   dependencies:
     debug "^2.2.0"

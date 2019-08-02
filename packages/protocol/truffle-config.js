@@ -13,7 +13,7 @@ const compilerConfig = require("./compiler");
 
 // Get the address of the first account in Ganache
 async function getFirstAddress() {
-  const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+  const web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
   const addresses = await web3.eth.getAccounts();
   return addresses[0];
 }
@@ -103,6 +103,7 @@ provider.send = provider.sendAsync.bind(provider);
 const truffleOptions = {};
 const compilerSettings = { optimizer: {} };
 
+// We do this because we have to disable the optimizer while covering the contracts
 if (process.env.MODE) {
   truffleOptions.provider = provider;
   compilerSettings.optimizer.enabled = false;

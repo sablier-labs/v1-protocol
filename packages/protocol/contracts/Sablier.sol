@@ -1,4 +1,4 @@
-pragma solidity 0.5.9;
+pragma solidity 0.5.10;
 
 import "./interfaces/IERC1620.sol";
 import "./zeppelin/IERC20.sol";
