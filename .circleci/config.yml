@@ -1,0 +1,63 @@
+version: 2.0
+
+jobs:
+  build:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:10.15.3
+    steps:
+      - checkout
+      - run:
+          name: "Update NPM"
+          command: sudo npm install -g npm@6.10.2
+      - run:
+          name: "Install Yarn"
+          command: sudo npm install -g yarn@1.17.3
+      - run:
+          name: "Install Dependencies"
+          command: yarn install
+      - run:
+          name: "Build Packages"
+          command: yarn build
+      - save_cache:
+          key: repo-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/repo
+  lint:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:10.15.3
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: "Lint Packages"
+          command: yarn lint
+      - run:
+          name: "Prettier Check"
+          command: yarn prettier:ci
+  test:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:10.15.3
+      - image: trufflesuite/ganache-cli:v6.5.1
+        command: ganache-cli -i 1234 -p 8545 -e 10000000 -l 6721975
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: "Test Packages"
+          command: yarn test
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build
+      - lint:
+          requires:
+            - build
+      - test:
+          requires:
+            - build
