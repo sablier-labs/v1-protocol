@@ -35,6 +35,10 @@
   },
   "homepage": "https://sablier.app",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sablierhq/sablier.git"
+  },
   "scripts": {
     "build:react": "react-scripts build",
     "eject": "react-scripts eject",
