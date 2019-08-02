@@ -3,8 +3,9 @@
   "description": "Dev utils to be shared across Sablier packages",
   "version": "0.0.1",
   "author": {
-    "name": "Paul Berg",
-    "url": "https://paulrberg.com"
+    "name": "Sablier",
+    "email": "paul@sablier.app",
+    "url": "https://sablier.app"
   },
   "bugs": {
     "url": "https://github.com/sablierhq/sablier/issues"

@@ -3,8 +3,9 @@
   "description": "Sablier landing page",
   "version": "0.0.1",
   "author": {
-    "name": "Paul Berg",
-    "url": "https://paulrberg.com"
+    "name": "Sablier",
+    "email": "paul@sablier.app",
+    "url": "https://sablier.app"
   },
   "browserslist": {
     "production": [
@@ -17,6 +18,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "bugs": {
+    "url": "https://github.com/sablierhq/sablier/issues"
   },
   "dependencies": {
     "classnames": "^2.2.6",

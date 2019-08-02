@@ -3,8 +3,9 @@
   "description": "Ethereum contracts for the Sablier dApp",
   "version": "0.0.2",
   "author": {
-    "name": "Paul Berg",
-    "url": "https://paulrberg.com"
+    "name": "Sablier",
+    "email": "paul@sablier.app",
+    "url": "https://sablier.app"
   },
   "bugs": {
     "url": "https://github.com/sablierhq/sablier/issues"
