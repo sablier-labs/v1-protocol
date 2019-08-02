@@ -75,7 +75,9 @@ class TokenApprovalModal extends Component {
     let gasPrice = "8000000000";
     try {
       gasPrice = await web3.eth.getGasPrice();
-      gasPrice = BN(gasPrice || "0").plus(BN("1000000000")).toString();
+      gasPrice = BN(gasPrice || "0")
+        .plus(BN("1000000000"))
+        .toString();
     } catch {}
     new web3.eth.Contract(ERC20ABI, tokenAddress).methods
       .approve(sablierAddress, allowance)

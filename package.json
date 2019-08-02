@@ -26,7 +26,7 @@
     "commit": "git-cz",
     "fixpack": "lerna exec --parallel -- yarn fixpack; fixpack",
     "lerna": "lerna",
-    "lint": "yarn wsrun --package $PKG --parallel -c lint",
+    "lint": "yarn wsrun --package $PKG --parallel -c lint && yarn prettier:ci",
     "prettier": "prettier --config .prettierrc --write '**/*.{js,jsx,ts,tsx,json,md}'",
     "prettier:ci": "prettier --config .prettierrc --list-different '**/*.{js,jsx,ts,tsx,json,md}'",
     "test": "yarn wsrun --package $PKG --serial -c test",

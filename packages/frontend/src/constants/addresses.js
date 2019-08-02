@@ -11,7 +11,7 @@ export const MAINNET = {
     "0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd": "GUSD",
     "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48": "USDC",
   },
-  sablierAddress: "0xeef1392e7044993Fd28bf7878DF85A365b540b92"
+  sablierAddress: "0xeef1392e7044993Fd28bf7878DF85A365b540b92",
 };
 
 export const RINKEBY = {
