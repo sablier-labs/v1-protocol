@@ -40,7 +40,7 @@
     "url": "git+https://github.com/sablierhq/sablier.git"
   },
   "scripts": {
-    "build:react": "react-scripts build",
+    "build:ui": "react-scripts build",
     "eject": "react-scripts eject",
     "lint": "eslint --ignore-path ../../.eslintignore .",
     "start": "react-scripts start"
