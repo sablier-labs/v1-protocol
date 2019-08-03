@@ -1,17 +1,13 @@
 # folders
 .0x-artifacts/
 .nyc_output/
-.vscode/
 artifacts/
 build/
 coverage/
-coverageEnv/
-docs/
 lib/
 node_modules/
 
 # files
-.DS_Store
 .env
 *.log
 coverage.json

@@ -36,6 +36,13 @@ module.exports = {
         allow: ["_id"],
       },
     ],
+    "no-unused-vars": [
+      "error",
+      {
+        argsIgnorePattern: "_",
+        varsIgnorePattern: "_",
+      },
+    ],
     "no-trailing-spaces": [
       "error",
       {
