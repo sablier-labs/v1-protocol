@@ -22,6 +22,11 @@
 
 ---
 
+## Warning :rotating_light:
+
+Please take note that this is experimental, beta software and is provided on an "as is" and "as available" basis. We do
+not give any warranties and will not be liable for any loss, direct or indirect through continued use of this codebase.
+
 ## Packages :package:
 
 Sablier is maintained as a monorepo with multiple sub packages. Please find a comprehensive list below.
