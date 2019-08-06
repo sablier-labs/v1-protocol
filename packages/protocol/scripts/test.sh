@@ -27,7 +27,7 @@ start_ganache() {
   echo "Waiting for ganache to launch on port "$ganache_port"..."
 
   while ! ganache_running; do
-    sleep 0.1 # wait for 1/10 of the second before check again
+    sleep 0.1 # wait for 1/10 of the second before checking again
   done
 
   echo "Ganache launched!"
@@ -38,11 +38,6 @@ if ganache_running; then
 else
   echo "Starting our own ganache instance"
   start_ganache
-fi
-
-if [ "$SOLC_NIGHTLY" = true ]; then
-  echo "Downloading solc nightly"
-  wget -q https://raw.githubusercontent.com/ethereum/solc-bin/gh-pages/bin/soljson-nightly.js -O /tmp/soljson.js && find . -name soljson.js -exec cp /tmp/soljson.js {} \;
 fi
 
 yarn truffle version

@@ -1,7 +1,7 @@
 {
   "name": "@sablier/protocol",
-  "description": "Ethereum contracts for the Sablier dApp",
-  "version": "0.0.2",
+  "description": "Ethereum contracts for the money streaming protocol",
+  "version": "0.1.0",
   "author": {
     "name": "Sablier",
     "email": "paul@sablier.app",
@@ -24,10 +24,12 @@
     "fixpack": "^2.3.1",
     "ganache-cli": "^6.5.1",
     "istanbul": "^0.4.5",
+    "prettier-plugin-solidity": "^1.0.0-alpha.27",
     "shx": "^0.3.2",
     "solc": "^0.5.10",
     "solhint": "^2.1.2",
     "truffle": "^5.0.30",
+    "truffle-assert": "^0.9.1",
     "truffle-assertions": "^0.8.2",
     "truffle-hdwallet-provider": "^1.0.15",
     "web3": "1.2.0",
@@ -36,7 +38,7 @@
   "files": [
     "/contracts"
   ],
-  "homepage": "https://github.com/sablierhq/sablier#readme",
+  "homepage": "https://github.com/sablierhq/tree/develop/packages/protocol#readme",
   "license": "LGPL-3.0",
   "publishConfig": {
     "access": "public"
@@ -46,7 +48,7 @@
     "url": "git+https://github.com/sablierhq/sablier.git"
   },
   "scripts": {
-    "clean": "shx rm -rf ./.0x-artifacts ./coverage.json ./build ./coverage ./coverageEnv ./export",
+    "clean": "shx rm -rf ./.0x-artifacts ./coverage.json ./build ./coverage",
     "coverage": "scripts/coverage.sh",
     "lint": "yarn lint:js && yarn lint:sol",
     "lint:js": "eslint --ignore-path ../../.eslintignore .",

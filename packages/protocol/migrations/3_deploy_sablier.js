@@ -1,5 +1,7 @@
 /* global artifacts, web3 */
-const ERC20Mintable = artifacts.require("./ERC20Mintable.sol");
+const BigNumber = require("bignumber.js");
+
+const ERC20Mock = artifacts.require("./ERC20Mock.sol");
 const Sablier = artifacts.require("./Sablier.sol");
 
 module.exports = (deployer, network, accounts) => {
@@ -7,20 +9,18 @@ module.exports = (deployer, network, accounts) => {
     if (network !== "development") {
       return;
     }
-    const allowance = web3.utils.toWei("1000");
-    const erc20Mintable = await ERC20Mintable.deployed();
-    await erc20Mintable.approve(sablier.address, allowance, { from: accounts[0] });
+    const allowance = new BigNumber(3600).multipliedBy(1e18).toString(10);
+    const erc20 = await ERC20Mock.deployed();
+    await erc20.approve(sablier.address, allowance, { from: accounts[0] });
 
-    const sender = accounts[0];
     const recipient = accounts[1];
-    const currentBlockNumber = await web3.eth.getBlockNumber();
-    const startBlock = currentBlockNumber + 5;
-    const stopBlock = currentBlockNumber + 100 + 5;
-    const tokenAddress = erc20Mintable.address;
-    const payment = web3.utils.toWei("1");
-    const interval = 1;
+    const deposit = allowance;
+    const tokenAddress = erc20.address;
+    const { timestamp } = await web3.eth.getBlock("latest");
+    const startTime = new BigNumber(timestamp).plus(300);
+    const stopTime = startTime.plus(3600);
 
     const opts = { from: accounts[0] };
-    await sablier.createStream(sender, recipient, tokenAddress, startBlock, stopBlock, payment, interval, opts);
+    await sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts);
   });
 };

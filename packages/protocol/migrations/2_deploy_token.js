@@ -1,10 +1,9 @@
 /* global artifacts, web3 */
-const ERC20Mintable = artifacts.require("./ERC20Mintable.sol");
+const ERC20Mock = artifacts.require("./ERC20Mock.sol");
 
-module.exports = (deployer, network, accounts) => {
-  deployer.deploy(ERC20Mintable).then(async (erc20Mintable) => {
-    const amount = web3.utils.toWei("1000");
-    const opts = { from: accounts[0] };
-    await erc20Mintable.mint(accounts[0], amount, opts);
+module.exports = (deployer, _, accounts) => {
+  return deployer.deploy(ERC20Mock).then(async (erc20Mock) => {
+    const initialBalance = web3.utils.toWei("7200");
+    await erc20Mock.mint(accounts[0], initialBalance);
   });
 };
