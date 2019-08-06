@@ -40,5 +40,8 @@
     "clean": "shx rm -rf ./lib",
     "lint": "eslint --ignore-path ../../.eslintignore .",
     "watch": "yarn build --watch"
+  },
+  "dependencies": {
+    "bignumber.js": "^9.0.0"
   }
 }
