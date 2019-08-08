@@ -58,6 +58,6 @@ workflows:
       - lint:
           requires:
             - build
-    #   - test:
-    #       requires:
-    #         - build
+      - test:
+          requires:
+            - build
