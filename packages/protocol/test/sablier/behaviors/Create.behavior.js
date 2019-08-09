@@ -1,5 +1,6 @@
 const { devConstants } = require("@sablier/dev-utils");
 const BigNumber = require("bignumber.js");
+const dayjs = require("dayjs");
 const truffleAssert = require("truffle-assertions");
 
 const { STANDARD_DEPOSIT, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA, ZERO_ADDRESS } = devConstants;
@@ -7,6 +8,7 @@ const { STANDARD_DEPOSIT, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA, ZERO_ADDRES
 function shouldBehaveLikeERC1620Create(alice, bob) {
   const sender = alice;
   const opts = { from: sender };
+  const now = new BigNumber(dayjs().unix());
 
   describe("when the recipient is valid", function() {
     const recipient = bob;
@@ -27,8 +29,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
                 let stopTime;
 
                 beforeEach(async function() {
-                  const { timestamp } = await web3.eth.getBlock("latest");
-                  startTime = new BigNumber(timestamp).plus(STANDARD_TIME_OFFSET);
+                  startTime = now.plus(STANDARD_TIME_OFFSET);
                   stopTime = startTime.plus(STANDARD_TIME_DELTA);
                 });
 
@@ -41,6 +42,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
                 });
 
                 it("increases the stream nonce", async function() {
+                  // console.log(new Date().getTime());
                   const nonce = await this.sablier.nonce();
                   const tokenAddress = this.token.address;
                   await this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts);
@@ -60,8 +62,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
                 let stopTime;
 
                 beforeEach(async function() {
-                  const { timestamp } = await web3.eth.getBlock("latest");
-                  startTime = new BigNumber(timestamp).plus(STANDARD_TIME_OFFSET);
+                  startTime = now.plus(STANDARD_TIME_OFFSET);
                   stopTime = startTime;
                 });
 
@@ -80,8 +81,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
               let stopTime;
 
               beforeEach(async function() {
-                const { timestamp } = await web3.eth.getBlock("latest");
-                startTime = new BigNumber(timestamp).minus(STANDARD_TIME_OFFSET);
+                startTime = now.minus(STANDARD_TIME_OFFSET);
                 stopTime = startTime.plus(STANDARD_TIME_DELTA);
               });
 
@@ -96,13 +96,12 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
           });
 
           describe("when the deposit is not a multiple of the time delta", function() {
-            const deposit = STANDARD_DEPOSIT.plus(1).toString(10);
+            const deposit = STANDARD_DEPOSIT.plus(5).toString(10);
             let startTime;
             let stopTime;
 
             beforeEach(async function() {
-              const { timestamp } = await web3.eth.getBlock("latest");
-              startTime = new BigNumber(timestamp).plus(STANDARD_TIME_OFFSET);
+              startTime = now.plus(STANDARD_TIME_OFFSET);
               stopTime = startTime.plus(STANDARD_TIME_DELTA);
             });
 
@@ -121,8 +120,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
             let stopTime;
 
             beforeEach(async function() {
-              const { timestamp } = await web3.eth.getBlock("latest");
-              startTime = new BigNumber(timestamp).plus(STANDARD_TIME_OFFSET);
+              startTime = now.plus(STANDARD_TIME_OFFSET);
               stopTime = startTime.plus(STANDARD_TIME_DELTA);
             });
 
@@ -142,8 +140,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
           let stopTime;
 
           beforeEach(async function() {
-            const { timestamp } = await web3.eth.getBlock("latest");
-            startTime = new BigNumber(timestamp).plus(STANDARD_TIME_OFFSET);
+            startTime = now.plus(STANDARD_TIME_OFFSET);
             stopTime = startTime.plus(STANDARD_TIME_DELTA);
           });
 
@@ -162,10 +159,9 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
         let stopTime;
 
         beforeEach(async function() {
-          const { timestamp } = await web3.eth.getBlock("latest");
-          startTime = new BigNumber(timestamp).plus(STANDARD_TIME_OFFSET);
+          startTime = now.plus(STANDARD_TIME_OFFSET);
           stopTime = startTime.plus(STANDARD_TIME_DELTA);
-          await this.token.approve(this.sablier.address, STANDARD_DEPOSIT.minus(1).toString(10), opts);
+          await this.token.approve(this.sablier.address, STANDARD_DEPOSIT.minus(5).toString(10), opts);
         });
 
         describe("when the sender has enough tokens", function() {
@@ -200,8 +196,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
       let stopTime;
 
       beforeEach(async function() {
-        const { timestamp } = await web3.eth.getBlock("latest");
-        startTime = new BigNumber(timestamp).plus(STANDARD_TIME_OFFSET);
+        startTime = now.plus(STANDARD_TIME_OFFSET);
         stopTime = startTime.plus(STANDARD_TIME_DELTA);
       });
 
@@ -235,8 +230,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
     let stopTime;
 
     beforeEach(async function() {
-      const { timestamp } = await web3.eth.getBlock("latest");
-      startTime = new BigNumber(timestamp).plus(STANDARD_TIME_OFFSET);
+      startTime = now.plus(STANDARD_TIME_OFFSET);
       stopTime = startTime.plus(STANDARD_TIME_DELTA);
     });
 
@@ -256,8 +250,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
     let stopTime;
 
     beforeEach(async function() {
-      const { timestamp } = await web3.eth.getBlock("latest");
-      startTime = new BigNumber(timestamp).plus(STANDARD_TIME_OFFSET);
+      startTime = now.plus(STANDARD_TIME_OFFSET);
       stopTime = startTime.plus(STANDARD_TIME_DELTA);
     });
 
@@ -278,8 +271,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
     let stopTime;
 
     beforeEach(async function() {
-      const { timestamp } = await web3.eth.getBlock("latest");
-      startTime = new BigNumber(timestamp).plus(STANDARD_TIME_OFFSET);
+      startTime = now.plus(STANDARD_TIME_OFFSET);
       stopTime = startTime.plus(STANDARD_TIME_DELTA);
     });
 

@@ -1,15 +1,17 @@
 const { devConstants } = require("@sablier/dev-utils");
 const BigNumber = require("bignumber.js");
+const dayjs = require("dayjs");
 const truffleAssert = require("truffle-assertions");
 
-const { STANDARD_DEPOSIT, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA, ZERO_ADDRESS } = devConstants;
+const { ONE_UNIT, STANDARD_DEPOSIT, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA, ZERO_ADDRESS } = devConstants;
 
 function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
-  const deposit = STANDARD_DEPOSIT.toString(10);
+  const now = new BigNumber(dayjs().unix());
 
   describe("when the stream exists", function() {
     const sender = alice;
     const recipient = bob;
+    const deposit = STANDARD_DEPOSIT.toString(10);
     let startTime;
     let stopTime;
     let streamId;
@@ -18,8 +20,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
       const opts = { from: sender };
       await this.token.approve(this.sablier.address, deposit, opts);
       const tokenAddress = this.token.address;
-      const { timestamp } = await web3.eth.getBlock("latest");
-      startTime = new BigNumber(timestamp).plus(STANDARD_TIME_OFFSET);
+      startTime = now.plus(STANDARD_TIME_OFFSET);
       stopTime = startTime.plus(STANDARD_TIME_DELTA);
       const result = await this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts);
       streamId = result.logs[0].args.streamId;
@@ -33,7 +34,10 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const balance = await this.token.balanceOf(sender);
           await this.sablier.cancel(streamId, opts);
           const newBalance = await this.token.balanceOf(sender);
-          balance.should.be.bignumber.equal(newBalance.minus(deposit));
+          balance.should.bignumber.satisfy(function(num) {
+            return num.isEqualTo(newBalance.minus(deposit)) || num.isEqualTo(newBalance.minus(deposit).plus(ONE_UNIT));
+          });
+          // balance.should.be.bignumber.equal(newBalance.minus(deposit));
         });
 
         it("deletes the stream object", async function() {
@@ -48,21 +52,42 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
       });
 
       describe("when the stream did start but not end", function() {
-        const streamingTime = new BigNumber(1);
-        const streamedAmount = new BigNumber(1).multipliedBy(1e18);
+        const streamedAmount = new BigNumber(5).multipliedBy(1e18);
 
         beforeEach(async function() {
-          await web3.utils.advanceTimeAndBlock(STANDARD_TIME_OFFSET.plus(streamingTime).toNumber());
+          await web3.utils.advanceBlockAtTime(
+            now
+              .plus(STANDARD_TIME_OFFSET)
+              .plus(5)
+              .toNumber(),
+          );
         });
 
-        it("cancels the stream and transfers tokens on a pro rata basis", async function() {
+        it("cancels the stream and transfers the tokens on a pro rata basis", async function() {
           const senderBalance = await this.token.balanceOf(sender);
           const recipientBalance = await this.token.balanceOf(recipient);
           await this.sablier.cancel(streamId, opts);
           const newSenderBalance = await this.token.balanceOf(sender);
           const newRecipientBalance = await this.token.balanceOf(recipient);
-          senderBalance.should.be.bignumber.equal(newSenderBalance.plus(streamedAmount).minus(deposit));
-          recipientBalance.should.be.bignumber.equal(newRecipientBalance.minus(streamedAmount));
+          senderBalance.should.bignumber.satisfy(function(num) {
+            return (
+              num.isEqualTo(newSenderBalance.plus(streamedAmount).minus(deposit)) ||
+              num.isEqualTo(
+                newSenderBalance
+                  .plus(streamedAmount)
+                  .minus(deposit)
+                  .plus(ONE_UNIT),
+              )
+            );
+          });
+          recipientBalance.should.bignumber.satisfy(function(num) {
+            return (
+              num.isEqualTo(newRecipientBalance.minus(streamedAmount)) ||
+              num.isEqualTo(newRecipientBalance.minus(streamedAmount).minus(ONE_UNIT))
+            );
+          });
+          // senderBalance.should.be.bignumber.equal(newSenderBalance.plus(streamedAmount).minus(deposit));
+          // recipientBalance.should.be.bignumber.equal(newRecipientBalance.minus(streamedAmount));
         });
 
         it("deletes the stream object", async function() {
@@ -74,13 +99,19 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const result = await this.sablier.cancel(streamId, opts);
           truffleAssert.eventEmitted(result, "Cancel");
         });
+
+        afterEach(async function() {
+          await web3.utils.advanceBlockAtTime(now.toNumber());
+        });
       });
 
       describe("when the stream did end", function() {
         beforeEach(async function() {
-          await web3.utils.advanceTimeAndBlock(
-            STANDARD_TIME_OFFSET.plus(STANDARD_TIME_DELTA)
-              .plus(1)
+          await web3.utils.advanceBlockAtTime(
+            now
+              .plus(STANDARD_TIME_OFFSET)
+              .plus(STANDARD_TIME_DELTA)
+              .plus(5)
               .toNumber(),
           );
         });
@@ -89,7 +120,10 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const balance = await this.token.balanceOf(recipient);
           await this.sablier.cancel(streamId, opts);
           const newBalance = await this.token.balanceOf(recipient);
-          balance.should.be.bignumber.equal(newBalance.minus(deposit));
+          balance.should.bignumber.satisfy(function(num) {
+            return num.isEqualTo(newBalance.minus(deposit)) || num.isEqualTo(newBalance.minus(deposit).plus(ONE_UNIT));
+          });
+          // balance.should.be.bignumber.equal(newBalance.minus(deposit));
         });
 
         it("deletes the stream object", async function() {
@@ -100,6 +134,10 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
         it("emits a cancel event", async function() {
           const result = await this.sablier.cancel(streamId, opts);
           truffleAssert.eventEmitted(result, "Cancel");
+        });
+
+        afterEach(async function() {
+          await web3.utils.advanceBlockAtTime(now.toNumber());
         });
       });
     });
@@ -112,7 +150,10 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const balance = await this.token.balanceOf(sender);
           await this.sablier.cancel(streamId, opts);
           const newBalance = await this.token.balanceOf(sender);
-          balance.should.be.bignumber.equal(newBalance.minus(deposit));
+          balance.should.bignumber.satisfy(function(num) {
+            return num.isEqualTo(newBalance.minus(deposit)) || num.isEqualTo(newBalance.minus(deposit).plus(ONE_UNIT));
+          });
+          // balance.should.be.bignumber.equal(newBalance.minus(deposit));
         });
 
         it("deletes the stream object", async function() {
@@ -127,21 +168,42 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
       });
 
       describe("when the stream did start but not end", function() {
-        const streamingTime = new BigNumber(1);
-        const streamedAmount = new BigNumber(1).multipliedBy(1e18);
+        const streamedAmount = new BigNumber(5).multipliedBy(1e18);
 
         beforeEach(async function() {
-          await web3.utils.advanceTimeAndBlock(STANDARD_TIME_OFFSET.plus(streamingTime).toNumber());
+          await web3.utils.advanceBlockAtTime(
+            now
+              .plus(STANDARD_TIME_OFFSET)
+              .plus(5)
+              .toNumber(),
+          );
         });
 
-        it("cancels the stream and transfers tokens on a pro rata basis", async function() {
+        it("cancels the stream and transfers the tokens on a pro rata basis", async function() {
           const senderBalance = await this.token.balanceOf(sender);
           const recipientBalance = await this.token.balanceOf(recipient);
           await this.sablier.cancel(streamId, opts);
           const newSenderBalance = await this.token.balanceOf(sender);
           const newRecipientBalance = await this.token.balanceOf(recipient);
-          senderBalance.should.be.bignumber.equal(newSenderBalance.plus(streamedAmount).minus(deposit));
-          recipientBalance.should.be.bignumber.equal(newRecipientBalance.minus(streamedAmount));
+          senderBalance.should.bignumber.satisfy(function(num) {
+            return (
+              num.isEqualTo(newSenderBalance.plus(streamedAmount).minus(deposit)) ||
+              num.isEqualTo(
+                newSenderBalance
+                  .plus(streamedAmount)
+                  .minus(deposit)
+                  .plus(ONE_UNIT),
+              )
+            );
+          });
+          recipientBalance.should.bignumber.satisfy(function(num) {
+            return (
+              num.isEqualTo(newRecipientBalance.minus(streamedAmount)) ||
+              num.isEqualTo(newRecipientBalance.minus(streamedAmount).minus(ONE_UNIT))
+            );
+          });
+          // senderBalance.should.be.bignumber.equal(newSenderBalance.plus(streamedAmount).minus(deposit));
+          // recipientBalance.should.be.bignumber.equal(newRecipientBalance.minus(streamedAmount));
         });
 
         it("deletes the stream object", async function() {
@@ -153,13 +215,19 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const result = await this.sablier.cancel(streamId, opts);
           truffleAssert.eventEmitted(result, "Cancel");
         });
+
+        afterEach(async function() {
+          await web3.utils.advanceBlockAtTime(now.toNumber());
+        });
       });
 
       describe("when the stream did end", function() {
         beforeEach(async function() {
-          await web3.utils.advanceTimeAndBlock(
-            STANDARD_TIME_OFFSET.plus(STANDARD_TIME_DELTA)
-              .plus(1)
+          await web3.utils.advanceBlockAtTime(
+            now
+              .plus(STANDARD_TIME_OFFSET)
+              .plus(STANDARD_TIME_DELTA)
+              .plus(5)
               .toNumber(),
           );
         });
@@ -168,7 +236,9 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const balance = await this.token.balanceOf(recipient);
           await this.sablier.cancel(streamId, opts);
           const newBalance = await this.token.balanceOf(recipient);
-          balance.should.be.bignumber.equal(newBalance.minus(deposit));
+          balance.should.bignumber.satisfy(function(num) {
+            return num.isEqualTo(newBalance.minus(deposit)) || num.isEqualTo(newBalance.minus(deposit).plus(ONE_UNIT));
+          });
         });
 
         it("deletes the stream object", async function() {
@@ -179,6 +249,10 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
         it("emits a cancel event", async function() {
           const result = await this.sablier.cancel(streamId, opts);
           truffleAssert.eventEmitted(result, "Cancel");
+        });
+
+        afterEach(async function() {
+          await web3.utils.advanceBlockAtTime(now.toNumber());
         });
       });
     });
@@ -200,7 +274,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
     const opts = { from: recipient };
 
     it("reverts", async function() {
-      const streamId = new BigNumber(1);
+      const streamId = new BigNumber(5);
       await truffleAssert.reverts(this.sablier.cancel(streamId, opts), "stream does not exist");
     });
   });

@@ -123,7 +123,7 @@ module.exports = {
     },
   },
   mocha: {
-    bail: true,
+    // bail: true,
     enableTimeouts: false,
   },
   networks: {

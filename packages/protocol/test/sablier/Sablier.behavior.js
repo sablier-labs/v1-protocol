@@ -6,12 +6,12 @@ function shouldBehaveLikeERC1620(alice, bob, _carol, _dave, eve) {
   let snapshot;
   let snapshotId;
 
-  beforeEach(async () => {
+  before(async () => {
     snapshot = await web3.utils.takeSnapshot();
     snapshotId = snapshot.result;
   });
 
-  afterEach(async () => {
+  after(async () => {
     await web3.utils.revertToSnapshot(snapshotId);
   });
 

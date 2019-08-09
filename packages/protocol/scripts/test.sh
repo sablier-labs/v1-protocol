@@ -20,7 +20,7 @@ ganache_running() {
 }
 
 start_ganache() {
-  yarn ganache-cli --networkId 1234 --gasLimit 0xfffffffffff --port "$ganache_port" > /dev/null &
+  npx ganache-cli --gasLimit 0xfffffffffff --port "$ganache_port" --networkId 1234 > /dev/null &
 
   ganache_pid=$!
 
