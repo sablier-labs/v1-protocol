@@ -3,7 +3,7 @@ pragma solidity 0.5.10;
 import "./NotERC20.sol";
 
 /// @dev Mock class using NotERC20
-/// @author Paul Berg - <hello@paulrberg.com>
+/// @author Paul Berg - <paul@sablier.app>
 
 contract NotERC20Mock is NotERC20 {
     function notMint(address account, uint256 amount) public {

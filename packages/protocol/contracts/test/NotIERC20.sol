@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
 /// @dev Forked from OpenZeppelin's IERC20
-/// @author Paul Berg - <hello@paulrberg.com>
+/// @author Paul Berg - <paul@sablier.app>
 
 interface NotIERC20 {
     /**
