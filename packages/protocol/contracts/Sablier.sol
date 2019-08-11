@@ -54,7 +54,7 @@ contract Sablier is IERC1620, Ownable {
         }
     }
 
-    function deltaOf(uint256 streamId) public view returns (uint256 delta) {
+    function deltaOf(uint256 streamId) public view streamExists(streamId) returns (uint256 delta) {
         Types.Stream memory stream = streams[streamId];
 
         // before the start of the stream
@@ -95,8 +95,6 @@ contract Sablier is IERC1620, Ownable {
         );
     }
 
-    event DebugDis(uint256 timestamp);
-
     function create(address recipient, uint256 deposit, address tokenAddress, uint256 startTime, uint256 stopTime)
         external
         returns (uint256 streamId)
@@ -125,7 +123,6 @@ contract Sablier is IERC1620, Ownable {
         });
 
         emit Create(streamId, sender, recipient, deposit, tokenAddress, startTime, stopTime);
-        emit DebugDis(block.timestamp);
 
         nonce = nonce.add(1);
         require(IERC20(tokenAddress).transferFrom(sender, address(this), deposit), "token transfer failure");
@@ -139,7 +136,6 @@ contract Sablier is IERC1620, Ownable {
 
         streams[streamId].balance = streams[streamId].balance.sub(amount);
         emit Withdraw(streamId, stream.recipient, amount);
-        emit DebugDis(block.timestamp);
 
         // saving gas
         if (streams[streamId].balance == 0) delete streams[streamId];
@@ -154,7 +150,6 @@ contract Sablier is IERC1620, Ownable {
         uint256 recipientAmount = balanceOf(streamId, stream.recipient);
 
         emit Cancel(streamId, stream.sender, stream.recipient, senderAmount, recipientAmount);
-        emit DebugDis(block.timestamp);
 
         // saving gas
         delete streams[streamId];
