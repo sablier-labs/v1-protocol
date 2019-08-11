@@ -1,0 +1,12 @@
+coverage:
+  status:
+    project:
+      default: off
+      protocol:
+        target: 95%
+        flags: protocol
+
+flags:
+  protocol:
+    paths:
+      - packages/protocol/

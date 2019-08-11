@@ -50,6 +50,19 @@ jobs:
       - run:
           name: "Test Packages"
           command: yarn test
+  coverage:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:10.15.3
+      - image: trufflesuite/ganache-cli:v6.5.1
+        command: ganache-cli -i 1234 -p 8545 -e 10000000 -l 6721975
+    steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: "Cover Packages"
+          command: PKG=@sablier/protocol yarn coverage
 workflows:
   version: 2
   main:
@@ -61,3 +74,7 @@ workflows:
       - test:
           requires:
             - build
+      - coverage:
+          requires:
+            - lint
+            - test

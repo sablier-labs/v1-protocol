@@ -19,7 +19,7 @@
     "bignumber.js": "^8.1.1",
     "chai": "^4.2.0",
     "chai-bignumber": "^3.0.0",
-    "coveralls": "3.0.3",
+    "codecov": "^3.5.0",
     "dayjs": "^1.8.15",
     "dotenv": "^7.0.0",
     "fixpack": "^2.3.1",

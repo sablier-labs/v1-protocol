@@ -46,8 +46,8 @@ yarn truffle test "$@"
 if [ "$MODE" = "coverage" ]; then
   yarn istanbul report html lcov
 
-  if [ "$CIRCLECI" = true ]; then
-    cat ./coverage/lcov.info | yarn coveralls
+  if [ "$CI" = true ]; then
+    cat ./coverage/lcov.info | yarn codecov
   fi
 fi
 
