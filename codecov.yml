@@ -12,4 +12,4 @@ flags:
       - packages/protocol/
 
 fixes:
-  - "packages/protocol/::" # move path   e.g., "before/path" => "after/path"
+  - "packages/protocol/::"
