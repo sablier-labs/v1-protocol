@@ -10,6 +10,7 @@ module.exports = {
   RPC_URL: "http://127.0.0.1:8545",
   RPC_PORT: 8545,
   STANDARD_DEPOSIT,
+  STANDARD_RATE: new BigNumber(1).multipliedBy(1e18),
   STANDARD_TIME_DELTA: new BigNumber(3600),
   STANDARD_TIME_OFFSET: new BigNumber(300),
   STANDARD_WITHDRAWAL: new BigNumber(1).multipliedBy(1e18),
