@@ -9,18 +9,17 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
   const now = new BigNumber(dayjs().unix());
 
   describe("when the stream exists", function() {
+    let streamId;
     const sender = alice;
     const recipient = bob;
     const deposit = STANDARD_DEPOSIT.toString(10);
     const startTime = now.plus(STANDARD_TIME_OFFSET);
     const stopTime = startTime.plus(STANDARD_TIME_DELTA);
-    let streamId;
 
     beforeEach(async function() {
       const opts = { from: sender };
       await this.token.approve(this.sablier.address, deposit, opts);
-      const tokenAddress = this.token.address;
-      const result = await this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts);
+      const result = await this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts);
       streamId = result.logs[0].args.streamId;
     });
 
@@ -193,7 +192,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
     const opts = { from: recipient };
 
     it("reverts", async function() {
-      const streamId = new BigNumber(5);
+      const streamId = new BigNumber(419863);
       const amount = new BigNumber(5).multipliedBy(1e18).toString(10);
       await truffleAssert.reverts(this.sablier.withdraw(streamId, amount, opts), "stream does not exist");
     });

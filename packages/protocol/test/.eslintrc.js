@@ -8,5 +8,6 @@ module.exports = {
   },
   rules: {
     "func-names": "off",
+    "prefer-destructuring": "off",
   },
 };

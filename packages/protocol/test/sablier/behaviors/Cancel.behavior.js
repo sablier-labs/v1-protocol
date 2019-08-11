@@ -9,12 +9,12 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
   const now = new BigNumber(dayjs().unix());
 
   describe("when the stream exists", function() {
+    let streamId;
     const sender = alice;
     const recipient = bob;
     const deposit = STANDARD_DEPOSIT.toString(10);
     let startTime;
     let stopTime;
-    let streamId;
 
     beforeEach(async function() {
       const opts = { from: sender };
@@ -274,7 +274,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
     const opts = { from: recipient };
 
     it("reverts", async function() {
-      const streamId = new BigNumber(5);
+      const streamId = new BigNumber(419863);
       await truffleAssert.reverts(this.sablier.cancel(streamId, opts), "stream does not exist");
     });
   });

@@ -35,8 +35,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
 
                 it("creates the stream", async function() {
                   const balance = await this.token.balanceOf(alice);
-                  const tokenAddress = this.token.address;
-                  await this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts);
+                  await this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts);
                   const newBalance = await this.token.balanceOf(alice);
                   balance.should.be.bignumber.equal(newBalance.plus(STANDARD_DEPOSIT));
                 });
@@ -44,15 +43,20 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
                 it("increases the stream nonce", async function() {
                   // console.log(new Date().getTime());
                   const nonce = await this.sablier.nonce();
-                  const tokenAddress = this.token.address;
-                  await this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts);
+                  await this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts);
                   const newNonce = await this.sablier.nonce();
                   nonce.should.be.bignumber.equal(newNonce.minus(1));
                 });
 
                 it("emits a create event", async function() {
-                  const tokenAddress = this.token.address;
-                  const result = await this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts);
+                  const result = await this.sablier.create(
+                    recipient,
+                    deposit,
+                    this.token.address,
+                    startTime,
+                    stopTime,
+                    opts,
+                  );
                   truffleAssert.eventEmitted(result, "Create");
                 });
               });
@@ -67,9 +71,8 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
                 });
 
                 it("reverts", async function() {
-                  const tokenAddress = this.token.address;
                   await truffleAssert.reverts(
-                    this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts),
+                    this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts),
                     "stop time before the start time",
                   );
                 });
@@ -86,9 +89,8 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
               });
 
               it("reverts", async function() {
-                const tokenAddress = this.token.address;
                 await truffleAssert.reverts(
-                  this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts),
+                  this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts),
                   "start time before block.timestamp",
                 );
               });
@@ -106,9 +108,8 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
             });
 
             it("reverts", async function() {
-              const tokenAddress = this.token.address;
               await truffleAssert.reverts(
-                this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts),
+                this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts),
                 "deposit not multiple of time delta",
               );
             });
@@ -125,9 +126,8 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
             });
 
             it("reverts", async function() {
-              const tokenAddress = this.token.address;
               await truffleAssert.reverts(
-                this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts),
+                this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts),
                 "deposit is zero",
               );
             });
@@ -145,9 +145,8 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
           });
 
           it("reverts", async function() {
-            const tokenAddress = this.token.address;
             await truffleAssert.reverts(
-              this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts),
+              this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts),
               "SafeMath: subtraction overflow",
             );
           });
@@ -168,9 +167,8 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
           const deposit = STANDARD_DEPOSIT.toString(10);
 
           it("reverts", async function() {
-            const tokenAddress = this.token.address;
             await truffleAssert.reverts(
-              this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts),
+              this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts),
               "SafeMath: subtraction overflow",
             );
           });
@@ -180,9 +178,8 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
           const deposit = STANDARD_DEPOSIT.multipliedBy(2).toString(10);
 
           it("reverts", async function() {
-            const tokenAddress = this.token.address;
             await truffleAssert.reverts(
-              this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts),
+              this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts),
               "SafeMath: subtraction overflow",
             );
           });
