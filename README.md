@@ -3,11 +3,14 @@
 <p align="center">Sablier is a decentralised app for continuous payments on Ethereum. Read this <a href="https://medium.com/sablier-app/introducing-sablier-continuous-payments-on-ethereum-c2bf04446d31" target="_blank">article</a> to find our more about our mission. Check out a demo video <a href="https://www.youtube.com/watch?v=2onYeCwAY3c" target="_blank">here</a>.</p>
 
 <p align="center">
+  <a href="https://app.netlify.com/sites/infallible-visvesvaraya-6d594e/deploys" alt="Netlify">
+    <img src="https://api.netlify.com/api/v1/badges/7a05c307-d1c2-43c0-b914-691dc1fa3104/deploy-status">
+  </a>
   <a href="https://circleci.com/gh/sablierhq/sablier" alt="CircleCI">
     <img src="https://circleci.com/gh/sablierhq/sablier.svg?style=svg">
   </a>
-  <a href="https://app.netlify.com/sites/infallible-visvesvaraya-6d594e/deploys" alt="Netlify">
-    <img src="https://api.netlify.com/api/v1/badges/7a05c307-d1c2-43c0-b914-691dc1fa3104/deploy-status">
+  <a href="https://codecov.io/gh/sablierhq/sablier">
+    <img src="https://codecov.io/gh/sablierhq/sablier/branch/develop/graph/badge.svg" />
   </a>
   <a href="https://prettier.io">
     <img src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg" alt="Styled with Prettier">
