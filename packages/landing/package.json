@@ -55,6 +55,7 @@
   },
   "scripts": {
     "build:ui": "react-scripts build",
+    "clean": "shx rm -rf ./build",
     "eject": "react-scripts eject",
     "lint": "eslint --ext js,jsx --ignore-path ../../.eslintignore .",
     "start": "react-scripts start"

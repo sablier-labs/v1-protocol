@@ -76,6 +76,7 @@
     "node-sass": "^4.11.0",
     "prettier": "^1.16.4",
     "react-scripts": "3.1.0",
+    "shx": "^0.3.2",
     "wsrun": "^3.6.4"
   },
   "homepage": "https://beta.sablier.app",
@@ -87,6 +88,7 @@
   },
   "scripts": {
     "build:ui": "react-scripts build",
+    "clean": "shx rm -rf ./build",
     "eject": "react-scripts eject",
     "lint": "eslint --ext js,jsx --ignore-path ../../.eslintignore .",
     "start": "react-scripts start"
