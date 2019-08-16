@@ -5,18 +5,14 @@ import PropTypes from "prop-types";
 import "./loader.scss";
 
 class Loader extends Component {
-  static propTypes = {
-    className: PropTypes.string,
-    delay: PropTypes.number,
-  };
 
-  static defaultProps = {
-    delay: 0,
-  };
+  constructor(props) {
+    super(props);
 
-  state = {
-    hidden: true,
-  };
+    this.state = {
+      hidden: true,
+    };
+  }
 
   componentDidMount() {
     const { delay } = this.props;
@@ -45,5 +41,15 @@ class Loader extends Component {
     return <div className={classnames(["loader", className])} />;
   }
 }
+
+Loader.propTypes = {
+  className: PropTypes.string,
+  delay: PropTypes.number,
+}
+
+Loader.defaultProps = {
+  className: "",
+  delay: 0,
+};
 
 export default Loader;

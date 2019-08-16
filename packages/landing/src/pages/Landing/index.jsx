@@ -10,6 +10,12 @@ import ReferralModal from "../../components/ReferralModal";
 
 import "./landing.scss";
 
+const initialState = {
+  email: "",
+  error: "",
+  showReferralModal: false,
+};
+
 function generateRandomString() {
   return (
     Math.random()
@@ -22,11 +28,11 @@ function generateRandomString() {
 }
 
 class Landing extends Component {
-  state = {
-    email: "",
-    error: "",
-    showReferralModal: false,
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = { ...initialState };
+  }
 
   onChangeState(e) {
     this.setState({
@@ -37,11 +43,13 @@ class Landing extends Component {
   onSubmit(e) {
     e.preventDefault();
 
-    if (this.state.loading) {
+    const { email, loading } = this.state;
+
+    if (loading) {
       return;
     }
 
-    if (!validator.isEmail(this.state.email)) {
+    if (!validator.isEmail(email)) {
       this.setState({
         error: "Please enter your email address",
       });
@@ -62,6 +70,8 @@ class Landing extends Component {
   }
 
   render() {
+    const { error, loading, referralUrl, showReferralModal } = this.state;
+
     return (
       <div className="landing">
         <div className="landing__header-container">
@@ -99,17 +109,17 @@ class Landing extends Component {
                 salary by the minute.
               </span>
               <span className="landing__subtitle-label">
-                Paydays don't make sense any more. Sign up below to have instant access to your earnings through a
+                Paydays don&apos;t make sense any more. Sign up below to have instant access to your earnings through a
                 decentralized app built on Ethereum.
               </span>
             </div>
             <div className="landing__form-container">
               <div
                 className={classnames("landing__error-container", {
-                  "landing__error-container--disabled": !this.state.error,
+                  "landing__error-container--disabled": !error,
                 })}
               >
-                {this.state.error}
+                {error}
               </div>
 
               <form className="landing__submit-container" name="Early Access Form" onSubmit={(e) => this.onSubmit(e)}>
@@ -118,11 +128,13 @@ class Landing extends Component {
                   name="email"
                   onChange={(value) => this.onChangeState(value)}
                   placeholder="Work Email"
-                  ref={(ref) => (this.emailRef = ref)}
+                  ref={(ref) => {
+                    this.emailRef = ref;
+                  }}
                   required
                   type="email"
                 />
-                {!this.state.loading ? (
+                {!loading ? (
                   <input className="landing__submit-button" type="submit" name="submit" value="Get early access" />
                 ) : (
                   <div className="landing__submit-button">
@@ -146,10 +158,10 @@ class Landing extends Component {
             </div>
           </div>
         </div>
-        {this.state.showReferralModal ? (
+        {showReferralModal ? (
           <ReferralModal
             onClose={() => this.setState({ showReferralModal: false })}
-            referralUrl={this.state.referralUrl}
+            referralUrl={referralUrl}
           />
         ) : null}
       </div>

@@ -10,18 +10,13 @@ import Modal from "../Modal";
 import "./referral-modal.scss";
 
 class ReferralModal extends Component {
-  static propTypes = {
-    onClose: PropTypes.func.isRequired,
-    referralUrl: PropTypes.string.isRequired,
-  };
+  constructor(props) {
+    super(props);
 
-  static defaultProps = {
-    onClose: () => {},
-  };
-
-  state = {
-    spot: 0,
-  };
+    this.state = {
+      spot: 0,
+    };
+  }
 
   componentDidMount() {
     const number = Math.floor(Math.random() * 500) + 100;
@@ -31,26 +26,30 @@ class ReferralModal extends Component {
   }
 
   onClickTwitter() {
+    const { referralUrl } = this.props;
     const text = "Get early access to @SablierHQ";
-    const intent = `https://twitter.com/intent/tweet?url=${this.props.referralUrl}&text=${text}`;
+    const intent = `https://twitter.com/intent/tweet?url=${referralUrl}&text=${text}`;
     window.open(intent, "_blank");
   }
 
   onClickWhatsapp() {
-    const text = encodeURIComponent(`Get early access to Sablier ${this.props.referralUrl}`);
+    const { referralUrl } = this.props;
+    const text = encodeURIComponent(`Get early access to Sablier ${referralUrl}`);
     const intent = `https://web.whatsapp.com/send?text=${text}`;
     window.open(intent, "_blank");
   }
 
   onClickMail() {
+    const { referralUrl } = this.props;
     const subject = "Get Early Access to Sablier";
-    const body = `It's an app that allows you to earn your salary by the minute ${this.props.referralUrl}`;
+    const body = `It's a decentralized app for real-time salaries ${referralUrl}`;
     const mailto = `mailto:?subject=${subject}&body=${body}`;
     window.open(mailto);
   }
 
   onClickUrl() {
-    navigator.clipboard.writeText(this.props.referralUrl);
+    const { referralUrl } = this.props;
+    navigator.clipboard.writeText(referralUrl);
 
     ReactTooltip.show(this.copyButtonRef);
     setTimeout(() => {
@@ -59,22 +58,29 @@ class ReferralModal extends Component {
   }
 
   render() {
+    const { onClose, referralUrl } = this.props;
+    const { spot } = this.state;
+
     return (
-      <Modal onClose={() => this.props.onClose()}>
+      <Modal onClose={() => onClose()}>
         <div className="referral-modal">
           <div className="referral-modal__title-label referral-modal__label">Your spot is reserved</div>
-          <div className="referral-modal__number-label referral-modal__label">#{this.state.spot}</div>
+          <div className="referral-modal__number-label referral-modal__label">#{spot}</div>
           <div className="referral-modal__separator" />
           <div className="referral-modal__vip-label referral-modal__label">
             Become a VIP member by inviting your friends
           </div>
           <div
-            ref={(ref) => (this.copyButtonRef = ref)}
+            ref={(ref) => {
+              this.copyButtonRef = ref;
+            }}
             className="referral-modal__url-container"
             data-for="copyUrlTooltip"
-            data-tip={"Copied"}
+            data-tip="Copied"
           >
-            <div onClick={() => this.onClickUrl()}>{this.props.referralUrl}</div>
+            <div onClick={() => this.onClickUrl()} onKeyDown={() => this.onClickUrl()} role="button" tabIndex={-1}>
+              {referralUrl}
+            </div>
             <ReactTooltip
               className="referral-modal__tooltip"
               effect="solid"
@@ -87,21 +93,30 @@ class ReferralModal extends Component {
             <div
               className="referral-modal__social-media-item"
               onClick={() => this.onClickTwitter()}
+              onKeyDown={() => this.onClickTwitter()}
+              role="button"
               style={{ backgroundColor: "#38A1F3" }}
+              tabIndex={0}
             >
               <img className="referral-modal__social-media-image" alt="Twitter" src={FaTwitterWhite} />
             </div>
             <div
               className="referral-modal__social-media-item"
               onClick={() => this.onClickWhatsapp()}
+              onKeyDown={() => this.onClickWhatsapp()}
+              role="button"
               style={{ backgroundColor: "#23D366" }}
+              tabIndex={0}
             >
               <img className="referral-modal__social-media-image" alt="Twitter" src={FaWhatsappWhite} />
             </div>
             <div
               className="referral-modal__social-media-item"
               onClick={() => this.onClickMail()}
+              onKeyDown={() => this.onClickMail()}
+              role="button"
               style={{ backgroundColor: "#7D7D7D" }}
+              tabIndex={0}
             >
               <img className="referral-modal__social-media-image" alt="Mail" src={FaEnvelope} />
             </div>
@@ -111,5 +126,14 @@ class ReferralModal extends Component {
     );
   }
 }
+
+ReferralModal.propTypes = {
+  onClose: PropTypes.func,
+  referralUrl: PropTypes.string.isRequired,
+};
+
+ReferralModal.defaultProps = {
+  onClose: () => {},
+};
 
 export default ReferralModal;
