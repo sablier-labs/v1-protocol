@@ -1,3 +1,6 @@
 {
-  "extends": ["airbnb-base", "../../.eslintrc"]
+  "env": {
+    "node": true
+  },
+  "extends": ["airbnb-base", "@sablier/eslint-config"]
 }

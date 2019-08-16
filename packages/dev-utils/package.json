@@ -10,13 +10,17 @@
   "bugs": {
     "url": "https://github.com/sablierhq/sablier/issues"
   },
+  "dependencies": {
+    "bignumber.js": "^9.0.0"
+  },
   "devDependencies": {
     "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",
     "@babel/plugin-proposal-object-rest-spread": "^7.4.0",
     "@babel/preset-env": "^7.5.5",
-    "eslint-config-airbnb-base": "^13.2.0",
-    "eslint-config-prettier": "^4.1.0",
+    "@sablier/eslint-config": "0.0.1",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
     "fixpack": "^2.3.1",
     "mocha": "^6.2.0",
@@ -38,10 +42,7 @@
   "scripts": {
     "build": "yarn clean && babel --copy-files --out-dir ./lib --root-mode upward ./src",
     "clean": "shx rm -rf ./lib",
-    "lint": "eslint --config ./.eslintrc --ignore-path ../../.eslintignore .",
+    "lint": "eslint --ignore-path ../../.eslintignore .",
     "watch": "yarn build --watch"
-  },
-  "dependencies": {
-    "bignumber.js": "^9.0.0"
   }
 }
