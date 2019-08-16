@@ -1,0 +1,34 @@
+{
+  "name": "@sablier/eslint-config",
+  "description": "Eslint config to be shared across Sablier projects and packages",
+  "version": "0.0.1",
+  "author": {
+    "name": "Sablier",
+    "email": "paul@sablier.app",
+    "url": "https://sablier.app"
+  },
+  "bugs": {
+    "url": "https://github.com/sablierhq/sablier/issues"
+  },
+  "dependencies": {
+    "eslint": "^6.1.0",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-plugin-react": "^7.14.3"
+  },
+  "devDependencies": {
+    "fixpack": "^2.3.1"
+  },
+  "files": [
+    "/src"
+  ],
+  "homepage": "https://github.com/sablierhq/sablier/tree/develop/packages/eslint-config#readme",
+  "license": "LGPL-3.0",
+  "main": "./src",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sablierhq/sablier.git"
+  }
+}
