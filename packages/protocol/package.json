@@ -10,18 +10,25 @@
   "bugs": {
     "url": "https://github.com/sablierhq/sablier/issues"
   },
+  "dependencies": {
+    "@openzeppelin/contracts": "2.3.0"
+  },
   "devDependencies": {
     "@0x/sol-coverage": "^3.0.8",
     "@0x/sol-profiler": "^3.1.10",
     "@0x/sol-trace": "^2.0.16",
     "@0x/subproviders": "^4.1.0",
     "@sablier/dev-utils": "0.0.1",
-    "bignumber.js": "^8.1.1",
+    "@sablier/eslint-config": "0.0.1",
+    "bignumber.js": "8.1.1",
     "chai": "^4.2.0",
-    "chai-bignumber": "^3.0.0",
+    "chai-bignumber": "3.0.0",
     "codecov": "^3.5.0",
     "dayjs": "^1.8.15",
     "dotenv": "^7.0.0",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
     "fixpack": "^2.3.1",
     "ganache-cli": "^6.5.1",
     "istanbul": "^0.4.5",
@@ -56,10 +63,6 @@
     "lint:sol": "solhint --config ../../.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
     "profile": "scripts/profile.sh",
     "test": "scripts/test.sh",
-    "trace": "scripts/trace.sh",
-    "verify": "truffle run verify contracts/Sablier.sol:Sablier contracts/interfaces/IERC1620.sol:IERC1620"
-  },
-  "dependencies": {
-    "@openzeppelin/contracts": "2.3.0"
+    "trace": "scripts/trace.sh"
   }
 }

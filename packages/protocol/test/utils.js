@@ -1,5 +1,3 @@
-/* global web3 */
-
 web3.utils.advanceBlockAtTime = (time) => {
   return new Promise((resolve, reject) => {
     web3.currentProvider.send(
