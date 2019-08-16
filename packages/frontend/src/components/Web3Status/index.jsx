@@ -16,22 +16,17 @@ import { getEtherscanTransactionLink } from "../../helpers/web3-utils";
 import "./web3-status.scss";
 
 class Web3Status extends Component {
-  static propTypes = {
-    isConnected: PropTypes.bool,
-    address: PropTypes.string,
-  };
-
-  static defaultProps = {
-    isConnected: false,
-    address: "Disconnected",
-  };
-
-  state = {
-    showModal: false,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      showModal: false,
+    };
+  }
 
   onClick = () => {
-    if (this.props.pending.length && !this.state.showModal) {
+    const { pending } = this.props;
+    const { showModal } = this.state;
+    if (pending.length && !showModal) {
       this.setState({ showModal: true });
     }
   };
@@ -44,6 +39,9 @@ class Web3Status extends Component {
           key={txhash}
           className={classnames("pending-modal__transaction-row")}
           onClick={() => window.open(getEtherscanTransactionLink(txhash), "_blank")}
+          onKeyDown={() => window.open(getEtherscanTransactionLink(txhash), "_blank")}
+          role="button"
+          tabIndex={0}
         >
           <div className="pending-modal__transaction-label">{txhash}</div>
           <div className="pending-modal--pending-indicator">
@@ -56,7 +54,8 @@ class Web3Status extends Component {
   }
 
   renderModal() {
-    if (!this.state.showModal) {
+    const { showModal } = this.state;
+    if (!showModal) {
       return null;
     }
 
@@ -64,8 +63,8 @@ class Web3Status extends Component {
       <Modal onClose={() => this.setState({ showModal: false })}>
         <CSSTransitionGroup
           transitionName="token-modal"
-          transitionAppear={true}
-          transitionLeave={true}
+          transitionAppear
+          transitionLeave
           transitionAppearTimeout={200}
           transitionLeaveTimeout={200}
           transitionEnterTimeout={200}
@@ -81,6 +80,7 @@ class Web3Status extends Component {
     );
   }
 
+  // eslint-disable-next-line class-methods-use-this
   renderIcon(address) {
     if (!address || address.length < 42 || !isHexStrict(address)) {
       return null;
@@ -103,6 +103,7 @@ class Web3Status extends Component {
     );
   }
 
+  // eslint-disable-next-line class-methods-use-this
   renderPendingContainer(pendingTransactions, pendingLabel) {
     return (
       <div className="web3-status__pending-container">
@@ -127,6 +128,9 @@ class Web3Status extends Component {
           "web3-status--confirmed": hasConfirmedTransactions,
         })}
         onClick={this.onClick}
+        onKeyDown={this.onClick}
+        role="button"
+        tabIndex={0}
       >
         {hasPendingTransactions ? null : this.renderIcon(address)}
         <div
@@ -142,12 +146,28 @@ class Web3Status extends Component {
   }
 }
 
+Web3Status.propTypes = {
+  address: PropTypes.string,
+  confirmed: PropTypes.shape([]),
+  isConnected: PropTypes.bool,
+  pending: PropTypes.shape([]),
+  t: PropTypes.shape({}),
+};
+
+Web3Status.defaultProps = {
+  address: "Disconnected",
+  confirmed: [],
+  isConnected: false,
+  pending: [],
+  t: {},
+};
+
 export default connect((state) => {
   return {
     address: state.web3connect.account,
+    confirmed: state.web3connect.transactions.confirmed,
     // eslint-disable-next-line eqeqeq
     isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
     pending: state.web3connect.transactions.pending,
-    confirmed: state.web3connect.transactions.confirmed,
   };
 })(withTranslation()(Web3Status));

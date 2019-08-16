@@ -25,6 +25,8 @@ function getTrustLink() {
   if (os.name === "iOS") {
     return wallets.trust.ios;
   }
+
+  return "";
 }
 
 function getCoinbaseWalletLink() {
@@ -37,6 +39,8 @@ function getCoinbaseWalletLink() {
   if (os.name === "iOS") {
     return wallets.coinbase.ios;
   }
+
+  return "";
 }
 
 function getBraveLink() {

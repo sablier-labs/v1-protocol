@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import React, { Component } from "react";
 import dayjs from "dayjs";
 import PropTypes from "prop-types";
@@ -80,7 +81,9 @@ export const selectors = () => (dispatch, getState) => {
         return Balance(0, "ETH");
       }
       return balance;
-    } else if (tokenAddress) {
+    }
+
+    if (tokenAddress) {
       return getTokenBalance(tokenAddress, address);
     }
 
@@ -302,7 +305,7 @@ export const sync = () => async (dispatch, getState) => {
         type: ADD_CONTRACT,
         payload: {
           address: tokenAddress,
-          contract: contract,
+          contract,
         },
       });
     }
@@ -312,7 +315,7 @@ export const sync = () => async (dispatch, getState) => {
       const tokenBalance = getBalance(address, tokenAddress);
       const balance = await contract.methods.balanceOf(address).call();
       const decimals = tokenBalance.decimals || (await contract.methods.decimals().call());
-      let symbol = tokenBalance.symbol;
+      let { symbol } = tokenBalance;
       try {
         symbol =
           symbol ||
@@ -330,6 +333,7 @@ export const sync = () => async (dispatch, getState) => {
                 .call()
                 .catch(),
             );
+          // eslint-disable-next-line no-empty
         } catch (err) {}
       }
       symbol = symbol || "";
@@ -362,12 +366,13 @@ export const sync = () => async (dispatch, getState) => {
         const approvalBalance = getApprovals(tokenAddress, tokenOwnerAddress, spenderAddress);
         const balance = await contract.methods.allowance(tokenOwnerAddress, spenderAddress).call();
         const decimals = approvalBalance.decimals || (await contract.methods.decimals().call());
-        let symbol = approvalBalance.symbol;
+        let { symbol } = approvalBalance;
         try {
           symbol = symbol || (await contract.methods.symbol().call());
         } catch (e) {
           try {
             symbol = symbol || web3.utils.hexToString(await contractBytes32.methods.symbol().call());
+            // eslint-disable-next-line no-empty
           } catch (err) {}
         }
         symbol = symbol || "";
@@ -579,15 +584,8 @@ export default function web3connectReducer(state = initialState, { type, payload
 
 // Connect Component
 export class _Web3Connect extends Component {
-  static propTypes = {
-    initialize: PropTypes.func.isRequired,
-  };
-
-  static defaultProps = {
-    initialize() {},
-  };
-
   componentDidMount() {
+    // eslint-disable-next-line react/destructuring-assignment
     this.props.initialize().then(this.props.startWatching());
   }
 
@@ -595,6 +593,16 @@ export class _Web3Connect extends Component {
     return <noscript />;
   }
 }
+
+_Web3Connect.propTypes = {
+  initialize: PropTypes.func,
+  startWatching: PropTypes.func,
+};
+
+_Web3Connect.defaultProps = {
+  initialize: () => {},
+  startWatching: () => {},
+};
 
 export const Web3Connect = connect(
   ({ web3connect }) => ({

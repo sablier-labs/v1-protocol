@@ -2,14 +2,14 @@
 const SPECIAL_CHARS_REGEX = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
 
 export default function(text, pattern, tokenSeparator = / +/g) {
-  let regex = new RegExp(pattern.replace(SPECIAL_CHARS_REGEX, "\\$&").replace(tokenSeparator, "|"));
-  let matches = text.match(regex);
-  let isMatch = !!matches;
-  let matchedIndices = [];
+  const regex = new RegExp(pattern.replace(SPECIAL_CHARS_REGEX, "\\$&").replace(tokenSeparator, "|"));
+  const matches = text.match(regex);
+  const isMatch = !!matches;
+  const matchedIndices = [];
 
   if (isMatch) {
     for (let i = 0, matchesLen = matches.length; i < matchesLen; i += 1) {
-      let match = matches[i];
+      const match = matches[i];
       matchedIndices.push([text.indexOf(match), match.length - 1]);
     }
   }

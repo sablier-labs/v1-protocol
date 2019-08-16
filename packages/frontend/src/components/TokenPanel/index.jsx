@@ -29,49 +29,14 @@ const FUSE_OPTIONS = {
 };
 
 class TokenPanel extends Component {
-  static propTypes = {
-    account: PropTypes.string,
-    addApprovalTx: PropTypes.func.isRequired,
-    addPendingTx: PropTypes.func.isRequired,
-    approvals: PropTypes.object.isRequired,
-    onSelectTokenAddress: PropTypes.func,
-    pendingApprovals: PropTypes.object.isRequired,
-    selectedTokens: PropTypes.array.isRequired,
-    selectedTokenAddress: PropTypes.string,
-    selectors: PropTypes.func.isRequired,
-    tokenAddresses: PropTypes.shape({
-      addresses: PropTypes.array.isRequired,
-    }).isRequired,
-    tokenSymbol: PropTypes.string.isRequired,
-  };
-
-  static defaultProps = {
-    selectedTokens: [],
-    onSelectTokenAddress() {},
-    selectedTokenAddress: "",
-  };
-
-  state = {
-    isShowingModal: false,
-    searchQuery: "",
-    loadingToken: false,
-  };
-
-  createTokenList = () => {
-    const { tokenAddresses } = this.props;
-    let tokens = tokenAddresses.addresses;
-    let tokenList = [];
-
-    for (let i = 0; i < tokens.length; i++) {
-      let entry = { value: "", label: "" };
-      entry.value = tokens[i][0];
-      entry.label = tokens[i][0];
-      entry.address = tokens[i][1];
-      tokenList.push(entry);
-    }
-
-    return tokenList;
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      isShowingModal: false,
+      searchQuery: "",
+      loadingToken: false,
+    };
+  }
 
   onSelectTokenAddress(address) {
     this.setState({
@@ -79,7 +44,23 @@ class TokenPanel extends Component {
       isShowingModal: false,
     });
 
-    this.props.onSelectTokenAddress(address);
+    const { onSelectTokenAddress } = this.props;
+    onSelectTokenAddress(address);
+  }
+
+  createTokenList() {
+    const { tokenAddresses } = this.props;
+    const tokens = tokenAddresses.addresses;
+    const tokenList = [];
+
+    for (let i = 0; i < tokens.length; i += 1) {
+      const entry = { value: "", label: "" };
+      [entry.value, entry.address] = tokens[i];
+      entry.label = entry.value;
+      tokenList.push(entry);
+    }
+
+    return tokenList;
   }
 
   renderTokenList() {
@@ -102,7 +83,7 @@ class TokenPanel extends Component {
       results = tokens;
     } else {
       const fuse = new Fuse(tokens, FUSE_OPTIONS);
-      results = fuse.search(this.state.searchQuery);
+      results = fuse.search(searchQuery);
     }
 
     if (!results.length) {
@@ -123,6 +104,9 @@ class TokenPanel extends Component {
             "token-modal__token-row--selected": isSelected,
           })}
           onClick={() => this.onSelectTokenAddress(address)}
+          onKeyDown={() => this.onSelectTokenAddress(address)}
+          role="button"
+          tabIndex={0}
         >
           <TokenLogo className="token-modal__token-logo" address={address} />
           <div className="token-modal__token-logo">{label}</div>
@@ -132,7 +116,9 @@ class TokenPanel extends Component {
   }
 
   renderModal() {
-    if (!this.state.isShowingModal) {
+    const { isShowingModal } = this.state;
+    const { t } = this.props;
+    if (!isShowingModal) {
       return null;
     }
 
@@ -140,8 +126,8 @@ class TokenPanel extends Component {
       <Modal onClose={() => this.setState({ isShowingModal: false, searchQuery: "" })}>
         <CSSTransitionGroup
           transitionName="token-modal"
-          transitionAppear={true}
-          transitionLeave={true}
+          transitionAppear
+          transitionLeave
           transitionAppearTimeout={250}
           transitionLeaveTimeout={250}
           transitionEnterTimeout={250}
@@ -150,7 +136,7 @@ class TokenPanel extends Component {
             <div className="token-modal__search-container">
               <input
                 type="text"
-                placeholder={this.props.t("searchToken")}
+                placeholder={t("searchToken")}
                 className="token-modal__search-input"
                 onChange={(e) => {
                   this.setState({ searchQuery: e.target.value });
@@ -166,11 +152,7 @@ class TokenPanel extends Component {
   }
 
   renderPanel() {
-    const { renderPanel, selectedTokenAddress, t, tokenSymbol } = this.props;
-
-    if (typeof renderPanel === "function") {
-      return renderPanel();
-    }
+    const { selectedTokenAddress, t, tokenSymbol } = this.props;
 
     return (
       <div
@@ -178,6 +160,11 @@ class TokenPanel extends Component {
         onClick={() => {
           this.setState({ isShowingModal: true });
         }}
+        onKeyDown={() => {
+          this.setState({ isShowingModal: true });
+        }}
+        role="button"
+        tabIndex={0}
       >
         <div
           className={classnames("token-panel__token-select", {
@@ -203,6 +190,26 @@ class TokenPanel extends Component {
     );
   }
 }
+
+TokenPanel.propTypes = {
+  approvals: PropTypes.shape({}).isRequired,
+  onSelectTokenAddress: PropTypes.func,
+  pendingApprovals: PropTypes.shape({}).isRequired,
+  selectedTokens: PropTypes.shape([]),
+  selectedTokenAddress: PropTypes.string,
+  t: PropTypes.shape({}),
+  tokenAddresses: PropTypes.shape({
+    addresses: PropTypes.array.isRequired,
+  }).isRequired,
+  tokenSymbol: PropTypes.string.isRequired,
+};
+
+TokenPanel.defaultProps = {
+  onSelectTokenAddress() {},
+  selectedTokens: [],
+  selectedTokenAddress: "",
+  t: {},
+};
 
 export default connect(
   (state) => ({

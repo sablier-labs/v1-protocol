@@ -2,33 +2,29 @@ import React, { Component } from "react";
 import classnames from "classnames";
 import PropTypes from "prop-types";
 
-class InputWithCurrencySuffix extends Component {
-  static propTypes = {
-    className: PropTypes.string,
-    id: PropTypes.string,
-    name: PropTypes.string,
-    onChange: PropTypes.func.isRequired,
-    suffix: PropTypes.string.isRequired,
-    type: PropTypes.string,
-  };
+const initialState = {
+  label: "",
+  suffix: "",
+  value: null,
+};
 
-  state = {
-    label: "",
-    suffix: "",
-    value: null,
-  };
+class InputWithCurrencySuffix extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = { ...initialState };
+  }
 
   static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.suffix !== prevState.suffix) {
       return { suffix: nextProps.suffix };
-    } else {
-      return prevState;
     }
+    return prevState;
   }
 
   onChange(e) {
-    const { suffix } = this.props;
-    let value = e.target.value;
+    const { onChange, suffix } = this.props;
+    let { value } = e.target;
     value = value.replace(" ", "");
     value = value.replace(suffix, "");
 
@@ -51,10 +47,9 @@ class InputWithCurrencySuffix extends Component {
     }
 
     this.setState({
-      value: parseFloat(value),
       label,
     });
-    this.props.onChange(value, label);
+    onChange(value, label);
   }
 
   /**
@@ -66,14 +61,14 @@ class InputWithCurrencySuffix extends Component {
       return;
     }
     e.preventDefault();
-    const { suffix } = this.props;
-    let value = e.target.value;
+    const { onChange, suffix } = this.props;
+    let { value } = e.target;
     value = value.replace(" ", "");
     value = value.replace(suffix, "");
     value = value.substr(0, value.length - 1);
     const label = value ? `${value} ${suffix}` : "";
-    this.setState({ value, label });
-    this.props.onChange(value, label);
+    this.setState({ label });
+    onChange(value, label);
   }
 
   render() {
@@ -96,5 +91,21 @@ class InputWithCurrencySuffix extends Component {
     );
   }
 }
+
+InputWithCurrencySuffix.propTypes = {
+  className: PropTypes.string,
+  id: PropTypes.string,
+  name: PropTypes.string,
+  onChange: PropTypes.func.isRequired,
+  suffix: PropTypes.string.isRequired,
+  type: PropTypes.string,
+};
+
+InputWithCurrencySuffix.defaultProps = {
+  className: "",
+  id: "",
+  name: "",
+  type: "",
+};
 
 export default InputWithCurrencySuffix;

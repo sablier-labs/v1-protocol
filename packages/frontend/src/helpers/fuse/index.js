@@ -1,4 +1,6 @@
+/* eslint-disable */
 import Bitap from "./bitap";
+
 const deepValue = require("./helpers/deep_value");
 const isArray = require("./helpers/is_array");
 

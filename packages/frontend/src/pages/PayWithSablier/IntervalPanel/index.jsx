@@ -11,23 +11,22 @@ import { INTERVALS } from "../../../constants/time";
 import "./interval-panel.scss";
 
 class IntervalPanel extends Component {
-  static propTypes = {
-    className: PropTypes.string,
-    interval: PropTypes.string,
-    onSelectInterval: PropTypes.func.isRequired,
-  };
+  constructor(props) {
+    super(props);
 
-  state = {
-    showIntervalDropdown: false,
-  };
-
-  handleClickOutside() {
-    this.setState({ showIntervalDropdown: false });
+    this.state = {
+      showIntervalDropdown: false,
+    };
   }
 
   onSelectInterval(interval) {
+    const { onSelectInterval } = this.props;
     this.setState({ showIntervalDropdown: false });
-    this.props.onSelectInterval(interval);
+    onSelectInterval(interval);
+  }
+
+  handleClickOutside() {
+    this.setState({ showIntervalDropdown: false });
   }
 
   renderDropdown() {
@@ -40,14 +39,17 @@ class IntervalPanel extends Component {
 
     return (
       <div className="interval-dropdown">
-        {Object.keys(INTERVALS).map((key, index) => {
+        {Object.keys(INTERVALS).map((key, _index) => {
           return (
             <div
               className={classnames("interval-dropdown__row", {
                 "interval-dropdown__row--selected": interval === key,
               })}
-              key={index}
+              key={key}
               onClick={() => this.onSelectInterval(key)}
+              onKeyDown={() => this.onSelectInterval(key)}
+              role="button"
+              tabIndex={0}
             >
               {INTERVALS[key]}
             </div>
@@ -59,12 +61,19 @@ class IntervalPanel extends Component {
 
   render() {
     const { className, interval, t } = this.props;
+    const { showIntervalDropdown } = this.state;
+
     return (
       <div
         className={classnames("interval-panel", className)}
         onClick={() => {
-          this.setState({ showIntervalDropdown: !this.state.showIntervalDropdown });
+          this.setState({ showIntervalDropdown: !showIntervalDropdown });
         }}
+        onKeyDown={() => {
+          this.setState({ showIntervalDropdown: !showIntervalDropdown });
+        }}
+        role="button"
+        tabIndex={0}
       >
         <span
           className={classnames("interval-panel__interval-label", {
@@ -79,5 +88,18 @@ class IntervalPanel extends Component {
     );
   }
 }
+
+IntervalPanel.propTypes = {
+  className: PropTypes.string,
+  interval: PropTypes.string,
+  onSelectInterval: PropTypes.func.isRequired,
+  t: PropTypes.shape({}),
+};
+
+IntervalPanel.defaultProps = {
+  className: "",
+  interval: INTERVALS.minute,
+  t: {},
+};
 
 export default withTranslation()(onClickOutside(IntervalPanel));

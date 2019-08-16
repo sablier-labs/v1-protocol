@@ -1,6 +1,7 @@
+/* eslint-disable no-bitwise */
 export default function(pattern) {
-  let mask = {};
-  let len = pattern.length;
+  const mask = {};
+  const len = pattern.length;
 
   for (let i = 0; i < len; i += 1) {
     mask[pattern.charAt(i)] = 0;

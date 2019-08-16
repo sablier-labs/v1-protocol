@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import { BigNumber as BN } from "bignumber.js";
 import { roundToDecimalPoints } from "./format-utils";
 /**

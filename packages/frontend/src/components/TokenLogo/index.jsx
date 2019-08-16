@@ -9,22 +9,14 @@ const RINKEBY_TOKEN_MAP = {
 
 const TOKEN_ICON_API = "https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens";
 const BAD_IMAGES = {};
-export default class TokenLogo extends Component {
-  static propTypes = {
-    address: PropTypes.string,
-    size: PropTypes.string,
-    className: PropTypes.string,
-  };
 
-  static defaultProps = {
-    address: "",
-    size: "20px",
-    className: "",
-  };
-
-  state = {
-    error: false,
-  };
+class TokenLogo extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      error: false,
+    };
+  }
 
   render() {
     const { address, size, className } = this.props;
@@ -35,7 +27,8 @@ export default class TokenLogo extends Component {
       path = EthereumLogo;
     }
 
-    if (!this.state.error && !BAD_IMAGES[mainAddress] && mainAddress !== "ETH") {
+    const { error } = this.state;
+    if (!error && !BAD_IMAGES[mainAddress] && mainAddress !== "ETH") {
       path = `${TOKEN_ICON_API}/${mainAddress.toLowerCase()}.png`;
     }
 
@@ -66,3 +59,17 @@ export default class TokenLogo extends Component {
     );
   }
 }
+
+TokenLogo.propTypes = {
+  address: PropTypes.string,
+  size: PropTypes.string,
+  className: PropTypes.string,
+};
+
+TokenLogo.defaultProps = {
+  address: "",
+  size: "20px",
+  className: "",
+};
+
+export default TokenLogo;

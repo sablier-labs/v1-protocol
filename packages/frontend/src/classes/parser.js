@@ -1,14 +1,17 @@
+/* eslint-disable no-case-declarations */
 import dayjs from "dayjs";
 
 import { BigNumber as BN } from "bignumber.js";
 import { toChecksumAddress } from "web3-utils";
+
+import StreamFlow from "./stream/flow";
+import StreamStatus from "./stream/status";
 
 import { MAINNET_BLOCK_TIME_AVERAGE } from "../constants/time";
 import { formatDuration, formatTime, roundToDecimalPoints } from "../helpers/format-utils";
 import { getEtherscanTransactionLink } from "../helpers/web3-utils";
 import { getUnitValue } from "../helpers/token-utils";
 import { roundTimeAroundHour } from "../helpers/time-utils";
-import { StreamFlow, StreamStatus } from "./stream";
 
 export const initialState = {
   flow: "",
@@ -46,6 +49,7 @@ export class Parser {
 
     // See the following
     // - https://stackoverflow.com/questions/13104494/does-javascript-pass-by-reference
+    // eslint-disable-next-line max-len
     // - https://stackoverflow.com/questions/122102/what-is-the-most-efficient-way-to-deep-clone-an-object-in-javascript/5344074#5344074
     this.stream = JSON.parse(JSON.stringify(stream));
     this.stream.rawStream.interval = new BN(stream.rawStream.interval);
@@ -73,6 +77,7 @@ export class Parser {
     } else {
       // Humans would arguably understand better the concept of a stream being "Ended" when
       // that stream has successfully paid the recipient all the funds deposited initially.
+      // eslint-disable-next-line no-lonely-if
       if (stream.rawStream.redemption.senderAmount === 0) {
         status = StreamStatus.ENDED.name;
       } else {
@@ -82,17 +87,17 @@ export class Parser {
     this.stream.rawStream.status = status;
   }
 
-  getMinutesForBlockDelta(blockDelta) {
-    const seconds = this.getSecondsForBlockDelta(blockDelta);
+  static getMinutesForBlockDelta(blockDelta) {
+    const seconds = Parser.getSecondsForBlockDelta(blockDelta);
     return BN(seconds.dividedBy(BN(60)).toFixed(0));
   }
 
-  getSecondsForBlockDelta(blockDelta) {
+  static getSecondsForBlockDelta(blockDelta) {
     return blockDelta.multipliedBy(MAINNET_BLOCK_TIME_AVERAGE);
   }
 
-  getTimeForBlockDelta(blockDelta, forPast = true) {
-    const seconds = this.getSecondsForBlockDelta(blockDelta);
+  static getTimeForBlockDelta(blockDelta, forPast = true) {
+    const seconds = Parser.getSecondsForBlockDelta(blockDelta);
     let time = dayjs();
     if (forPast) {
       time = time.subtract(seconds, "second");
@@ -154,9 +159,6 @@ export class Parser {
     const depositBN = totalBlockDeltaBN.dividedBy(interval).multipliedBy(payment);
     const depositValue = getUnitValue(depositBN, token.decimals);
 
-    if (rawStream.status === StreamStatus.CREATED.name || rawStream.status === StreamStatus.UNDEFINED.name) {
-    }
-
     let blockDeltaBN;
     switch (rawStream.status) {
       case StreamStatus.ACTIVE.name:
@@ -199,10 +201,10 @@ export class Parser {
     withdrawals.forEach((withdrawal) => {
       withdrawnBN = withdrawnBN.plus(new BN(withdrawal.amount));
     });
-    let withdrawnValue = getUnitValue(withdrawnBN, token.decimals);
+    const withdrawnValue = getUnitValue(withdrawnBN, token.decimals);
 
-    let withdrawableBN = paidBN.minus(withdrawnBN);
-    let withdrawableValue = getUnitValue(withdrawableBN, token.decimals);
+    const withdrawableBN = paidBN.minus(withdrawnBN);
+    const withdrawableValue = getUnitValue(withdrawableBN, token.decimals);
 
     return {
       deposit: depositValue,
@@ -218,14 +220,14 @@ export class Parser {
     const { stream, translations } = this;
     const { rawStream } = stream;
 
-    // TODO: use the Etherscan API for calculating time and be loose with off-by-one errors.
+    // TODO: use the Etherscan API to calculate time and be loose with off-by-one errors.
     // At the moment, the string interval won't be resolved lest the MAINNET_BLOCK_TIME_AVERAGE is
     // 15 seconds.
     const paymentBN = new BN(rawStream.payment);
     const payment = getUnitValue(paymentBN, rawStream.token.decimals);
     const minutes = this.getMinutesForBlockDelta(rawStream.interval);
 
-    let formattedInterval = formatDuration(translations, minutes)
+    const formattedInterval = formatDuration(translations, minutes)
       .replace(`1 ${translations("month")}`, translations("month"))
       .replace(`1 ${translations("day")}`, translations("day"))
       .replace(`1 ${translations("hour")}`, translations("hour"))
@@ -241,7 +243,7 @@ export class Parser {
       return {};
     }
 
-    const timestamp = rawStream.txs[rawStream.txs.length - 1].timestamp;
+    const { timestamp } = rawStream.txs[rawStream.txs.length - 1];
     const redemptionTime = formatTime(translations, dayjs.unix(timestamp));
 
     return {
@@ -257,7 +259,8 @@ export class Parser {
 
     const blockNumberBN = new BN(block.number);
     const intervalInMinutes = this.getMinutesForBlockDelta(rawStream.interval);
-    let startTime, stopTime;
+    let startTime;
+    let stopTime;
 
     // Not using the `status` here because start and stop times are independent of it
     // Before the start of the stream

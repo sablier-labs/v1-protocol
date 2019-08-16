@@ -5,7 +5,7 @@ import ReactGA from "react-ga";
 import ReactTable from "react-table";
 
 import { connect } from "react-redux";
-import { push } from "connected-react-router";
+import { push as routerPush } from "connected-react-router";
 import { Query } from "react-apollo";
 import { withTranslation } from "react-i18next";
 
@@ -14,27 +14,16 @@ import FaPlus from "../../assets/images/fa-plus.svg";
 import Link from "../../components/Link";
 import Loader from "../../components/Loader";
 import ProgressBar from "../../components/ProgressBar";
+import StreamFlow from "../../classes/stream/flow";
 
 import { GET_STREAMS } from "../../apollo/queries";
 import { Parser } from "../../classes/parser";
 import { selectors, watchBalance } from "../../redux/ducks/web3connect";
-import { StreamFlow } from "../../classes/stream";
 
 import "react-table/react-table.css";
 import "./dashboard.scss";
 
 class Dashboard extends Component {
-  static propTypes = {
-    account: PropTypes.string,
-    block: PropTypes.shape({
-      number: PropTypes.object.isRequired,
-      timestamp: PropTypes.object.isRequired,
-    }),
-    push: PropTypes.func.isRequired,
-    selectors: PropTypes.func.isRequired,
-    watchBalance: PropTypes.func.isRequired,
-  };
-
   componentDidMount() {
     ReactGA.pageview(window.location.pathname + window.location.search);
   }
@@ -175,12 +164,13 @@ class Dashboard extends Component {
         ]}
         data={cellData}
         defaultPageSize={99999}
-        getTdProps={(state, rowInfo, column, instance) => {
+        getTdProps={(state, rowInfo, column, _instance) => {
           return {
-            onClick: (e, handleOriginal) => {
+            onClick: (_e, _handleOriginal) => {
               if (column.id !== "link") {
                 const cellDataItem = cellData[rowInfo.index];
-                this.props.push(`/stream/${cellDataItem.rawStreamId}`);
+                const { push } = this.props;
+                push(`/stream/${cellDataItem.rawStreamId}`);
               }
             },
           };
@@ -199,7 +189,7 @@ class Dashboard extends Component {
     return (
       <div className="dashboard">
         <div className="dashboard__title-label">{t("dashboard")}</div>
-        <Link className="dashboard__plus-icon-container" to={"/"}>
+        <Link className="dashboard__plus-icon-container" to="/">
           <img className="dashboard__plus-icon" alt="New Stream" src={FaPlus} />
         </Link>
         <Query query={GET_STREAMS} variables={{ owner: account.toLowerCase() }}>
@@ -222,13 +212,29 @@ class Dashboard extends Component {
   }
 }
 
+Dashboard.propTypes = {
+  account: PropTypes.string,
+  block: PropTypes.shape({
+    number: PropTypes.object.isRequired,
+    timestamp: PropTypes.object.isRequired,
+  }),
+  push: PropTypes.func.isRequired,
+  t: PropTypes.shape({}),
+};
+
+Dashboard.defaultProps = {
+  account: "",
+  block: {},
+  t: {},
+};
+
 export default connect(
   (state) => ({
     account: state.web3connect.account,
     block: state.web3connect.block,
   }),
   (dispatch) => ({
-    push: (path) => dispatch(push(path)),
+    push: (path) => dispatch(routerPush(path)),
     selectors: () => dispatch(selectors()),
     watchBalance: ({ balanceOf, tokenAddress }) => dispatch(watchBalance({ balanceOf, tokenAddress })),
   }),

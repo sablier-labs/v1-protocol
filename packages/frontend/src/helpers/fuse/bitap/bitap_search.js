@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 import bitapScore from "./bitap_score";
 import matchedIndices from "./bitap_matched_indices";
 
@@ -36,7 +37,7 @@ export default function(
     bestLocation = text.lastIndexOf(pattern, expectedLocation + patternLen);
 
     if (bestLocation !== -1) {
-      let score = bitapScore(pattern, {
+      score = bitapScore(pattern, {
         errors: 0,
         currentLocation: bestLocation,
         expectedLocation,
@@ -83,16 +84,16 @@ export default function(
     binMax = binMid;
 
     let start = Math.max(1, expectedLocation - binMid + 1);
-    let finish = findAllMatches ? textLen : Math.min(expectedLocation + binMid, textLen) + patternLen;
+    const finish = findAllMatches ? textLen : Math.min(expectedLocation + binMid, textLen) + patternLen;
 
     // Initialize the bit array
-    let bitArr = Array(finish + 2);
+    const bitArr = Array(finish + 2);
 
     bitArr[finish + 1] = (1 << i) - 1;
 
     for (let j = finish; j >= start; j -= 1) {
-      let currentLocation = j - 1;
-      let charMatch = patternAlphabet[text.charAt(currentLocation)];
+      const currentLocation = j - 1;
+      const charMatch = patternAlphabet[text.charAt(currentLocation)];
 
       if (charMatch) {
         matchMask[currentLocation] = 1;

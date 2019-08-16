@@ -12,7 +12,7 @@ import Modal from "../../../components/Modal";
 import PrimaryButton from "../../../components/PrimaryButton";
 import SablierABI from "../../../abi/sablier";
 
-import { addPendingTx } from "../../../redux/ducks/web3connect";
+import { addPendingTx as web3AddPendingTx } from "../../../redux/ducks/web3connect";
 import { countDecimalPoints, roundToDecimalPoints } from "../../../helpers/format-utils";
 
 import "rc-slider/assets/index.css";
@@ -25,17 +25,12 @@ const initialState = {
 };
 
 class WithdrawModal extends Component {
-  static propTypes = {
-    account: PropTypes.string,
-    addPendingTx: PropTypes.func.isRequired,
-    hasPendingTransactions: PropTypes.bool.isRequired,
-    onClose: PropTypes.func.isRequired,
-    onWithdrawSuccess: PropTypes.func.isRequired,
-    stream: PropTypes.object.isRequired,
-    web3: PropTypes.object.isRequired,
-  };
 
-  state = { ...initialState };
+  constructor(props) {
+    super(props);
+
+    this.state = { ...initialState };
+  }
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const initialAmountToWithdraw = Math.floor(nextProps.stream.funds.withdrawable / 2);
@@ -43,16 +38,47 @@ class WithdrawModal extends Component {
 
     if (amountToWithdraw !== prevState.amountToWithdraw) {
       return { amountToWithdraw };
-    } else {
-      return prevState;
+    }
+    return prevState;
+  }
+
+  componentDidUpdate(_prevProps, _prevState) {
+    const { hasPendingTransactions, onWithdrawSuccess } = this.props;
+    const { amountToWithdraw, submitted, submissionError } = this.state;
+    if (submitted && !submissionError && !hasPendingTransactions) {
+      onWithdrawSuccess(amountToWithdraw);
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  onClose() {
+    const { onClose } = this.props;
+    this.setState(initialState);
+    onClose();
+  }
+
+  async onSubmitWithdraw() {
+    const { account, addPendingTx, sablierAddress, stream, web3 } = this.props;
     const { amountToWithdraw } = this.state;
-    if (this.state.submitted && !this.state.submissionError && !this.props.hasPendingTransactions) {
-      this.props.onWithdrawSuccess(amountToWithdraw);
-    }
+
+    const adjustedAmount = new BN(amountToWithdraw).multipliedBy(10 ** stream.token.decimals).toFixed(0);
+    let gasPrice = "8000000000";
+    try {
+      gasPrice = await web3.eth.getGasPrice();
+      gasPrice = BN(gasPrice || "0")
+        .plus(BN("1000000000"))
+        .toString();
+      // eslint-disable-next-line no-empty
+    } catch {}
+    new web3.eth.Contract(SablierABI, sablierAddress).methods
+      .withdrawFromStream(stream.rawStreamId, adjustedAmount)
+      .send({ from: account, gasPrice })
+      .once("transactionHash", (transactionHash) => {
+        addPendingTx(transactionHash);
+        this.setState({ submitted: true });
+      })
+      .once("error", (err) => {
+        this.handleError(err);
+      });
   }
 
   getSliderStep() {
@@ -76,35 +102,6 @@ class WithdrawModal extends Component {
       submissionError: err.toString() || t("error"),
       submitted: false,
     });
-  }
-
-  onClose() {
-    this.setState(initialState);
-    this.props.onClose();
-  }
-
-  async onSubmitWithdraw() {
-    const { account, addPendingTx, sablierAddress, stream, web3 } = this.props;
-    const { amountToWithdraw } = this.state;
-
-    const adjustedAmount = new BN(amountToWithdraw).multipliedBy(10 ** stream.token.decimals).toFixed(0);
-    let gasPrice = "8000000000";
-    try {
-      gasPrice = await web3.eth.getGasPrice();
-      gasPrice = BN(gasPrice || "0")
-        .plus(BN("1000000000"))
-        .toString();
-    } catch {}
-    new web3.eth.Contract(SablierABI, sablierAddress).methods
-      .withdrawFromStream(stream.rawStreamId, adjustedAmount)
-      .send({ from: account, gasPrice })
-      .once("transactionHash", (transactionHash) => {
-        addPendingTx(transactionHash);
-        this.setState({ submitted: true });
-      })
-      .once("error", (err) => {
-        this.handleError(err);
-      });
   }
 
   render() {
@@ -154,7 +151,7 @@ class WithdrawModal extends Component {
           <PrimaryButton
             className={classnames(["withdraw-modal__button", "primary-button--yellow"])}
             disabled={disabled}
-            disabledWhileLoadin={true}
+            disabledWhileLoading
             label={`${t("withdraw.verbatim")} ${roundToDecimalPoints(amountToWithdraw, 3)} ${stream.token.symbol}`}
             loading={hasPendingTransactions}
             onClick={() =>
@@ -170,15 +167,32 @@ class WithdrawModal extends Component {
   }
 }
 
+WithdrawModal.propTypes = {
+  account: PropTypes.string,
+  addPendingTx: PropTypes.func.isRequired,
+  hasPendingTransactions: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onWithdrawSuccess: PropTypes.func.isRequired,
+  sablierAddress: PropTypes.string,
+  stream: PropTypes.object.isRequired,
+  web3: PropTypes.object.isRequired,
+  t: PropTypes.shape({}),
+};
+
+WithdrawModal.defaultProps = {
+  account: "",
+  sablierAddress: "",
+  t: {},
+};
+
 export default connect(
   (state) => ({
     account: state.web3connect.account,
-    addPendingTx: PropTypes.func.isRequired,
     hasPendingTransactions: !!state.web3connect.transactions.pending.length,
     sablierAddress: state.addresses.sablierAddress,
     web3: state.web3connect.web3,
   }),
   (dispatch) => ({
-    addPendingTx: (path) => dispatch(addPendingTx(path)),
+    addPendingTx: (path) => dispatch(web3AddPendingTx(path)),
   }),
 )(withTranslation()(WithdrawModal));

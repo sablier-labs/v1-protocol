@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 export function retry(func, retryCount = 5) {
   return new Promise((resolve, reject) => {
     func().then(
@@ -8,7 +9,7 @@ export function retry(func, retryCount = 5) {
         if (retryCount === 0) {
           return reject();
         }
-        setTimeout(() => retry(func, retryCount - 1).then(resolve, reject), 50);
+        return setTimeout(() => retry(func, retryCount - 1).then(resolve, reject), 50);
       },
     );
   });

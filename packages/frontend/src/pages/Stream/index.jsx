@@ -5,7 +5,7 @@ import ReactGA from "react-ga";
 import ReactTooltip from "react-tooltip";
 
 import { connect } from "react-redux";
-import { push } from "connected-react-router";
+import { push as routerPush } from "connected-react-router";
 import { Query } from "react-apollo";
 import { withTranslation } from "react-i18next";
 
@@ -30,18 +30,19 @@ import Loader from "../../components/Loader";
 import ModalWithImage from "../../components/ModalWithImage";
 import PrimaryButton from "../../components/PrimaryButton";
 import RedeemModal from "./RedeemModal";
+import StreamFlow from "../../classes/stream/flow";
+import StreamStatus from "../../classes/stream/status";
 import TokenLogo from "../../components/TokenLogo";
 import WithdrawModal from "./WithdrawModal";
 
 import { GET_STREAM } from "../../apollo/queries";
 import { getEtherscanAddressLink } from "../../helpers/web3-utils";
 import { Parser } from "../../classes/parser";
-import { StreamFlow, StreamStatus } from "../../classes/stream";
 
 import "react-circular-progressbar/dist/styles.css";
 import "./stream.scss";
 
-const StatItem = ({ icon, label, tooltip, value }) => (
+const StatItem = ({ label, icon, tooltip, value }) => (
   <div className="stream__stats-item">
     <div className="stream__stats-item__icon-container">
       <img className="stream__stats-item__icon" alt={label} src={icon} />
@@ -57,7 +58,14 @@ const StatItem = ({ icon, label, tooltip, value }) => (
   </div>
 );
 
-const StatItemWithLink = ({ icon, label, link, tooltip, value }) => (
+StatItem.propTypes = {
+  icon: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  tooltip: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+};
+
+const StatItemWithLink = ({ label, icon, link, tooltip, value }) => (
   <div className="stream__stats-item" style={{ marginTop: "0px" }}>
     <div className="stream__stats-item__icon-container">
       <img className="stream__stats-item__icon" alt={label} src={icon} />
@@ -74,6 +82,14 @@ const StatItemWithLink = ({ icon, label, link, tooltip, value }) => (
     </div>
   </div>
 );
+
+StatItemWithLink.propTypes = {
+  icon: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  link: PropTypes.string.isRequired,
+  tooltip: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+};
 
 const Funds = ({ downLabel, stream, topLabel }) => (
   <div className="stream__funds-container">
@@ -104,6 +120,12 @@ const Funds = ({ downLabel, stream, topLabel }) => (
   </div>
 );
 
+Funds.propTypes = {
+  downLabel: PropTypes.string.isRequired,
+  stream: PropTypes.string.isRequired,
+  topLabel: PropTypes.string.isRequired,
+};
+
 const initialState = {
   hasShownRedeemWarning: false,
   lastWithdrawalAmount: 0,
@@ -117,17 +139,11 @@ const initialState = {
 };
 
 class Stream extends Component {
-  static propTypes = {
-    account: PropTypes.string,
-    block: PropTypes.shape({
-      number: PropTypes.object.isRequired,
-      timestamp: PropTypes.object.isRequired,
-    }),
-    push: PropTypes.func.isRequired,
-    web3: PropTypes.object.isRequired,
-  };
+  constructor(props) {
+    super(props);
 
-  state = { ...initialState };
+    this.state = { ...initialState };
+  }
 
   componentDidMount() {
     ReactGA.pageview(window.location.pathname + window.location.search);
@@ -258,14 +274,14 @@ class Stream extends Component {
             tooltip={t("tooltip.stopTime")}
             value={stream.stopTime}
           />
-          <ReactTooltip className="stream__tooltip" effect="solid" id="stats-tooltip" multiline={true} type="dark" />
+          <ReactTooltip className="stream__tooltip" effect="solid" id="stats-tooltip" multiline type="dark" />
         </div>
       </div>
     );
   }
 
   renderPanel(stream) {
-    const { t } = this.props;
+    const { push, t } = this.props;
     const { submissionError } = this.state;
 
     return (
@@ -277,13 +293,13 @@ class Stream extends Component {
             icon={FaTachometer}
             label={t("goDashboard")}
             labelClassName={classnames("primary-button__label--black")}
-            onClick={() => this.props.push("/dashboard")}
+            onClick={() => push("/dashboard")}
           />
           <PrimaryButton
             className={classnames(["stream__panel-container-button", "stream__button"])}
             icon={FaPlus}
             label={t("newStream")}
-            onClick={() => this.props.push("/")}
+            onClick={() => push("/")}
           />
           <LastPanelButton
             onClickRedeem={() => this.onClickRedeem()}
@@ -304,9 +320,11 @@ class Stream extends Component {
         <span className="stream__title-label">{t("share")}</span>
         <div className="stream__button-container">
           <div
-            ref={(ref) => (this.copyLinkButtonContainerRef = ref)}
+            ref={(ref) => {
+              this.copyLinkButtonContainerRef = ref;
+            }}
             data-for="copyLinkButtonTooltip"
-            data-tip={"Copied"}
+            data-tip="Copied"
           >
             <PrimaryButton
               className={classnames(["stream__panel-container-button", "stream__button", "primary-button--white"])}
@@ -320,7 +338,7 @@ class Stream extends Component {
               effect="solid"
               event="none"
               id="copyLinkButtonTooltip"
-              multiline={true}
+              multiline
               type="dark"
             />
           </div>
@@ -354,14 +372,14 @@ class Stream extends Component {
 
   renderRedeemModal(stream, refetch) {
     const { t } = this.props;
-    const { showRedeemModal, showRedeemSuccessModal } = this.state;
+    const { redemptionSenderAmount, showRedeemModal, showRedeemSuccessModal } = this.state;
 
     return (
       <div>
         {!showRedeemModal ? null : (
           <RedeemModal
             onClose={() => this.setState({ showRedeemModal: false })}
-            onRedeemSuccess={(senderAmount, recipientAmount) => this.onRedeemSuccess(senderAmount, refetch)}
+            onRedeemSuccess={(senderAmount, _recipientAmount) => this.onRedeemSuccess(senderAmount, refetch)}
             stream={stream}
           />
         )}
@@ -370,7 +388,7 @@ class Stream extends Component {
             buttonLabel={t("goBack")}
             image={FaShieldCheck}
             label={t("redeem.success", {
-              senderAmount: this.state.redemptionSenderAmount,
+              senderAmount: redemptionSenderAmount,
               tokenSymbol: stream.token.symbol,
             })}
             onClose={() =>
@@ -415,7 +433,7 @@ class Stream extends Component {
 
   renderWithdrawModal(stream, refetch) {
     const { t } = this.props;
-    const { showWithdrawModal, showWithdrawSuccessModal } = this.state;
+    const { lastWithdrawalAmount, showWithdrawModal, showWithdrawSuccessModal } = this.state;
 
     return (
       <div>
@@ -431,7 +449,7 @@ class Stream extends Component {
             buttonLabel={t("goBack")}
             image={FaShieldCheck}
             label={t("withdraw.success", {
-              amount: this.state.lastWithdrawalAmount,
+              amount: lastWithdrawalAmount,
               tokenSymbol: stream.token.symbol,
             })}
             onClose={() =>
@@ -481,15 +499,42 @@ class Stream extends Component {
   }
 }
 
+Stream.propTypes = {
+  account: PropTypes.string,
+  block: PropTypes.shape({
+    number: PropTypes.object.isRequired,
+    timestamp: PropTypes.object.isRequired,
+  }),
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      rawStreamId: PropTypes.string,
+    }),
+    url: PropTypes.string,
+  }),
+  push: PropTypes.func.isRequired,
+  t: PropTypes.shape({}),
+};
+
+Stream.defaultProps = {
+  account: "",
+  block: {},
+  match: {
+    params: {
+      rawStreamId: "",
+    },
+    url: "",
+  },
+  t: {},
+};
+
 export default connect(
   (state) => ({
     account: state.web3connect.account,
     block: state.web3connect.block,
     // eslint-disable-next-line eqeqeq
     isConnected: !!state.web3connect.account && state.web3connect.networkId == (process.env.REACT_APP_NETWORK_ID || 1),
-    web3: state.web3connect.web3,
   }),
   (dispatch) => ({
-    push: (path) => dispatch(push(path)),
+    push: (path) => dispatch(routerPush(path)),
   }),
 )(withTranslation()(Stream));

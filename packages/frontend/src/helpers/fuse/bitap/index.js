@@ -50,6 +50,7 @@ class Bitap {
 
   search(text) {
     if (!this.options.isCaseSensitive) {
+      // eslint-disable-next-line no-param-reassign
       text = text.toLowerCase();
     }
 

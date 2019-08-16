@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import MediaQuery from "react-responsive";
 
 import { connect } from "react-redux";
 import { ConnectedRouter } from "connected-react-router";
@@ -9,15 +10,18 @@ import { withTranslation } from "react-i18next";
 import Dashboard from "./pages/Dashboard";
 import FaBan from "./assets/images/fa-ban.svg";
 import Header from "./components/Header";
-import MediaQuery from "react-responsive";
 import NetworkModal from "./components/NetworkModal";
 import PayWithSablier from "./pages/PayWithSablier";
 import Stream from "./pages/Stream";
 import WalletModal from "./components/WalletModal";
 
 import { history } from "./redux/store";
-import { setAddresses } from "./redux/ducks/addresses";
-import { Web3Connect, startWatching, initialize } from "./redux/ducks/web3connect";
+import { setAddresses as web3SetAddresses } from "./redux/ducks/addresses";
+import {
+  Web3Connect,
+  startWatching as web3StartWatching,
+  initialize as web3Initialize,
+} from "./redux/ducks/web3connect";
 import ModalWithImage from "./components/ModalWithImage";
 
 class App extends Component {
@@ -42,12 +46,11 @@ class App extends Component {
   }
 
   renderModals() {
-    const { initialized, networkId, t, web3 } = this.props;
-    const hasSetNetworkId = this.hasSetNetworkId;
+    const { initialized, networkId, web3 } = this.props;
     // eslint-disable-next-line eqeqeq
     const hasCorrectNetworkId = networkId == (process.env.REACT_APP_NETWORK_ID || 1);
 
-    if (initialized && web3 && hasSetNetworkId && !hasCorrectNetworkId) {
+    if (initialized && web3 && this.hasSetNetworkId && !hasCorrectNetworkId) {
       return <NetworkModal />;
     }
     if (initialized && !web3) {
@@ -57,7 +60,7 @@ class App extends Component {
   }
 
   render() {
-    const { initialized, networkId, t, web3 } = this.props;
+    const { initialized, t } = this.props;
     if (!initialized) {
       return <noscript />;
     }
@@ -94,8 +97,8 @@ export default connect(
     web3: state.web3connect.web3,
   }),
   (dispatch) => ({
-    setAddresses: (networkId) => dispatch(setAddresses(networkId)),
-    initialize: () => dispatch(initialize()),
-    startWatching: () => dispatch(startWatching()),
+    setAddresses: (networkId) => dispatch(web3SetAddresses(networkId)),
+    initialize: () => dispatch(web3Initialize()),
+    startWatching: () => dispatch(web3StartWatching()),
   }),
 )(withTranslation()(App));

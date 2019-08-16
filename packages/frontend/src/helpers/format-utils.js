@@ -17,7 +17,8 @@ export function formatDuration(translations, duration, minimumInterval = INTERVA
     return translations("aLot");
   }
 
-  let result = [];
+  let adjustedDuration;
+  const result = [];
 
   const months = Math.floor(duration / INTERVAL_MINUTES.month);
   if (months) {
@@ -27,7 +28,7 @@ export function formatDuration(translations, duration, minimumInterval = INTERVA
       return result.join(" ");
     }
   }
-  duration %= INTERVAL_MINUTES.month;
+  adjustedDuration %= INTERVAL_MINUTES.month;
 
   const days = Math.floor(duration / INTERVAL_MINUTES.day);
   if (days) {
@@ -37,7 +38,7 @@ export function formatDuration(translations, duration, minimumInterval = INTERVA
       return result.join(" ");
     }
   }
-  duration %= INTERVAL_MINUTES.day;
+  adjustedDuration %= INTERVAL_MINUTES.day;
 
   const hours = Math.floor(duration / INTERVAL_MINUTES.hour);
   if (hours) {
@@ -46,11 +47,11 @@ export function formatDuration(translations, duration, minimumInterval = INTERVA
       return result.join(" ");
     }
   }
-  duration %= INTERVAL_MINUTES.hour;
+  adjustedDuration %= INTERVAL_MINUTES.hour;
 
   // Purposefully omitting the quarter hour ...
 
-  const minutes = Math.floor(duration / INTERVAL_MINUTES.minute);
+  const minutes = Math.floor(adjustedDuration / INTERVAL_MINUTES.minute);
   if (minutes) {
     result.push(`${minutes} ${translations("min", { count: minutes })}`);
   }

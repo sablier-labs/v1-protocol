@@ -11,9 +11,8 @@ import Link from "../Link";
 import Modal from "../Modal";
 import PrimaryButton from "../PrimaryButton";
 
-import { addPendingTx } from "../../redux/ducks/web3connect";
+import { addPendingTx as web3AddPendingTx, selectors as web3Selectors } from "../../redux/ducks/web3connect";
 import { getEtherscanAddressLink } from "../../helpers/web3-utils";
-import { selectors } from "../../redux/ducks/web3connect";
 
 import "./token-approval-modal.scss";
 
@@ -23,30 +22,45 @@ const initialState = {
 };
 
 class TokenApprovalModal extends Component {
-  static defaultProps = {
-    account: PropTypes.string,
-    addPendingTx: PropTypes.func.isRequired,
-    approvals: PropTypes.object.isRequired,
-    hasPendingTransactions: PropTypes.bool.isRequired,
-    onApproveTokenSuccess: PropTypes.func.isRequired,
-    onClose: PropTypes.func.isRequired,
-    sablierAddress: PropTypes.string,
-    selectors: PropTypes.func.isRequired,
-    tokenAddress: PropTypes.string.isRequired,
-    tokenSymbol: PropTypes.string.isRequired,
-    web3: PropTypes.object.isRequired,
-  };
+  constructor(props) {
+    super(props);
+    this.state = { ...initialState };
+  }
 
-  state = {
-    ...initialState,
-  };
+  componentDidUpdate(_prevProps, _prevState) {
+    const { submitted, submissionError } = this.state;
 
-  componentDidUpdate(prevProps, prevState) {
     // Trick: we added the redux `approvals` object in the props so that this function
     // gets called when the user gets approved
-    if (this.state.submitted && !this.state.submissionError && !this.isUnapproved()) {
-      this.props.onApproveTokenSuccess();
+    if (submitted && !submissionError && !this.isUnapproved()) {
+      const { onApproveTokenSuccess } = this.props;
+      onApproveTokenSuccess();
     }
+  }
+
+  async onSubmit() {
+    const { account, addPendingTx, sablierAddress, tokenAddress, web3 } = this.props;
+    // Set allowance to maximum value possible so that we don't have to ask the user again
+    const allowance = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+    let gasPrice = "8000000000";
+    try {
+      gasPrice = await web3.eth.getGasPrice();
+      gasPrice = BN(gasPrice || "0")
+        .plus(BN("1000000000"))
+        .toString();
+      // TODO: handle this error properly
+      // eslint-disable-next-line no-empty
+    } catch {}
+    new web3.eth.Contract(ERC20ABI, tokenAddress).methods
+      .approve(sablierAddress, allowance)
+      .send({ from: account, gasPrice })
+      .once("transactionHash", (transactionHash) => {
+        addPendingTx(transactionHash);
+        this.setState({ submitted: true });
+      })
+      .once("error", (err) => {
+        this.handleError(err);
+      });
   }
 
   handleError(err) {
@@ -68,38 +82,15 @@ class TokenApprovalModal extends Component {
     return true;
   }
 
-  async onSubmit() {
-    const { account, addPendingTx, sablierAddress, tokenAddress, web3 } = this.props;
-    // Set allowance to maximum value possible so that we don't have to ask the user again
-    const allowance = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-    let gasPrice = "8000000000";
-    try {
-      gasPrice = await web3.eth.getGasPrice();
-      gasPrice = BN(gasPrice || "0")
-        .plus(BN("1000000000"))
-        .toString();
-    } catch {}
-    new web3.eth.Contract(ERC20ABI, tokenAddress).methods
-      .approve(sablierAddress, allowance)
-      .send({ from: account, gasPrice })
-      .once("transactionHash", (transactionHash) => {
-        addPendingTx(transactionHash);
-        this.setState({ submitted: true });
-      })
-      .once("error", (err) => {
-        this.handleError(err);
-      });
-  }
-
   render() {
-    const { account, t, tokenSymbol } = this.props;
+    const { account, onClose, t, tokenSymbol } = this.props;
     const { submitted, submissionError } = this.state;
 
     return (
       <Modal
         onClose={() => {
           if (!submitted) {
-            this.props.onClose();
+            onClose();
           }
         }}
       >
@@ -130,16 +121,43 @@ class TokenApprovalModal extends Component {
   }
 }
 
+TokenApprovalModal.propTypes = {
+  account: PropTypes.string,
+  addPendingTx: PropTypes.func.isRequired,
+  // See `componentDidUpdate`
+  // eslint-disable-next-line react/no-unused-prop-types
+  approvals: PropTypes.shape({}),
+  onApproveTokenSuccess: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+  sablierAddress: PropTypes.string,
+  selectors: PropTypes.func.isRequired,
+  t: PropTypes.shape({}),
+  tokenAddress: PropTypes.string.isRequired,
+  tokenSymbol: PropTypes.string.isRequired,
+  web3: PropTypes.shape({
+    eth: PropTypes.shape({
+      Contract: PropTypes.func.isRequired,
+      getGasPrice: PropTypes.func.isRequired,
+    }),
+  }).isRequired,
+};
+
+TokenApprovalModal.defaultProps = {
+  account: "",
+  approvals: "",
+  sablierAddress: "",
+  t: {},
+};
+
 export default connect(
   (state) => ({
     account: state.web3connect.account,
     approvals: state.web3connect.approvals,
-    hasPendingTransactions: !!state.web3connect.transactions.pending.length,
     sablierAddress: state.addresses.sablierAddress,
     web3: state.web3connect.web3,
   }),
   (dispatch) => ({
-    addPendingTx: (id) => dispatch(addPendingTx(id)),
-    selectors: () => dispatch(selectors()),
+    addPendingTx: (id) => dispatch(web3AddPendingTx(id)),
+    selectors: () => dispatch(web3Selectors()),
   }),
 )(withTranslation()(TokenApprovalModal));

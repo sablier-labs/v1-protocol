@@ -14,48 +14,36 @@ import { INTERVAL_MINUTES } from "../../../constants/time";
 
 import "react-datepicker/dist/react-datepicker.css";
 import "./datetime.scss";
+
 class SablierDateTime extends Component {
-  static propTypes = {
-    className: PropTypes.string,
-    inputClassNames: PropTypes.string,
-    interval: PropTypes.string.isRequired,
-    maxTime: PropTypes.object,
-    minTime: PropTypes.object,
-    name: PropTypes.string.isRequired,
-    onSelectTime: PropTypes.func.isRequired,
-    placeholder: PropTypes.string,
-    selectedTime: PropTypes.object,
-  };
-
-  state = {
-    showModal: false,
-    showTimeSelect: false,
-  };
-
   constructor(props) {
     super(props);
     this.inputRef = React.createRef();
+    this.state = {
+      showModal: false,
+      showTimeSelect: false,
+    };
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const showTimeSelect = nextProps.name === "startTime" || isIntervalShorterThanADay(nextProps.interval);
     if (showTimeSelect !== prevState.showTimeSelect) {
       return { showTimeSelect };
-    } else {
-      return null;
     }
+    return null;
   }
 
   onClose(newTime) {
+    const { onSelectTime } = this.props;
     this.setState({ showModal: false });
     this.inputRef.current.blur();
     if (newTime) {
-      this.props.onSelectTime(newTime);
+      onSelectTime(newTime);
     }
   }
 
   onSelectTime(time) {
-    const { minTime, selectedTime } = this.props;
+    const { minTime, onSelectTime, selectedTime } = this.props;
     let newTime = dayjs(time);
 
     if (
@@ -74,7 +62,7 @@ class SablierDateTime extends Component {
       return;
     }
 
-    this.props.onSelectTime(newTime);
+    onSelectTime(newTime);
   }
 
   renderModal() {
@@ -110,18 +98,18 @@ class SablierDateTime extends Component {
   }
 
   render() {
-    const { className, inputClassNames, name, placeholder, selectedTime, t } = this.props;
+    const { className, inputClassName, name, placeholder, selectedTime, t } = this.props;
 
     return (
       <div className={classnames("sablier-datetime", className)}>
         <input
           autoComplete="off"
-          className={classnames("sablier-datetime__input", inputClassNames)}
+          className={classnames("sablier-datetime__input", inputClassName)}
           id={name}
           name={name}
           onFocus={() => this.setState({ showModal: true })}
           placeholder={placeholder || t("selectTime")}
-          readOnly={true}
+          readOnly
           ref={this.inputRef}
           value={isDayJs(selectedTime) ? formatTime(t, selectedTime, { prettyPrint: true }) : ""}
         />
@@ -130,5 +118,38 @@ class SablierDateTime extends Component {
     );
   }
 }
+
+SablierDateTime.propTypes = {
+  className: PropTypes.string,
+  inputClassName: PropTypes.string,
+  interval: PropTypes.string.isRequired,
+  maxTime: PropTypes.shape({
+    toDate: PropTypes.func.isRequired,
+  }),
+  minTime: PropTypes.shape({
+    hour: PropTypes.func.isRequired,
+    isAfter: PropTypes.func.isRequired,
+    toDate: PropTypes.func.isRequired,
+  }),
+  name: PropTypes.string.isRequired,
+  onSelectTime: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+  selectedTime: PropTypes.shape({
+    hour: PropTypes.func.isRequired,
+    minute: PropTypes.func.isRequired,
+    toDate: PropTypes.func.isRequired,
+  }),
+  t: PropTypes.shape({}),
+};
+
+SablierDateTime.defaultProps = {
+  className: "",
+  inputClassName: "",
+  maxTime: null,
+  minTime: null,
+  placeholder: "",
+  selectedTime: null,
+  t: {},
+};
 
 export default withTranslation()(SablierDateTime);

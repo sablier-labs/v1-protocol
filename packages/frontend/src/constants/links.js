@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 module.exports = {
   menu: {
     docs: "https://beta.sablier.app",

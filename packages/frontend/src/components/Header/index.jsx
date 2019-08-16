@@ -16,7 +16,7 @@ export default () => {
       <Logo />
       <div className="header__menu">
         <div className="header__link-container">
-          <Link className="header__link" to={"/dashboard"}>
+          <Link className="header__link" to="/dashboard">
             {t("dashboard")}
           </Link>
           <Link className="header__link" to={links.menu.github} target="_blank">
