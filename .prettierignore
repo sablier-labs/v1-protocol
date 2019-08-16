@@ -6,6 +6,3 @@ build/
 coverage/
 lib/
 node_modules/
-
-# files
-package.json
