@@ -155,12 +155,9 @@ contract Sablier is IERC1620, Ownable {
         delete streams[streamId];
 
         // saving gas by checking beforehand
+        IERC20 token = IERC20(stream.tokenAddress);
         if (recipientAmount > 0)
-            require(
-                IERC20(stream.tokenAddress).transfer(stream.recipient, recipientAmount),
-                "recipient token transfer failure"
-            );
-        if (senderAmount > 0)
-            require(IERC20(stream.tokenAddress).transfer(stream.sender, senderAmount), "sender token transfer failure");
+            require(token.transfer(stream.recipient, recipientAmount), "recipient token transfer failure");
+        if (senderAmount > 0) require(token.transfer(stream.sender, senderAmount), "sender token transfer failure");
     }
 }

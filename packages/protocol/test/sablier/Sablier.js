@@ -11,7 +11,7 @@ Sablier.numberFormat = "BigNumber";
 
 const { STANDARD_DEPOSIT } = devConstants;
 
-contract("Sablier", function sablier([_, alice, bob, carol, dave, eve]) {
+contract("Sablier", function sablier([_, alice, bob, carol, eve]) {
   beforeEach(async function() {
     this.token = await ERC20Mock.new();
     await this.token.mint(alice, STANDARD_DEPOSIT.toString(10));
@@ -22,5 +22,5 @@ contract("Sablier", function sablier([_, alice, bob, carol, dave, eve]) {
     this.sablier = await Sablier.new();
   });
 
-  shouldBehaveLikeERC1620(alice, bob, carol, dave, eve);
+  shouldBehaveLikeERC1620(alice, bob, carol, eve);
 });
