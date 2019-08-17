@@ -25,7 +25,6 @@ const initialState = {
 };
 
 class WithdrawModal extends Component {
-
   constructor(props) {
     super(props);
 

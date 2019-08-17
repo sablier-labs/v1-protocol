@@ -42,15 +42,15 @@ Sablier is maintained as a monorepo with multiple sub packages. Please find a co
 | Package                                     | Version                                                                                                         | Description                                                 |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | [`@sablier/dev-utils`](/packages/dev-utils) | [![npm](https://img.shields.io/npm/v/@sablier/dev-utils.svg)](https://www.npmjs.com/package/@sablier/dev-utils) | Dev utils to be shared across Sablier projects and packages |
-| [`@sablier/protocol`](/packages/protocol)   | [![npm](https://img.shields.io/npm/v/@sablier/protocol.svg)](https://www.npmjs.com/package/@sablier/protocol)   | Solidity smart contracts & tests                    |
+| [`@sablier/protocol`](/packages/protocol)   | [![npm](https://img.shields.io/npm/v/@sablier/protocol.svg)](https://www.npmjs.com/package/@sablier/protocol)   | Solidity smart contracts & tests                            |
 
 ### Private Packages
 
-| Package                                   | Description  |
-| ----------------------------------------- | ------------ |
+| Package                                             | Description   |
+| --------------------------------------------------- | ------------- |
 | [`@sablier/eslint-config`](/packages/eslint-config) | Eslint config |
-| [`@sablier/frontend`](/packages/frontend) | Frontend app |
-| [`@sablier/landing`](/packages/landing)   | Landing page |
+| [`@sablier/frontend`](/packages/frontend)           | Frontend app  |
+| [`@sablier/landing`](/packages/landing)             | Landing page  |
 
 ## Usage :hammer_and_pick:
 

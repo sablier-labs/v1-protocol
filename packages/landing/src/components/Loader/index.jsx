@@ -5,7 +5,6 @@ import PropTypes from "prop-types";
 import "./loader.scss";
 
 class Loader extends Component {
-
   constructor(props) {
     super(props);
 
@@ -45,7 +44,7 @@ class Loader extends Component {
 Loader.propTypes = {
   className: PropTypes.string,
   delay: PropTypes.number,
-}
+};
 
 Loader.defaultProps = {
   className: "",

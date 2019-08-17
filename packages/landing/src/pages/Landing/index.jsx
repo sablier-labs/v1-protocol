@@ -159,10 +159,7 @@ class Landing extends Component {
           </div>
         </div>
         {showReferralModal ? (
-          <ReferralModal
-            onClose={() => this.setState({ showReferralModal: false })}
-            referralUrl={referralUrl}
-          />
+          <ReferralModal onClose={() => this.setState({ showReferralModal: false })} referralUrl={referralUrl} />
         ) : null}
       </div>
     );

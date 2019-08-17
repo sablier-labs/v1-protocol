@@ -26,12 +26,14 @@
     "lerna": "lerna",
     "lint": "yarn wsrun --package $PKG --parallel -c lint && yarn prettier:ci",
     "prettier": "prettier --config .prettierrc --write '**/*.{js,json,jsx,md,sol,ts,tsx}'",
-    "prettier:ci": "prettier --config .prettierrc --list-different '**/*.{js,jsx,ts,tsx,json,md}'",
+    "prettier:ci": "prettier --config .prettierrc --list-different '**/*.{js,json,jsx,md,sol,ts,tsx}'",
     "test": "yarn wsrun --package $PKG --serial -c test",
     "watch": "yarn wsrun --package $PKG --parallel -c watch",
     "wsrun": "wsrun --exclude-missing --fast-exit"
   },
-  "workspaces": [
-    "packages/*"
-  ]
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  }
 }
