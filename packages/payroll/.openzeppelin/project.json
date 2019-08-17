@@ -1,0 +1,14 @@
+{
+  "name": "@sablier/payroll",
+  "version": "0.0.1",
+  "manifestVersion": "2.2",
+  "contracts": {},
+  "dependencies": {},
+  "compiler": {
+    "manager": "openzeppelin",
+    "solcVersion": "0.5.10",
+    "compilerSettings": {
+      "optimizer": {}
+    }
+  }
+}
