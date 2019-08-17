@@ -61,8 +61,8 @@
     "subscriptions-transport-ws": "^0.9.16",
     "ua-parser-js": "^0.7.19",
     "validator": "^11.1.0",
-    "web3": "1.0.0-beta.55",
-    "web3-utils": "1.0.0-beta.55"
+    "web3": "1.2.1",
+    "web3-utils": "1.2.1"
   },
   "devDependencies": {
     "@sablier/eslint-config": "0.0.1",
