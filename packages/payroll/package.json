@@ -12,10 +12,15 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "2.3.0",
+    "@openzeppelin/contracts-ethereum-package": "^2.2.3",
     "@openzeppelin/upgrades": "2.5.2",
     "@sablier/protocol": "0.1.0"
   },
   "devDependencies": {
+    "@0x/sol-coverage": "^3.0.9",
+    "@0x/sol-profiler": "^3.1.11",
+    "@0x/sol-trace": "^2.0.17",
+    "@0x/subproviders": "^5.0.1",
     "@sablier/dev-utils": "0.0.1",
     "@sablier/eslint-config": "0.0.1",
     "codecov": "^3.5.0",
@@ -25,11 +30,13 @@
     "eslint-plugin-import": "^2.18.2",
     "fixpack": "^2.3.1",
     "ganache-cli": "^6.5.1",
-    "ganache-time-traveler": "^1.0.4",
+    "ganache-time-traveler": "^1.0.5",
     "prettier-plugin-solidity": "^1.0.0-alpha.31",
     "shx": "^0.3.2",
     "solc": "0.5.10",
     "solhint": "^2.1.2",
+    "truffle": "5.0.30",
+    "truffle-hdwallet-provider": "^1.0.16",
     "web3": "1.2.1",
     "web3-utils": "1.2.1"
   },
@@ -46,9 +53,13 @@
     "url": "git+https://github.com/sablierhq/sablier.git"
   },
   "scripts": {
-    "clean": "shx rm -rf ./build",
+    "clean": "shx rm -rf ./.0x-artifacts ./artifacts ./build ./coverage",
+    "coverage": "scripts/coverage.sh",
     "lint": "yarn lint:js && yarn lint:sol",
     "lint:js": "eslint --ignore-path ../../.eslintignore .",
-    "lint:sol": "solhint --config ../../.solhint.json --max-warnings 0 \"contracts/**/*.sol\""
+    "lint:sol": "solhint --config ../../.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
+    "profile": "scripts/profile.sh",
+    "test": "scripts/test.sh",
+    "trace": "scripts/trace.sh"
   }
 }

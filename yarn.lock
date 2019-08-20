@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@0x/assert@^2.1.1", "@0x/assert@^2.1.3":
+"@0x/assert@^2.1.3":
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/@0x/assert/-/assert-2.1.3.tgz#ff35336730246140ad9584b0521046bf2962b62a"
   integrity sha512-uOA4tQ3LQTPnVUaQrFkbFtGKWhvW51CNwS8DO65xXPszSUmWOc9Pqtrk2Ee10TxfA90ImaXYgWGves9lDI+Nog==
@@ -2385,6 +2385,11 @@
     once "^1.4.0"
     universal-user-agent "^2.0.0"
     url-template "^2.0.8"
+
+"@openzeppelin/contracts-ethereum-package@^2.2.3":
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-ethereum-package/-/contracts-ethereum-package-2.2.3.tgz#a0bde5361a1c5a87297852c771c778dab2aa16f3"
+  integrity sha512-SPg7ac3w9E5yXITHXxhjTpDWrfYjiNJ66hqeIvygf841QPlC02oEB1F/kZFqEKl/5AvXNpSMKiBuCP13CGjChQ==
 
 "@openzeppelin/contracts@2.3.0":
   version "2.3.0"
@@ -8690,6 +8695,16 @@ ganache-core@^2.6.0:
   optionalDependencies:
     ethereumjs-wallet "0.6.3"
     web3 "1.0.0-beta.35"
+
+ganache-time-traveler@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/ganache-time-traveler/-/ganache-time-traveler-1.0.4.tgz#be5ead9c3ed011f88670f1c5b85b8b8f7efc6b36"
+  integrity sha512-hDG9suNzb6UgC99+xOWCVCYY8iXDhun7UcgTbxQ6fu6VWQYbDaywmhdUg7tpLGBJjvae+m+nBI0XtN058ZmbEQ==
+
+ganache-time-traveler@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/ganache-time-traveler/-/ganache-time-traveler-1.0.5.tgz#8383518d6ea19614e57d78a9a156be83ed162771"
+  integrity sha512-46lhryBbHfNyixWq22zgK5OeRF4T8FgA67idiKMwYAePAvj1gqREaljVO2aV5GBouovtp8jg8qt+TXTXTtUEsQ==
 
 gauge@~2.7.3:
   version "2.7.4"
@@ -17630,10 +17645,29 @@ truffle-hdwallet-provider@^1.0.15:
     web3 "^1.2.0"
     websocket "^1.0.28"
 
+truffle-hdwallet-provider@^1.0.16:
+  version "1.0.16"
+  resolved "https://registry.yarnpkg.com/truffle-hdwallet-provider/-/truffle-hdwallet-provider-1.0.16.tgz#c36955c8e1d74bdfa526a3170d3903f8f0b37b21"
+  integrity sha512-pEmCUZjdRBw8uMfEuuR+BXWMd6TZrcOo/G0V6N48IBzcJ+5YBvR/FjA803l+8ln10X97W2uSR0PaeVc6nxYHKQ==
+  dependencies:
+    any-promise "^1.3.0"
+    bindings "^1.3.1"
+    web3 "1.2.1"
+    websocket "^1.0.28"
+
 truffle@^5.0.30:
   version "5.0.30"
   resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.30.tgz#13ac335939fc6c908c615c25cd94c7a56ba674d5"
   integrity sha512-l13cUq5QUEPfW89b4dDBIahNmDWazpey4Y8UJXhNn+YTkHxVM5h8L8eNNIBTD1SiYerrXfw49QMIQubEcz3erA==
+  dependencies:
+    app-module-path "^2.2.0"
+    mocha "5.2.0"
+    original-require "1.0.1"
+
+truffle@^5.0.32:
+  version "5.0.32"
+  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.32.tgz#14545a31548bf699a7d22da5b82642033cdbb8ef"
+  integrity sha512-h2S1FbxwtXg/gApsdU24fx0I4CTyzWxvDElVWsaInR79MEYGMHVbcJdisePvpxGsuZTz6foifzdj2PV9Xc/OOw==
   dependencies:
     app-module-path "^2.2.0"
     mocha "5.2.0"

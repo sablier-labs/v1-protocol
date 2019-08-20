@@ -3,8 +3,8 @@ pragma solidity 0.5.10;
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/upgrades/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 
 import "@sablier/protocol/contracts/interfaces/IERC1620.sol";
 import "@sablier/protocol/contracts/Types.sol";
@@ -14,7 +14,7 @@ import "./interfaces/ICERC20.sol";
 /// @title Payroll dapp contracts
 /// @author Paul Berg - <paul@sablier.app>
 
-contract Payroll is Initializable, OpenZeppelinUpgradesOwnable {
+contract Payroll is Initializable, Ownable {
     using SafeMath for uint256;
 
     uint256 public constant MAX_ALLOWANCE = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
@@ -42,11 +42,12 @@ contract Payroll is Initializable, OpenZeppelinUpgradesOwnable {
     event CancelSalary(uint256 indexed salaryId);
     event DiscardCToken(address indexed cTokenAddress);
     event WhitelistCToken(address indexed cTokenAddress, address underlyingAddress);
+    event WithdrawFromSalary(uint256 indexed salaryId, uint256 amount);
 
     modifier onlyCompanyOrEmployee(uint256 salaryId) {
         Salary memory salary = salaries[salaryId];
-        (address company, address employee, , , , , , ) = sablier.getStream(salary.streamId);
-        require(msg.sender == company || msg.sender == employee, "caller is not the company or the employee");
+        (, address employee, , , , , , ) = sablier.getStream(salary.streamId);
+        require(msg.sender == salary.company || msg.sender == employee, "caller is not the company or the employee");
         _;
     }
 
@@ -62,14 +63,8 @@ contract Payroll is Initializable, OpenZeppelinUpgradesOwnable {
         _;
     }
 
-    // modifier salaryStreamed(uint256 salaryId) {
-    //     Salary memory salary = salaries[salaryId];
-    //     (, , , address token, uint256 startTime, uint256 stopTime , , ) = sablier.getStream(salary.streamId);
-    //     require(stopTime < block.timestamp, "salary not streamed");
-    //     _;
-    // }
-
-    function initialize(IERC1620 _sablier) public initializer {
+    function initialize(address _owner, IERC1620 _sablier) public initializer {
+        Ownable.initialize(_owner);
         sablier = _sablier;
         nonce = 1;
     }
@@ -81,7 +76,7 @@ contract Payroll is Initializable, OpenZeppelinUpgradesOwnable {
         returns (
             address company,
             address employee,
-            uint256 deposit,
+            uint256 salary,
             address tokenAddress,
             uint256 startTime,
             uint256 stopTime,
@@ -91,7 +86,7 @@ contract Payroll is Initializable, OpenZeppelinUpgradesOwnable {
         )
     {
         company = salaries[salaryId].company;
-        (, employee, deposit, tokenAddress, startTime, stopTime, balance, rate) = sablier.getStream(
+        (, employee, salary, tokenAddress, startTime, stopTime, balance, rate) = sablier.getStream(
             salaries[salaryId].streamId
         );
         isAccruing = salaries[salaryId].isAccruing;
@@ -103,16 +98,16 @@ contract Payroll is Initializable, OpenZeppelinUpgradesOwnable {
 
     function addSalary(
         address employee,
-        uint256 deposit,
+        uint256 salary,
         address tokenAddress,
         uint256 startTime,
         uint256 stopTime,
         bool isAccruing
     ) public returns (uint256 salaryId) {
         IERC20 token = IERC20(tokenAddress);
-        require(token.transferFrom(msg.sender, address(this), deposit), "token transfer failure");
+        require(token.transferFrom(msg.sender, address(this), salary), "token transfer failure");
 
-        uint256 streamId = sablier.create(employee, deposit, tokenAddress, startTime, stopTime);
+        uint256 streamId = sablier.create(employee, salary, tokenAddress, startTime, stopTime);
         salaryId = nonce;
         salaries[nonce] = Salary({ company: msg.sender, isAccruing: isAccruing, isEntity: true, streamId: streamId });
 
@@ -128,13 +123,12 @@ contract Payroll is Initializable, OpenZeppelinUpgradesOwnable {
         (, , , address tokenAddress, , , , ) = sablier.getStream(salary.streamId);
         uint256 companyBalance = sablier.balanceOf(salary.streamId, address(this));
 
-        emit CancelSalary(salaryId);
         deleteSalary(salaryId);
+        emit CancelSalary(salaryId);
         sablier.cancel(salary.streamId);
 
-        IERC20 token = IERC20(tokenAddress);
         if (companyBalance > 0)
-            require(token.transfer(salary.company, companyBalance), "company token transfer failure");
+            require(IERC20(tokenAddress).transfer(salary.company, companyBalance), "company token transfer failure");
     }
 
     function deleteSalary(uint256 salaryId) public
@@ -168,14 +162,13 @@ contract Payroll is Initializable, OpenZeppelinUpgradesOwnable {
 
     function resetAllowance(address underlyingAddress, address cTokenAddress) public onlyOwner {
         // underlying to sablier
-        IERC20 underlyingContract = IERC20(underlyingAddress);
-        require(underlyingContract.approve(address(sablier), MAX_ALLOWANCE), "underlying to sablier approval failure");
+        resetSablierAllowance(underlyingAddress);
 
         // ctoken to sablier
-        IERC20 cTokenContract = IERC20(cTokenAddress);
-        require(cTokenContract.approve(address(sablier), MAX_ALLOWANCE), "ctoken to sablier approval failure");
+        resetSablierAllowance(cTokenAddress);
 
-        // underling to ctoken
+        // underlying to ctoken
+        IERC20 underlyingContract = IERC20(underlyingAddress);
         require(underlyingContract.approve(cTokenAddress, MAX_ALLOWANCE), "underlying to ctoken approval failure");
     }
 
@@ -184,6 +177,11 @@ contract Payroll is Initializable, OpenZeppelinUpgradesOwnable {
         for (uint256 i = 0; i < length; i = i.add(1)) {
             resetAllowance(cTokenStructs[cTokenList[i]].underlyingAddress, cTokenList[i]);
         }
+    }
+
+    function resetSablierAllowance(address tokenAddress) public onlyOwner {
+        IERC20 tokenContract = IERC20(tokenAddress);
+        require(tokenContract.approve(address(sablier), MAX_ALLOWANCE), "token approval failure");
     }
 
     function whitelistCToken(address cTokenAddress, address underlyingAddress) public onlyOwner {
@@ -201,5 +199,6 @@ contract Payroll is Initializable, OpenZeppelinUpgradesOwnable {
     {
         Salary memory salary = salaries[salaryId];
         sablier.withdraw(salary.streamId, amount);
+        emit WithdrawFromSalary(salaryId, amount);
     }
 }
