@@ -9,15 +9,15 @@ ERC20Mock.numberFormat = "BigNumber";
 NotERC20Mock.numberFormat = "BigNumber";
 Sablier.numberFormat = "BigNumber";
 
-const { STANDARD_DEPOSIT } = devConstants;
+const { STANDARD_SALARY } = devConstants;
 
 contract("Sablier", function sablier([_, alice, bob, carol, eve]) {
   beforeEach(async function() {
     this.token = await ERC20Mock.new();
-    await this.token.mint(alice, STANDARD_DEPOSIT.toString(10));
+    await this.token.mint(alice, STANDARD_SALARY.toString(10));
 
     this.notERC20Token = await NotERC20Mock.new();
-    this.notERC20Token.notMint(alice, STANDARD_DEPOSIT.toString(10));
+    this.notERC20Token.notMint(alice, STANDARD_SALARY.toString(10));
 
     this.sablier = await Sablier.new();
   });

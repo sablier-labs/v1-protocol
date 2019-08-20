@@ -1,9 +1,10 @@
 const { devConstants } = require("@sablier/dev-utils");
 const BigNumber = require("bignumber.js");
 const dayjs = require("dayjs");
+const traveler = require("ganache-time-traveler");
 const truffleAssert = require("truffle-assertions");
 
-const { ONE_UNIT, STANDARD_DEPOSIT, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA, ZERO_ADDRESS } = devConstants;
+const { ONE_UNIT, STANDARD_SALARY, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA, ZERO_ADDRESS } = devConstants;
 
 function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
   const now = new BigNumber(dayjs().unix());
@@ -12,17 +13,16 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
     let streamId;
     const sender = alice;
     const recipient = bob;
-    const deposit = STANDARD_DEPOSIT.toString(10);
+    const deposit = STANDARD_SALARY.toString(10);
     let startTime;
     let stopTime;
 
     beforeEach(async function() {
       const opts = { from: sender };
       await this.token.approve(this.sablier.address, deposit, opts);
-      const tokenAddress = this.token.address;
       startTime = now.plus(STANDARD_TIME_OFFSET);
       stopTime = startTime.plus(STANDARD_TIME_DELTA);
-      const result = await this.sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts);
+      const result = await this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts);
       streamId = result.logs[0].args.streamId;
     });
 
@@ -37,7 +37,6 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           balance.should.bignumber.satisfy(function(num) {
             return num.isEqualTo(newBalance.minus(deposit)) || num.isEqualTo(newBalance.minus(deposit).plus(ONE_UNIT));
           });
-          // balance.should.be.bignumber.equal(newBalance.minus(deposit));
         });
 
         it("deletes the stream object", async function() {
@@ -55,7 +54,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
         const streamedAmount = new BigNumber(5).multipliedBy(1e18);
 
         beforeEach(async function() {
-          await web3.utils.advanceBlockAtTime(
+          await traveler.advanceBlockAndSetTime(
             now
               .plus(STANDARD_TIME_OFFSET)
               .plus(5)
@@ -86,8 +85,6 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
               num.isEqualTo(newRecipientBalance.minus(streamedAmount).minus(ONE_UNIT))
             );
           });
-          // senderBalance.should.be.bignumber.equal(newSenderBalance.plus(streamedAmount).minus(deposit));
-          // recipientBalance.should.be.bignumber.equal(newRecipientBalance.minus(streamedAmount));
         });
 
         it("deletes the stream object", async function() {
@@ -101,13 +98,13 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
         });
 
         afterEach(async function() {
-          await web3.utils.advanceBlockAtTime(now.toNumber());
+          await traveler.advanceBlockAndSetTime(now.toNumber());
         });
       });
 
       describe("when the stream did end", function() {
         beforeEach(async function() {
-          await web3.utils.advanceBlockAtTime(
+          await traveler.advanceBlockAndSetTime(
             now
               .plus(STANDARD_TIME_OFFSET)
               .plus(STANDARD_TIME_DELTA)
@@ -123,7 +120,6 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           balance.should.bignumber.satisfy(function(num) {
             return num.isEqualTo(newBalance.minus(deposit)) || num.isEqualTo(newBalance.minus(deposit).plus(ONE_UNIT));
           });
-          // balance.should.be.bignumber.equal(newBalance.minus(deposit));
         });
 
         it("deletes the stream object", async function() {
@@ -137,7 +133,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
         });
 
         afterEach(async function() {
-          await web3.utils.advanceBlockAtTime(now.toNumber());
+          await traveler.advanceBlockAndSetTime(now.toNumber());
         });
       });
     });
@@ -153,7 +149,6 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           balance.should.bignumber.satisfy(function(num) {
             return num.isEqualTo(newBalance.minus(deposit)) || num.isEqualTo(newBalance.minus(deposit).plus(ONE_UNIT));
           });
-          // balance.should.be.bignumber.equal(newBalance.minus(deposit));
         });
 
         it("deletes the stream object", async function() {
@@ -171,7 +166,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
         const streamedAmount = new BigNumber(5).multipliedBy(1e18);
 
         beforeEach(async function() {
-          await web3.utils.advanceBlockAtTime(
+          await traveler.advanceBlockAndSetTime(
             now
               .plus(STANDARD_TIME_OFFSET)
               .plus(5)
@@ -202,8 +197,6 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
               num.isEqualTo(newRecipientBalance.minus(streamedAmount).minus(ONE_UNIT))
             );
           });
-          // senderBalance.should.be.bignumber.equal(newSenderBalance.plus(streamedAmount).minus(deposit));
-          // recipientBalance.should.be.bignumber.equal(newRecipientBalance.minus(streamedAmount));
         });
 
         it("deletes the stream object", async function() {
@@ -217,13 +210,13 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
         });
 
         afterEach(async function() {
-          await web3.utils.advanceBlockAtTime(now.toNumber());
+          await traveler.advanceBlockAndSetTime(now.toNumber());
         });
       });
 
       describe("when the stream did end", function() {
         beforeEach(async function() {
-          await web3.utils.advanceBlockAtTime(
+          await traveler.advanceBlockAndSetTime(
             now
               .plus(STANDARD_TIME_OFFSET)
               .plus(STANDARD_TIME_DELTA)
@@ -252,7 +245,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
         });
 
         afterEach(async function() {
-          await web3.utils.advanceBlockAtTime(now.toNumber());
+          await traveler.advanceBlockAndSetTime(now.toNumber());
         });
       });
     });

@@ -1,9 +1,10 @@
 const { devConstants } = require("@sablier/dev-utils");
 const BigNumber = require("bignumber.js");
 const dayjs = require("dayjs");
+const traveler = require("ganache-time-traveler");
 const truffleAssert = require("truffle-assertions");
 
-const { FIVE_UNITS, ONE_UNIT, STANDARD_DEPOSIT, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA } = devConstants;
+const { FIVE_UNITS, ONE_UNIT, STANDARD_SALARY, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA } = devConstants;
 
 function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
   const now = new BigNumber(dayjs().unix());
@@ -12,7 +13,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
     let streamId;
     const sender = alice;
     const recipient = bob;
-    const deposit = STANDARD_DEPOSIT.toString(10);
+    const deposit = STANDARD_SALARY.toString(10);
     const startTime = now.plus(STANDARD_TIME_OFFSET);
     const stopTime = startTime.plus(STANDARD_TIME_DELTA);
 
@@ -39,7 +40,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
 
         describe("when the stream did start but not end", function() {
           beforeEach(async function() {
-            await web3.utils.advanceBlockAtTime(
+            await traveler.advanceBlockAndSetTime(
               now
                 .plus(STANDARD_TIME_OFFSET)
                 .plus(5)
@@ -88,13 +89,13 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
           });
 
           afterEach(async function() {
-            await web3.utils.advanceBlockAtTime(now.toNumber());
+            await traveler.advanceBlockAndSetTime(now.toNumber());
           });
         });
 
         describe("when the stream did end", function() {
           beforeEach(async function() {
-            await web3.utils.advanceBlockAtTime(
+            await traveler.advanceBlockAndSetTime(
               now
                 .plus(STANDARD_TIME_OFFSET)
                 .plus(STANDARD_TIME_DELTA)
@@ -105,7 +106,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
 
           describe("when the withdrawal amount is within the available balance", function() {
             describe("when the balance is withdrawn in full", function() {
-              const amount = STANDARD_DEPOSIT.toString(10);
+              const amount = STANDARD_SALARY.toString(10);
 
               it("makes the withdrawal", async function() {
                 const balance = await this.token.balanceOf(recipient);
@@ -126,7 +127,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
             });
 
             describe("when the balance is not withdrawn in full", function() {
-              const amount = STANDARD_DEPOSIT.dividedBy(2).toString(10);
+              const amount = STANDARD_SALARY.dividedBy(2).toString(10);
 
               it("makes the withdrawal", async function() {
                 const balance = await this.token.balanceOf(recipient);
@@ -150,7 +151,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
           });
 
           describe("when the withdrawal amount is not within the available balance", function() {
-            const amount = STANDARD_DEPOSIT.plus(FIVE_UNITS).toString(10);
+            const amount = STANDARD_SALARY.plus(FIVE_UNITS).toString(10);
 
             it("reverts", async function() {
               await truffleAssert.reverts(
@@ -161,7 +162,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
           });
 
           afterEach(async function() {
-            await web3.utils.advanceBlockAtTime(now.toNumber());
+            await traveler.advanceBlockAndSetTime(now.toNumber());
           });
         });
       });

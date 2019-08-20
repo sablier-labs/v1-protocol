@@ -136,11 +136,8 @@ contract Sablier is IERC1620, Ownable {
 
         streams[streamId].balance = streams[streamId].balance.sub(amount);
         emit Withdraw(streamId, stream.recipient, amount);
-
-        // saving gas
         if (streams[streamId].balance == 0) delete streams[streamId];
 
-        // saving gas by checking beforehand
         require(IERC20(stream.tokenAddress).transfer(stream.recipient, amount), "token transfer failure");
     }
 
@@ -150,11 +147,8 @@ contract Sablier is IERC1620, Ownable {
         uint256 recipientAmount = balanceOf(streamId, stream.recipient);
 
         emit Cancel(streamId, stream.sender, stream.recipient, senderAmount, recipientAmount);
-
-        // saving gas
         delete streams[streamId];
 
-        // saving gas by checking beforehand
         IERC20 token = IERC20(stream.tokenAddress);
         if (recipientAmount > 0)
             require(token.transfer(stream.recipient, recipientAmount), "recipient token transfer failure");
