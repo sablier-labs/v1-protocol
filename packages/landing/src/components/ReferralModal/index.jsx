@@ -42,7 +42,7 @@ class ReferralModal extends Component {
   onClickMail() {
     const { referralUrl } = this.props;
     const subject = "Get Early Access to Sablier";
-    const body = `It's a decentralized app for real-time salaries ${referralUrl}`;
+    const body = `Decentralized app for real-time salaries ${referralUrl}`;
     const mailto = `mailto:?subject=${subject}&body=${body}`;
     window.open(mailto);
   }

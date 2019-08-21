@@ -1,10 +1,9 @@
 import React, { Component } from "react";
 import classnames from "classnames";
-// import uuidv4 from "uuid/v4";
 import validator from "validator";
 
 import Loader from "../../components/Loader";
-import Logotype from "../../assets/images/logotype.png";
+import Logo from "../../assets/images/logo.png";
 import iPhoneScreenshot from "../../assets/images/screenshot.png";
 import ReferralModal from "../../components/ReferralModal";
 
@@ -75,7 +74,7 @@ class Landing extends Component {
     return (
       <div className="landing">
         <div className="landing__header-container">
-          <img className="landing__header-container__logo" alt="Logo" src={Logotype} />
+          <img className="landing__header-container__logo" alt="Logo" src={Logo} />
           <div className="landing__menu-container">
             <a
               className="landing__menu-item"
