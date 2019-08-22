@@ -1,4 +1,4 @@
-<p align="center"><img src="https://i.imgur.com/CGFvZW3.png" width="280px"/></p>
+<p align="center"><img src="https://i.imgur.com/q6UHTt1.png" width="280px"/></p>
 
 <p align="center">Sablier is a decentralised app for continuous payments on Ethereum. Read this <a href="https://medium.com/sablier-app/introducing-sablier-continuous-payments-on-ethereum-c2bf04446d31" target="_blank">article</a> to find our more about our mission. Check out a demo video <a href="https://www.youtube.com/watch?v=2onYeCwAY3c" target="_blank">here</a>.</p>
 
@@ -17,9 +17,6 @@
   </a>
   <a href="http://commitizen.github.io/cz-cli/">
     <img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen Friendly">
-  </a>
-  <a href="https://twitter.com/SablierHQ">
-    <img src="https://img.shields.io/badge/chat-twitter-38A1F3.svg?style=flat" alt="Twitter"/>
   </a>
   <a href="https://www.gnu.org/licenses/lgpl-3.0">
     <img src="https://img.shields.io/badge/License-LGPL%20v3-008033.svg" alt="License: LGPL v3">
