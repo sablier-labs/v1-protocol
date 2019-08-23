@@ -121,12 +121,20 @@ function shouldBehaveLikeAddSalary(alice, bob) {
 
     describe("when the token contract is non-compliant", function() {
       beforeEach(async function() {
-        await this.notERC20Token.notApprove(this.payroll.address, STANDARD_SALARY.toString(10), opts);
+        await this.nonStandardERC20Token.nonStandardApprove(this.payroll.address, STANDARD_SALARY.toString(10), opts);
       });
 
       it("reverts", async function() {
         await truffleAssert.reverts(
-          this.payroll.addSalary(employee, salary, this.notERC20Token.address, startTime, stopTime, isAccruing, opts),
+          this.payroll.addSalary(
+            employee,
+            salary,
+            this.nonStandardERC20Token.address,
+            startTime,
+            stopTime,
+            isAccruing,
+            opts,
+          ),
           truffleAssert.ErrorType.REVERT,
         );
       });

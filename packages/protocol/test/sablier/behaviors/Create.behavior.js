@@ -198,12 +198,12 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
 
       describe("when the token contract is non-compliant", function() {
         beforeEach(async function() {
-          await this.notERC20Token.notApprove(this.sablier.address, STANDARD_SALARY.toString(10), opts);
+          await this.nonStandardERC20Token.nonStandardApprove(this.sablier.address, STANDARD_SALARY.toString(10), opts);
         });
 
         it("reverts", async function() {
           await truffleAssert.reverts(
-            this.sablier.create(recipient, deposit, this.notERC20Token.address, startTime, stopTime, opts),
+            this.sablier.create(recipient, deposit, this.nonStandardERC20Token.address, startTime, stopTime, opts),
             truffleAssert.ErrorType.REVERT,
           );
         });
