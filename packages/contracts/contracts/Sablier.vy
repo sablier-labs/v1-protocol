@@ -1,4 +1,4 @@
-import IERC1620 as foobar
+import IERC1620 as IERC1620
 from vyper.interfaces import ERC20
 
 #   @title Sablier - ERC Money Streaming Implementation
