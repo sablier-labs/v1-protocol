@@ -4,7 +4,7 @@ const dayjs = require("dayjs");
 const traveler = require("ganache-time-traveler");
 const truffleAssert = require("truffle-assertions");
 
-const { ONE_UNIT, STANDARD_SALARY, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA, ZERO_ADDRESS } = devConstants;
+const { FIVE_UNITS, ONE_UNIT, STANDARD_SALARY, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA, ZERO_ADDRESS } = devConstants;
 
 function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
   const now = new BigNumber(dayjs().unix());
@@ -51,8 +51,6 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
       });
 
       describe("when the stream did start but not end", function() {
-        const streamedAmount = new BigNumber(5).multipliedBy(1e18);
-
         beforeEach(async function() {
           await traveler.advanceBlockAndSetTime(
             now
@@ -70,10 +68,10 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const newRecipientBalance = await this.token.balanceOf(recipient);
           senderBalance.should.bignumber.satisfy(function(num) {
             return (
-              num.isEqualTo(newSenderBalance.plus(streamedAmount).minus(deposit)) ||
+              num.isEqualTo(newSenderBalance.plus(FIVE_UNITS).minus(deposit)) ||
               num.isEqualTo(
                 newSenderBalance
-                  .plus(streamedAmount)
+                  .plus(FIVE_UNITS)
                   .minus(deposit)
                   .plus(ONE_UNIT),
               )
@@ -81,8 +79,8 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           });
           recipientBalance.should.bignumber.satisfy(function(num) {
             return (
-              num.isEqualTo(newRecipientBalance.minus(streamedAmount)) ||
-              num.isEqualTo(newRecipientBalance.minus(streamedAmount).minus(ONE_UNIT))
+              num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS)) ||
+              num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS).minus(ONE_UNIT))
             );
           });
         });
@@ -163,8 +161,6 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
       });
 
       describe("when the stream did start but not end", function() {
-        const streamedAmount = new BigNumber(5).multipliedBy(1e18);
-
         beforeEach(async function() {
           await traveler.advanceBlockAndSetTime(
             now
@@ -182,10 +178,10 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const newRecipientBalance = await this.token.balanceOf(recipient);
           senderBalance.should.bignumber.satisfy(function(num) {
             return (
-              num.isEqualTo(newSenderBalance.plus(streamedAmount).minus(deposit)) ||
+              num.isEqualTo(newSenderBalance.plus(FIVE_UNITS).minus(deposit)) ||
               num.isEqualTo(
                 newSenderBalance
-                  .plus(streamedAmount)
+                  .plus(FIVE_UNITS)
                   .minus(deposit)
                   .plus(ONE_UNIT),
               )
@@ -193,8 +189,8 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           });
           recipientBalance.should.bignumber.satisfy(function(num) {
             return (
-              num.isEqualTo(newRecipientBalance.minus(streamedAmount)) ||
-              num.isEqualTo(newRecipientBalance.minus(streamedAmount).minus(ONE_UNIT))
+              num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS)) ||
+              num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS).minus(ONE_UNIT))
             );
           });
         });
@@ -256,7 +252,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
       it("reverts", async function() {
         await truffleAssert.reverts(
           this.sablier.cancel(streamId, opts),
-          "caller is not the stream or the recipient of the stream",
+          "caller is not the sender or the recipient of the stream",
         );
       });
     });

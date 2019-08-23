@@ -3,20 +3,12 @@ require("dotenv").config();
 const { CoverageSubprovider } = require("@0x/sol-coverage");
 const { ProfilerSubprovider } = require("@0x/sol-profiler");
 const { RevertTraceSubprovider, TruffleArtifactAdapter } = require("@0x/sol-trace");
-const { GanacheSubprovider } = require("@0x/subproviders");
 const HDWalletProvider = require("truffle-hdwallet-provider");
-const Web3 = require("web3");
 const ProviderEngine = require("web3-provider-engine");
-const { toWei, toHex } = require("web3-utils");
+const WebsocketSubprovider = require("web3-provider-engine/subproviders/websocket");
+const { toHex, toWei } = require("web3-utils");
 
 const compilerConfig = require("./compiler");
-
-// Get the address of the first account in Ganache
-async function getFirstAddress() {
-  const web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
-  const addresses = await web3.eth.getAccounts();
-  return addresses[0];
-}
 
 // You must specify MNEMONIC and INFURA_API_KEY in a .env file
 function createProvider(network) {
@@ -36,7 +28,7 @@ function createProvider(network) {
   };
 }
 
-const defaultFromAddress = getFirstAddress();
+const defaultFromAddress = "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1";
 const isVerbose = true;
 const coverageSubproviderConfig = {
   isVerbose,
@@ -51,44 +43,42 @@ const coverageSubproviderConfig = {
 };
 
 const projectRoot = "";
-const artifactAdapter = new TruffleArtifactAdapter(projectRoot, compilerConfig.solcVersion);
+const truffleArtifactAdapter = new TruffleArtifactAdapter(projectRoot, compilerConfig.solcVersion);
 const provider = new ProviderEngine();
 
 let kovanProvider;
 let rinkebyProvider;
 let ropstenProvider;
 
-switch (process.env.MODE) {
-  case "profile":
-    global.profilerSubprovider = new ProfilerSubprovider(artifactAdapter, defaultFromAddress, isVerbose);
-    global.profilerSubprovider.stop();
-    provider.addProvider(global.profilerSubprovider);
-    break;
-  case "coverage":
-    global.coverageSubprovider = new CoverageSubprovider(
-      artifactAdapter,
-      defaultFromAddress,
-      coverageSubproviderConfig,
-    );
-    provider.addProvider(global.coverageSubprovider);
-    break;
-  case "trace":
-    provider.addProvider(new RevertTraceSubprovider(artifactAdapter, defaultFromAddress, isVerbose));
-    break;
-  default:
-    // Due to some strange error, contracts do not get deployed when using the ganache subprovider
-    // required by the 0x tools
-    kovanProvider = createProvider("kovan");
-    rinkebyProvider = createProvider("rinkeby");
-    ropstenProvider = createProvider("ropsten");
-    break;
-}
-
 if (process.env.MODE) {
-  provider.addProvider(new GanacheSubprovider());
+  switch (process.env.MODE) {
+    case "profile":
+      global.profilerSubprovider = new ProfilerSubprovider(truffleArtifactAdapter, defaultFromAddress, isVerbose);
+      global.profilerSubprovider.stop();
+      provider.addProvider(global.profilerSubprovider);
+      break;
+    case "coverage":
+      global.coverageSubprovider = new CoverageSubprovider(
+        truffleArtifactAdapter,
+        defaultFromAddress,
+        coverageSubproviderConfig,
+      );
+      provider.addProvider(global.coverageSubprovider);
+      break;
+    case "trace":
+      provider.addProvider(new RevertTraceSubprovider(truffleArtifactAdapter, defaultFromAddress, isVerbose));
+      break;
+    default:
+      kovanProvider = createProvider("kovan");
+      rinkebyProvider = createProvider("rinkeby");
+      ropstenProvider = createProvider("ropsten");
+      break;
+  }
+
+  provider.addProvider(new WebsocketSubprovider({ rpcUrl: "http://localhost:8545" }));
   provider.start((err) => {
     if (err !== undefined) {
-      console.log(err);
+      console.log("provider started with error:", err);
       process.exit(1);
     }
   });

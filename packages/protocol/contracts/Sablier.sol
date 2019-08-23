@@ -24,7 +24,7 @@ contract Sablier is IERC1620, Ownable {
     modifier onlySenderOrRecipient(uint256 streamId) {
         require(
             msg.sender == streams[streamId].sender || msg.sender == streams[streamId].recipient,
-            "caller is not the stream or the recipient of the stream"
+            "caller is not the sender or the recipient of the stream"
         );
         _;
     }
@@ -128,7 +128,7 @@ contract Sablier is IERC1620, Ownable {
         require(IERC20(tokenAddress).transferFrom(sender, address(this), deposit), "token transfer failure");
     }
 
-    function withdraw(uint256 streamId, uint256 amount) external streamExists(streamId) onlyRecipient(streamId) {
+    function withdraw(uint256 streamId, uint256 amount) external streamExists(streamId) onlySenderOrRecipient(streamId) {
         require(amount > 0, "amount is zero");
         Types.Stream memory stream = streams[streamId];
         uint256 balance = balanceOf(streamId, stream.recipient);

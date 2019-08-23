@@ -14,10 +14,9 @@
     "@openzeppelin/contracts": "2.3.0"
   },
   "devDependencies": {
-    "@0x/sol-coverage": "^3.0.9",
-    "@0x/sol-profiler": "^3.1.11",
-    "@0x/sol-trace": "^2.0.17",
-    "@0x/subproviders": "^5.0.1",
+    "@0x/sol-coverage": "^3.0.10",
+    "@0x/sol-profiler": "^3.1.12",
+    "@0x/sol-trace": "^2.0.18",
     "@sablier/dev-utils": "0.0.1",
     "@sablier/eslint-config": "0.0.1",
     "bignumber.js": "8.1.1",
@@ -47,7 +46,7 @@
   "files": [
     "/contracts"
   ],
-  "homepage": "https://github.com/sablierhq/tree/develop/packages/protocol#readme",
+  "homepage": "https://github.com/sablierhq/sablier/tree/develop/packages/protocol#readme",
   "license": "LGPL-3.0",
   "publishConfig": {
     "access": "public"
@@ -57,7 +56,7 @@
     "url": "git+https://github.com/sablierhq/sablier.git"
   },
   "scripts": {
-    "clean": "shx rm -rf ./.0x-artifacts ./build ./coverage",
+    "clean": "shx rm -rf ./.0x-artifacts ./artifacts ./build ./coverage",
     "coverage": "scripts/coverage.sh",
     "lint": "yarn lint:js && yarn lint:sol",
     "lint:js": "eslint --ignore-path ../../.eslintignore .",
