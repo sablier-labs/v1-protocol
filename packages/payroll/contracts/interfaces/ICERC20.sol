@@ -1,7 +1,7 @@
 pragma solidity 0.5.10;
 
 /// @title cERC20 interface
-/// @author Paul Berg - <paul@sablier.app>
+/// @author Paul Razvan Berg - <paul@sablier.app>
 /// @dev See https://compound.finance/developers
 
 interface ICERC20 {

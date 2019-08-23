@@ -12,7 +12,7 @@ import "@sablier/protocol/contracts/Types.sol";
 import "./interfaces/ICERC20.sol";
 
 /// @title Payroll dapp contracts
-/// @author Paul Berg - <paul@sablier.app>
+/// @author Paul Razvan Berg - <paul@sablier.app>
 
 contract Payroll is Initializable, Ownable {
     using SafeMath for uint256;

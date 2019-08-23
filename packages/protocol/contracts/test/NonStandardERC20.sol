@@ -1,7 +1,7 @@
 pragma solidity 0.5.10;
 
 /// @dev Forked from OpenZeppelin's ERC20
-/// @author Paul Berg - <paul@sablier.app>
+/// @author Paul Razvan Berg - <paul@sablier.app>
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./NonStandardIERC20.sol";

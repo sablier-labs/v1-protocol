@@ -8,7 +8,7 @@ import "./interfaces/IERC1620.sol";
 import "./Types.sol";
 
 /// @title Sablier - Money Streaming Implementation
-/// @author Paul Berg - <paul@sablier.app>
+/// @author Paul Razvan Berg - <paul@sablier.app>
 
 contract Sablier is IERC1620, Ownable {
     using SafeMath for uint256;

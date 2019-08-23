@@ -271,7 +271,7 @@ interface IERC20 {
 pragma solidity 0.5.10;
 
 /// @title ERC-1620 Money Streaming Standard
-/// @author Paul Berg - <paul@sablier.app>
+/// @author Paul Razvan Berg - <paul@sablier.app>
 /// @dev See https://github.com/ethereum/eips/issues/1620
 
 interface IERC1620 {
@@ -386,7 +386,7 @@ pragma solidity 0.5.10;
 
 
 /// @title Sablier - Money Streaming Implementation
-/// @author Paul Berg - <paul@sablier.app>
+/// @author Paul Razvan Berg - <paul@sablier.app>
 
 contract Sablier is IERC1620, Ownable {
     using SafeMath for uint256;
