@@ -13,12 +13,12 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
     let salaryId;
     const company = alice;
     const employee = bob;
-    const relayer = carol;
     const salary = STANDARD_SALARY.toString(10);
     let startTime;
     let stopTime;
     const isAccruing = false;
     let streamId;
+    const relayer = carol;
 
     beforeEach(async function() {
       const opts = { from: company };

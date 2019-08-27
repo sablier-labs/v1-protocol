@@ -34,11 +34,11 @@ const coverageSubproviderConfig = {
   isVerbose,
   ignoreFilesGlobs: [
     "**/Migrations.sol",
+    "**/Sablier.sol",
     "**/interfaces/**",
     "**/mocks/**",
     "**/node_modules/**",
     "**/test/**",
-    "**/zeppelin/**",
   ],
 };
 

@@ -14556,6 +14556,20 @@ prepend-http@^2.0.0:
   resolved "https://registry.yarnpkg.com/prepend-http/-/prepend-http-2.0.0.tgz#e92434bfa5ea8c19f41cdfd401d741a3c819d897"
   integrity sha1-6SQ0v6XqjBn0HN/UAddBo8gZ2Jc=
 
+prettier-plugin-solidity@1.0.0-alpha.27:
+  version "1.0.0-alpha.27"
+  resolved "https://registry.yarnpkg.com/prettier-plugin-solidity/-/prettier-plugin-solidity-1.0.0-alpha.27.tgz#8190683230ddaa5964c1281ddb052e100162a79d"
+  integrity sha512-Xd5krR4z0briiuwVx9s/SSv5/5ryD92lF7dzWtYLA1wWi8I8tbUa3vl37zxHp8r3sJ//FvR+IY4awwzTlshjtQ==
+  dependencies:
+    dir-to-object "^2.0.0"
+    emoji-regex "^8.0.0"
+    escape-string-regexp "^1.0.5"
+    extract-comments "^1.1.0"
+    prettier "^1.15.3"
+    semver "^6.1.2"
+    solidity-parser-antlr "^0.4.5"
+    string-width "^3.1.0"
+
 prettier-plugin-solidity@^1.0.0-alpha.31:
   version "1.0.0-alpha.31"
   resolved "https://registry.yarnpkg.com/prettier-plugin-solidity/-/prettier-plugin-solidity-1.0.0-alpha.31.tgz#e7725e85d786c480f5ac1dd4f5df5170cef1f24c"
@@ -16692,7 +16706,7 @@ solhint@^2.1.2:
   optionalDependencies:
     prettier "^1.14.3"
 
-solidity-parser-antlr@^0.4.0, solidity-parser-antlr@^0.4.2, solidity-parser-antlr@^0.4.8:
+solidity-parser-antlr@^0.4.0, solidity-parser-antlr@^0.4.2, solidity-parser-antlr@^0.4.5, solidity-parser-antlr@^0.4.8:
   version "0.4.8"
   resolved "https://registry.yarnpkg.com/solidity-parser-antlr/-/solidity-parser-antlr-0.4.8.tgz#69f77a56ed5596458ee42f7240e80f23b8eb75b9"
   integrity sha512-HkAAvzLfw2OPmkuGLcy8M5yVaO4PWagmV4t7DSKYi3pXQZG7TPQ2dWl1c0QTp56snX08FeKsBAsPhXY43yjZUQ==

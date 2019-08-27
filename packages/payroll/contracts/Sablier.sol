@@ -1,4 +1,3 @@
-
 // File: @openzeppelin/contracts/math/SafeMath.sol
 
 pragma solidity ^0.5.0;
@@ -130,7 +129,7 @@ contract Ownable {
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
      */
-    constructor () internal {
+    constructor() internal {
         _owner = msg.sender;
         emit OwnershipTransferred(address(0), _owner);
     }
@@ -380,11 +379,6 @@ library Types {
 
 pragma solidity 0.5.10;
 
-
-
-
-
-
 /// @title Sablier - Money Streaming Implementation
 /// @author Paul Razvan Berg - <paul@sablier.app>
 
@@ -506,7 +500,11 @@ contract Sablier is IERC1620, Ownable {
         require(IERC20(tokenAddress).transferFrom(sender, address(this), deposit), "token transfer failure");
     }
 
-    function withdraw(uint256 streamId, uint256 amount) external streamExists(streamId) onlySenderOrRecipient(streamId) {
+    function withdraw(uint256 streamId, uint256 amount)
+        external
+        streamExists(streamId)
+        onlySenderOrRecipient(streamId)
+    {
         require(amount > 0, "amount is zero");
         Types.Stream memory stream = streams[streamId];
         uint256 balance = balanceOf(streamId, stream.recipient);
