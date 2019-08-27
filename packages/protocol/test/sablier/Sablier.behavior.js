@@ -241,11 +241,11 @@ function shouldBehaveLikeERC1620(alice, bob, carol, eve) {
         const stream = await this.sablier.getStream(streamId);
         stream.sender.should.be.equal(sender);
         stream.recipient.should.be.equal(recipient);
-        stream.deposit.should.be.bignumber.equal(STANDARD_SALARY);
+        stream.deposit.should.be.bignumber.equal(salary);
         stream.tokenAddress.should.be.equal(this.token.address);
         stream.startTime.should.be.bignumber.equal(startTime);
         stream.stopTime.should.be.bignumber.equal(stopTime);
-        stream.balance.should.be.bignumber.equal(STANDARD_SALARY);
+        stream.balance.should.be.bignumber.equal(salary);
         stream.rate.should.be.bignumber.equal(STANDARD_RATE);
       });
     });

@@ -38,7 +38,6 @@ const coverageSubproviderConfig = {
     "**/mocks/**",
     "**/node_modules/**",
     "**/test/**",
-    "**/zeppelin/**",
   ],
 };
 
