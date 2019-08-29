@@ -39,14 +39,20 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
     modifier onlyCompanyOrEmployee(uint256 salaryId) {
         Salary memory salary = salaries[salaryId];
         (, address employee, , , , , , ) = sablier.getStream(salary.streamId);
-        require(msg.sender == salary.company || msg.sender == employee, "caller is not the company or the employee");
+        require(
+            _msgSender() == salary.company || _msgSender() == employee,
+            "caller is not the company or the employee"
+        );
         _;
     }
 
     modifier onlyEmployeeOrRelayer(uint256 salaryId) {
         Salary memory salary = salaries[salaryId];
         (, address employee, , , , , , ) = sablier.getStream(salary.streamId);
-        require(msg.sender == employee || relayers[msg.sender][salaryId], "caller is not the employee or a relayer");
+        require(
+            _msgSender() == employee || relayers[_msgSender()][salaryId],
+            "caller is not the employee or a relayer"
+        );
         _;
     }
 
@@ -89,8 +95,6 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
         require(tokenContract.approve(address(sablier), MAX_ALLOWANCE), "token approval failure");
     }
 
-    /* Salary functions */
-
     function addSalary(
         address employee,
         uint256 salary,
@@ -100,11 +104,11 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
         bool isAccruing
     ) public returns (uint256 salaryId) {
         IERC20 token = IERC20(tokenAddress);
-        require(token.transferFrom(msg.sender, address(this), salary), "token transfer failure");
+        require(token.transferFrom(_msgSender(), address(this), salary), "token transfer failure");
 
         uint256 streamId = sablier.create(employee, salary, tokenAddress, startTime, stopTime);
         salaryId = nonce;
-        salaries[nonce] = Salary({ company: msg.sender, isAccruing: isAccruing, isEntity: true, streamId: streamId });
+        salaries[nonce] = Salary({ company: _msgSender(), isAccruing: isAccruing, isEntity: true, streamId: streamId });
 
         emit AddSalary(nonce, streamId, isAccruing);
         nonce = nonce.add(1);
@@ -182,5 +186,4 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
             return _rejectRelayedCall(uint256(GSNBouncerSignatureErrorCodes.INVALID_SIGNER));
         }
     }
-
 }
