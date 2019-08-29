@@ -4,7 +4,7 @@ coverage:
       default: off
       payroll:
         target: 95%
-        flags: protocol
+        flags: payroll
       protocol:
         target: 95%
         flags: protocol
@@ -18,4 +18,5 @@ flags:
       - packages/protocol/
 
 fixes:
+  - "packages/payroll/::"
   - "packages/protocol/::"
