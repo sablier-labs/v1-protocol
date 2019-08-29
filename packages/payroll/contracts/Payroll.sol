@@ -1,28 +1,21 @@
 pragma solidity 0.5.10;
 
-import "@openzeppelin/upgrades/contracts/Initializable.sol";
-
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/GSN/bouncers/GSNBouncerSignature.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipient.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
 import "@sablier/protocol/contracts/interfaces/IERC1620.sol";
 import "@sablier/protocol/contracts/Types.sol";
 
-import "./interfaces/ICERC20.sol";
-
 /// @title Payroll dapp contracts
 /// @author Paul Razvan Berg - <paul@sablier.app>
 
-contract Payroll is Initializable, Ownable {
+contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
     using SafeMath for uint256;
 
-    uint256 public constant MAX_ALLOWANCE = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-
-    struct cToken {
-        uint256 listPointer;
-        address underlyingAddress;
-    }
     struct Salary {
         address company;
         bool isAccruing;
@@ -30,6 +23,7 @@ contract Payroll is Initializable, Ownable {
         uint256 streamId;
     }
 
+    uint256 public constant MAX_ALLOWANCE = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
     uint256 public fee;
     uint256 public nonce;
     mapping(address => mapping(uint256 => bool)) public relayers;
@@ -90,6 +84,13 @@ contract Payroll is Initializable, Ownable {
         isAccruing = salaries[salaryId].isAccruing;
     }
 
+    function resetSablierAllowance(address tokenAddress) public onlyOwner {
+        IERC20 tokenContract = IERC20(tokenAddress);
+        require(tokenContract.approve(address(sablier), MAX_ALLOWANCE), "token approval failure");
+    }
+
+    /* Salary functions */
+
     function addSalary(
         address employee,
         uint256 salary,
@@ -139,10 +140,7 @@ contract Payroll is Initializable, Ownable {
         emit WithdrawFromSalary(salaryId, amount);
     }
 
-    function resetSablierAllowance(address tokenAddress) public onlyOwner {
-        IERC20 tokenContract = IERC20(tokenAddress);
-        require(tokenContract.approve(address(sablier), MAX_ALLOWANCE), "token approval failure");
-    }
+    /* Sablier Relayer Network */
 
     function addRelayer(address relayer, uint256 salaryId) public onlyOwner salaryExists(salaryId) {
         require(relayers[relayer][salaryId] == false, "relayer exists");
@@ -153,4 +151,36 @@ contract Payroll is Initializable, Ownable {
         require(relayers[relayer][salaryId] == true, "relayer does not exist");
         relayers[relayer][salaryId] = false;
     }
+
+    /* Gas Station Network */
+
+    function acceptRelayedCall(
+        address relay,
+        address from,
+        bytes calldata encodedFunction,
+        uint256 transactionFee,
+        uint256 gasPrice,
+        uint256 gasLimit,
+        uint256 _nonce,
+        bytes calldata approvalData,
+        uint256
+    ) external view returns (uint256, bytes memory) {
+        bytes memory blob = abi.encodePacked(
+            relay,
+            from,
+            encodedFunction,
+            transactionFee,
+            gasPrice,
+            gasLimit,
+            _nonce, // Prevents replays on RelayHub
+            getHubAddr(), // Prevents replays in multiple RelayHubs
+            address(this) // Prevents replays in multiple recipients
+        );
+        if (keccak256(blob).toEthSignedMessageHash().recover(approvalData) == owner()) {
+            return _approveRelayedCall();
+        } else {
+            return _rejectRelayedCall(uint256(GSNBouncerSignatureErrorCodes.INVALID_SIGNER));
+        }
+    }
+
 }
