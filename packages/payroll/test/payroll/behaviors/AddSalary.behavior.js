@@ -65,7 +65,7 @@ function shouldBehaveLikeAddSalary(alice, bob) {
         it("reverts", async function() {
           await truffleAssert.reverts(
             this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts),
-            "SafeMath: subtraction overflow",
+            truffleAssert.ErrorType.REVERT,
           );
         });
       });
@@ -89,7 +89,7 @@ function shouldBehaveLikeAddSalary(alice, bob) {
         it("reverts", async function() {
           await truffleAssert.reverts(
             this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts),
-            "SafeMath: subtraction overflow",
+            truffleAssert.ErrorType.REVERT,
           );
         });
       });
@@ -100,7 +100,7 @@ function shouldBehaveLikeAddSalary(alice, bob) {
         it("reverts", async function() {
           await truffleAssert.reverts(
             this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts),
-            "SafeMath: subtraction overflow",
+            truffleAssert.ErrorType.REVERT,
           );
         });
       });
