@@ -32,14 +32,7 @@ const defaultFromAddress = "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1";
 const isVerbose = true;
 const coverageSubproviderConfig = {
   isVerbose,
-  ignoreFilesGlobs: [
-    "**/Migrations.sol",
-    "**/Sablier.sol",
-    "**/interfaces/**",
-    "**/mocks/**",
-    "**/node_modules/**",
-    "**/test/**",
-  ],
+  ignoreFilesGlobs: ["**/Migrations.sol", "**/Sablier.sol", "**/node_modules/**", "**/test/**"],
 };
 
 const projectRoot = "";
