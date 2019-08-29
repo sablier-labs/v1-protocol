@@ -146,7 +146,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
           it("reverts", async function() {
             await truffleAssert.reverts(
               this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts),
-              "SafeMath: subtraction overflow",
+              truffleAssert.ErrorType.REVERT,
             );
           });
         });
@@ -168,7 +168,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
           it("reverts", async function() {
             await truffleAssert.reverts(
               this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts),
-              "SafeMath: subtraction overflow",
+              truffleAssert.ErrorType.REVERT,
             );
           });
         });
@@ -179,7 +179,7 @@ function shouldBehaveLikeERC1620Create(alice, bob) {
           it("reverts", async function() {
             await truffleAssert.reverts(
               this.sablier.create(recipient, deposit, this.token.address, startTime, stopTime, opts),
-              "SafeMath: subtraction overflow",
+              truffleAssert.ErrorType.REVERT,
             );
           });
         });

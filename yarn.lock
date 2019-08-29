@@ -2356,15 +2356,10 @@
     universal-user-agent "^2.0.0"
     url-template "^2.0.8"
 
-"@openzeppelin/contracts-ethereum-package@^2.2.3":
+"@openzeppelin/contracts-ethereum-package@2.2.3":
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-ethereum-package/-/contracts-ethereum-package-2.2.3.tgz#a0bde5361a1c5a87297852c771c778dab2aa16f3"
   integrity sha512-SPg7ac3w9E5yXITHXxhjTpDWrfYjiNJ66hqeIvygf841QPlC02oEB1F/kZFqEKl/5AvXNpSMKiBuCP13CGjChQ==
-
-"@openzeppelin/contracts@2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-2.3.0.tgz#043961a6e37b87e0eb80647c7528a7c62c41361f"
-  integrity sha512-lf8C3oULQAnsu3OTRP4tP5/ddfil6l65Lg3JQCwAIgc99vZ1jz5qeBoETGGGmczxt+bIyMI06WPP2apC74EZag==
 
 "@openzeppelin/upgrades@2.5.2":
   version "2.5.2"

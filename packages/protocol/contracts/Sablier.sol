@@ -1,8 +1,8 @@
 pragma solidity 0.5.10;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 
 import "./interfaces/IERC1620.sol";
 import "./Types.sol";
@@ -35,6 +35,7 @@ contract Sablier is IERC1620, Ownable {
     }
 
     constructor() public {
+        Ownable.initialize(msg.sender);
         nonce = 1;
     }
 

@@ -11,7 +11,7 @@
     "url": "https://github.com/sablierhq/sablier/issues"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "2.3.0"
+    "@openzeppelin/contracts-ethereum-package": "2.2.3"
   },
   "devDependencies": {
     "@0x/sol-coverage": "^3.0.10",
