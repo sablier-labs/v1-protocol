@@ -71,7 +71,9 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
               await this.sablier.withdraw(streamId, amount, opts);
               const newBalance = await this.sablier.balanceOf(streamId, recipient);
               balance.should.bignumber.satisfy(function(num) {
-                return num.isEqualTo(newBalance.plus(amount)) || num.isEqualTo(newBalance.plus(amount).plus(ONE_UNIT));
+                return (
+                  num.isEqualTo(newBalance.plus(amount)) || num.isEqualTo(newBalance.plus(amount).plus(ONE_UNIT))
+                );
               });
             });
           });
