@@ -1,7 +1,7 @@
 {
-  "name": "@sablier/protocol",
-  "description": "Ethereum contracts for the money streaming protocol",
-  "version": "0.1.0",
+  "name": "@sablier/payroll",
+  "description": "Ethereum contracts for the payroll dapp",
+  "version": "0.0.1",
   "author": {
     "name": "Sablier",
     "email": "paul@sablier.app",
@@ -11,7 +11,9 @@
     "url": "https://github.com/sablierhq/sablier/issues"
   },
   "dependencies": {
-    "@openzeppelin/contracts-ethereum-package": "2.2.3"
+    "@openzeppelin/contracts-ethereum-package": "2.2.3",
+    "@openzeppelin/upgrades": "2.5.2",
+    "@sablier/protocol": "0.1.0"
   },
   "devDependencies": {
     "@0x/sol-coverage": "^3.0.10",
@@ -19,11 +21,7 @@
     "@0x/sol-trace": "^2.0.18",
     "@sablier/dev-utils": "0.0.1",
     "@sablier/eslint-config": "0.0.1",
-    "bignumber.js": "8.1.1",
-    "chai": "^4.2.0",
-    "chai-bignumber": "3.0.0",
     "codecov": "^3.5.0",
-    "dayjs": "^1.8.15",
     "dotenv": "^7.0.0",
     "eslint": "^6.1.0",
     "eslint-config-airbnb-base": "^14.0.0",
@@ -31,22 +29,20 @@
     "fixpack": "^2.3.1",
     "ganache-cli": "^6.5.1",
     "ganache-time-traveler": "^1.0.5",
-    "istanbul": "^0.4.5",
-    "prettier-plugin-solidity": "^1.0.0-alpha.31",
+    "prettier-plugin-solidity": "1.0.0-alpha.27",
     "shx": "^0.3.2",
     "solc": "0.5.10",
     "solhint": "^2.1.2",
     "truffle": "^5.0.34",
-    "truffle-assert": "^0.9.1",
-    "truffle-assertions": "^0.8.2",
-    "truffle-hdwallet-provider": "^1.0.15",
+    "truffle-hdwallet-provider": "^1.0.16",
     "web3": "1.2.1",
+    "web3-provider-engine": "^15.0.3",
     "web3-utils": "1.2.1"
   },
   "files": [
     "/contracts"
   ],
-  "homepage": "https://github.com/sablierhq/sablier/tree/develop/packages/protocol#readme",
+  "homepage": "https://github.com/sablierhq/sablier/tree/develop/packages/payroll#readme",
   "license": "LGPL-3.0",
   "publishConfig": {
     "access": "public"

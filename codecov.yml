@@ -2,14 +2,21 @@ coverage:
   status:
     project:
       default: off
+      payroll:
+        target: 95%
+        flags: payroll
       protocol:
         target: 95%
         flags: protocol
 
 flags:
+  payroll:
+    paths:
+      - packages/payroll/
   protocol:
     paths:
       - packages/protocol/
 
 fixes:
+  - "packages/payroll/::"
   - "packages/protocol/::"

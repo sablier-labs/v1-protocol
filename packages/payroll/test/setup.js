@@ -2,8 +2,8 @@ const BigNumber = require("bignumber.js");
 const chai = require("chai");
 const chaiBigNumber = require("chai-bignumber");
 
-chai.should();
 chai.use(chaiBigNumber(BigNumber));
+chai.should();
 
 after("Generate coverage report", async () => {
   if (process.env.MODE === "profiler") {

@@ -141,7 +141,7 @@ class PayWithSablier extends Component {
     const { startBlock, stopBlock } = this.getStartAndStopBlock();
     const { decimals } = balances[tokenAddress][account];
     const adjustedPayment = new BN(payment).multipliedBy(10 ** decimals).toFixed(0);
-    const intervalInBlocks = this.getBlockDeltaForInterval(interval)
+    const intervalInBlocks = PayWithSablier.getBlockDeltaForInterval(interval)
       .toNumber()
       .toFixed(0);
 

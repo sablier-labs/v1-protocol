@@ -32,11 +32,11 @@ const defaultFromAddress = "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1";
 const isVerbose = true;
 const coverageSubproviderConfig = {
   isVerbose,
-  ignoreFilesGlobs: ["**/Migrations.sol", "**/interfaces/**", "**/node_modules/**", "**/test/**"],
+  ignoreFilesGlobs: ["**/Migrations.sol", "**/Sablier.sol", "**/node_modules/**", "**/test/**"],
 };
 
 const projectRoot = "";
-const truffleArtifactAdapter = new TruffleArtifactAdapter(projectRoot, compilerConfig.solcVersion);
+const artifactAdapter = new TruffleArtifactAdapter(projectRoot, compilerConfig.solcVersion);
 const provider = new ProviderEngine();
 
 let kovanProvider;
@@ -46,20 +46,20 @@ let ropstenProvider;
 if (process.env.MODE) {
   switch (process.env.MODE) {
     case "profile":
-      global.profilerSubprovider = new ProfilerSubprovider(truffleArtifactAdapter, defaultFromAddress, isVerbose);
+      global.profilerSubprovider = new ProfilerSubprovider(artifactAdapter, defaultFromAddress, isVerbose);
       global.profilerSubprovider.stop();
       provider.addProvider(global.profilerSubprovider);
       break;
     case "coverage":
       global.coverageSubprovider = new CoverageSubprovider(
-        truffleArtifactAdapter,
+        artifactAdapter,
         defaultFromAddress,
         coverageSubproviderConfig,
       );
       provider.addProvider(global.coverageSubprovider);
       break;
     case "trace":
-      provider.addProvider(new RevertTraceSubprovider(truffleArtifactAdapter, defaultFromAddress, isVerbose));
+      provider.addProvider(new RevertTraceSubprovider(artifactAdapter, defaultFromAddress, isVerbose));
       break;
     default:
       kovanProvider = createProvider("kovan");
