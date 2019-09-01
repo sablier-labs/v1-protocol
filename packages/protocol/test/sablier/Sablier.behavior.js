@@ -30,83 +30,6 @@ function shouldBehaveLikeERC1620(alice, bob, carol, eve) {
     await traveler.revertToSnapshot(snapshotId);
   });
 
-  describe("deltaOf", function() {
-    const sender = alice;
-    const opts = { from: sender };
-    const now = new BigNumber(dayjs().unix());
-
-    describe("when the stream exists", function() {
-      let streamId;
-      const recipient = bob;
-      const salary = STANDARD_SALARY.toString(10);
-      const startTime = now.plus(STANDARD_TIME_OFFSET);
-      const stopTime = startTime.plus(STANDARD_TIME_DELTA);
-
-      beforeEach(async function() {
-        await this.token.approve(this.sablier.address, salary, opts);
-        const result = await this.sablier.create(recipient, salary, this.token.address, startTime, stopTime, opts);
-        streamId = result.logs[0].args.streamId;
-      });
-
-      describe("when the stream did not start", function() {
-        it("returns 0", async function() {
-          const delta = await this.sablier.deltaOf(streamId, opts);
-          delta.should.be.bignumber.equal(new BigNumber(0));
-        });
-      });
-
-      describe("when the stream did start but not end", function() {
-        beforeEach(async function() {
-          await traveler.advanceBlockAndSetTime(
-            now
-              .plus(STANDARD_TIME_OFFSET)
-              .plus(5)
-              .toNumber(),
-          );
-        });
-
-        it("returns the time the number of seconds that passed since the start time", async function() {
-          const delta = await this.sablier.deltaOf(streamId, opts);
-          delta.should.bignumber.satisfy(function(num) {
-            return num.isEqualTo(new BigNumber(5)) || num.isEqualTo(new BigNumber(5).plus(1));
-          });
-        });
-
-        afterEach(async function() {
-          await traveler.advanceBlockAndSetTime(now.toNumber());
-        });
-      });
-
-      describe("when the stream did end", function() {
-        beforeEach(async function() {
-          await traveler.advanceBlockAndSetTime(
-            now
-              .plus(STANDARD_TIME_OFFSET)
-              .plus(STANDARD_TIME_DELTA)
-              .plus(5)
-              .toNumber(),
-          );
-        });
-
-        it("returns the difference between the stop time and the start time", async function() {
-          const delta = await this.sablier.deltaOf(streamId, opts);
-          delta.should.be.bignumber.equal(stopTime.minus(startTime));
-        });
-
-        afterEach(async function() {
-          await traveler.advanceBlockAndSetTime(now.toNumber());
-        });
-      });
-    });
-
-    describe("when the stream does not exist", function() {
-      it("reverts", async function() {
-        const streamId = new BigNumber(419863);
-        await truffleAssert.reverts(this.sablier.deltaOf(streamId, opts), "stream does not exist");
-      });
-    });
-  });
-
   describe("balanceOf", function() {
     const sender = alice;
     const opts = { from: sender };
@@ -215,6 +138,83 @@ function shouldBehaveLikeERC1620(alice, bob, carol, eve) {
       it("reverts", async function() {
         const streamId = new BigNumber(419863);
         await truffleAssert.reverts(this.sablier.balanceOf(streamId, sender, opts), "stream does not exist");
+      });
+    });
+  });
+
+  describe("deltaOf", function() {
+    const sender = alice;
+    const opts = { from: sender };
+    const now = new BigNumber(dayjs().unix());
+
+    describe("when the stream exists", function() {
+      let streamId;
+      const recipient = bob;
+      const salary = STANDARD_SALARY.toString(10);
+      const startTime = now.plus(STANDARD_TIME_OFFSET);
+      const stopTime = startTime.plus(STANDARD_TIME_DELTA);
+
+      beforeEach(async function() {
+        await this.token.approve(this.sablier.address, salary, opts);
+        const result = await this.sablier.create(recipient, salary, this.token.address, startTime, stopTime, opts);
+        streamId = result.logs[0].args.streamId;
+      });
+
+      describe("when the stream did not start", function() {
+        it("returns 0", async function() {
+          const delta = await this.sablier.deltaOf(streamId, opts);
+          delta.should.be.bignumber.equal(new BigNumber(0));
+        });
+      });
+
+      describe("when the stream did start but not end", function() {
+        beforeEach(async function() {
+          await traveler.advanceBlockAndSetTime(
+            now
+              .plus(STANDARD_TIME_OFFSET)
+              .plus(5)
+              .toNumber(),
+          );
+        });
+
+        it("returns the time the number of seconds that passed since the start time", async function() {
+          const delta = await this.sablier.deltaOf(streamId, opts);
+          delta.should.bignumber.satisfy(function(num) {
+            return num.isEqualTo(new BigNumber(5)) || num.isEqualTo(new BigNumber(5).plus(1));
+          });
+        });
+
+        afterEach(async function() {
+          await traveler.advanceBlockAndSetTime(now.toNumber());
+        });
+      });
+
+      describe("when the stream did end", function() {
+        beforeEach(async function() {
+          await traveler.advanceBlockAndSetTime(
+            now
+              .plus(STANDARD_TIME_OFFSET)
+              .plus(STANDARD_TIME_DELTA)
+              .plus(5)
+              .toNumber(),
+          );
+        });
+
+        it("returns the difference between the stop time and the start time", async function() {
+          const delta = await this.sablier.deltaOf(streamId, opts);
+          delta.should.be.bignumber.equal(stopTime.minus(startTime));
+        });
+
+        afterEach(async function() {
+          await traveler.advanceBlockAndSetTime(now.toNumber());
+        });
+      });
+    });
+
+    describe("when the stream does not exist", function() {
+      it("reverts", async function() {
+        const streamId = new BigNumber(419863);
+        await truffleAssert.reverts(this.sablier.deltaOf(streamId, opts), "stream does not exist");
       });
     });
   });
