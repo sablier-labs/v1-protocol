@@ -56,23 +56,12 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
         await this.payroll.cancelSalary(salaryId, opts);
         const newSenderBalance = await this.token.balanceOf(company);
         const newRecipientBalance = await this.token.balanceOf(employee);
-        senderBalance.should.bignumber.satisfy(function(num) {
-          return (
-            num.isEqualTo(newSenderBalance.plus(FIVE_UNITS).minus(salary)) ||
-            num.isEqualTo(
-              newSenderBalance
-                .plus(FIVE_UNITS)
-                .minus(salary)
-                .plus(ONE_UNIT),
-            )
-          );
-        });
-        recipientBalance.should.bignumber.satisfy(function(num) {
-          return (
-            num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS)) ||
-            num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS).minus(ONE_UNIT))
-          );
-        });
+        senderBalance.should.tolerateTheBlockTimeVariation(newSenderBalance.plus(FIVE_UNITS).minus(salary));
+        const addTheBlockTimeAverage = false;
+        recipientBalance.should.tolerateTheBlockTimeVariation(
+          newRecipientBalance.minus(FIVE_UNITS),
+          addTheBlockTimeAverage,
+        );
       });
 
       it("deletes the salary object", async function() {
@@ -104,23 +93,13 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
         await this.payroll.cancelSalary(salaryId, opts);
         const newSenderBalance = await this.token.balanceOf(company);
         const newRecipientBalance = await this.token.balanceOf(employee);
-        senderBalance.should.bignumber.satisfy(function(num) {
-          return (
-            num.isEqualTo(newSenderBalance.plus(FIVE_UNITS).minus(salary)) ||
-            num.isEqualTo(
-              newSenderBalance
-                .plus(FIVE_UNITS)
-                .minus(salary)
-                .plus(ONE_UNIT),
-            )
-          );
-        });
-        recipientBalance.should.bignumber.satisfy(function(num) {
-          return (
-            num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS)) ||
-            num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS).minus(ONE_UNIT))
-          );
-        });
+
+        senderBalance.should.tolerateTheBlockTimeVariation(newSenderBalance.plus(FIVE_UNITS).minus(salary));
+        const addTheBlockTimeAverage = false;
+        recipientBalance.should.tolerateTheBlockTimeVariation(
+          newRecipientBalance.minus(FIVE_UNITS),
+          addTheBlockTimeAverage,
+        );
       });
 
       it("deletes the salary object", async function() {

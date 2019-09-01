@@ -56,11 +56,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
           const balance = await this.token.balanceOf(employee);
           await this.payroll.withdrawFromSalary(salaryId, FIVE_UNITS, opts);
           const newBalance = await this.token.balanceOf(employee);
-          balance.should.bignumber.satisfy(function(num) {
-            return (
-              num.isEqualTo(newBalance.minus(FIVE_UNITS)) || num.isEqualTo(newBalance.minus(FIVE_UNITS).plus(ONE_UNIT))
-            );
-          });
+          balance.should.be.bignumber.equal(newBalance.minus(FIVE_UNITS));
         });
 
         it("emits a withdrawfromsalary event", async function() {
@@ -72,11 +68,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
           const balance = await this.sablier.balanceOf(streamId, employee);
           await this.payroll.withdrawFromSalary(salaryId, FIVE_UNITS, opts);
           const newBalance = await this.sablier.balanceOf(streamId, employee);
-          balance.should.bignumber.satisfy(function(num) {
-            return (
-              num.isEqualTo(newBalance.plus(FIVE_UNITS)) || num.isEqualTo(newBalance.plus(FIVE_UNITS).plus(ONE_UNIT))
-            );
-          });
+          balance.should.tolerateTheBlockTimeVariation(newBalance.plus(FIVE_UNITS));
         });
       });
 
@@ -110,11 +102,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
           const balance = await this.token.balanceOf(employee);
           await this.payroll.withdrawFromSalary(salaryId, FIVE_UNITS, opts);
           const newBalance = await this.token.balanceOf(employee);
-          balance.should.bignumber.satisfy(function(num) {
-            return (
-              num.isEqualTo(newBalance.minus(FIVE_UNITS)) || num.isEqualTo(newBalance.minus(FIVE_UNITS).plus(ONE_UNIT))
-            );
-          });
+          balance.should.be.bignumber.equal(newBalance.minus(FIVE_UNITS));
         });
 
         it("emits a withdrawfromsalary event", async function() {
@@ -126,11 +114,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
           const balance = await this.sablier.balanceOf(streamId, employee);
           await this.payroll.withdrawFromSalary(salaryId, FIVE_UNITS, opts);
           const newBalance = await this.sablier.balanceOf(streamId, employee);
-          balance.should.bignumber.satisfy(function(num) {
-            return (
-              num.isEqualTo(newBalance.plus(FIVE_UNITS)) || num.isEqualTo(newBalance.plus(FIVE_UNITS).plus(ONE_UNIT))
-            );
-          });
+          balance.should.tolerateTheBlockTimeVariation(newBalance.plus(FIVE_UNITS));
         });
       });
 
