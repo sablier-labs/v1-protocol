@@ -1,0 +1,48 @@
+{
+  "name": "@sablier/chai-eth",
+  "description": "Chai plugin for ethereum smart contracts",
+  "version": "0.0.1",
+  "author": {
+    "name": "Sablier",
+    "email": "paul@sablier.app",
+    "url": "https://sablier.app"
+  },
+  "bugs": {
+    "url": "https://github.com/sablierhq/sablier/issues"
+  },
+  "dependencies": {
+    "bignumber.js": "^9.0.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.4.0",
+    "@babel/preset-env": "^7.5.5",
+    "@sablier/eslint-config": "0.0.1",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "fixpack": "^2.3.1",
+    "mocha": "^6.2.0",
+    "shx": "^0.3.2"
+  },
+  "files": [
+    "/lib"
+  ],
+  "homepage": "https://github.com/sablierhq/sablier/tree/develop/packages/chai-eth#readme",
+  "license": "LGPL-3.0",
+  "main": "./lib",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sablierhq/sablier.git"
+  },
+  "scripts": {
+    "build": "yarn clean && babel --copy-files --out-dir ./lib --root-mode upward ./src",
+    "clean": "shx rm -rf ./lib",
+    "lint": "eslint --ignore-path ../../.eslintignore .",
+    "watch": "yarn build --watch"
+  }
+}
