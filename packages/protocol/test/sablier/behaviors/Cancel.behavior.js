@@ -34,9 +34,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const balance = await this.token.balanceOf(sender);
           await this.sablier.cancel(streamId, opts);
           const newBalance = await this.token.balanceOf(sender);
-          balance.should.bignumber.satisfy(function(num) {
-            return num.isEqualTo(newBalance.minus(deposit)) || num.isEqualTo(newBalance.minus(deposit).plus(ONE_UNIT));
-          });
+          balance.should.be.bignumber.equal(newBalance.minus(deposit));
         });
 
         it("deletes the stream object", async function() {
@@ -66,23 +64,12 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           await this.sablier.cancel(streamId, opts);
           const newSenderBalance = await this.token.balanceOf(sender);
           const newRecipientBalance = await this.token.balanceOf(recipient);
-          senderBalance.should.bignumber.satisfy(function(num) {
-            return (
-              num.isEqualTo(newSenderBalance.plus(FIVE_UNITS).minus(deposit)) ||
-              num.isEqualTo(
-                newSenderBalance
-                  .plus(FIVE_UNITS)
-                  .minus(deposit)
-                  .plus(ONE_UNIT),
-              )
-            );
-          });
-          recipientBalance.should.bignumber.satisfy(function(num) {
-            return (
-              num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS)) ||
-              num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS).minus(ONE_UNIT))
-            );
-          });
+          senderBalance.should.tolerateTheBlockTimeVariation(newSenderBalance.plus(FIVE_UNITS).minus(deposit));
+          const addTheBlockTimeAverage = false;
+          recipientBalance.should.tolerateTheBlockTimeVariation(
+            newRecipientBalance.minus(FIVE_UNITS),
+            addTheBlockTimeAverage,
+          );
         });
 
         it("deletes the stream object", async function() {
@@ -115,9 +102,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const balance = await this.token.balanceOf(recipient);
           await this.sablier.cancel(streamId, opts);
           const newBalance = await this.token.balanceOf(recipient);
-          balance.should.bignumber.satisfy(function(num) {
-            return num.isEqualTo(newBalance.minus(deposit)) || num.isEqualTo(newBalance.minus(deposit).plus(ONE_UNIT));
-          });
+          balance.should.be.bignumber.equal(newBalance.minus(deposit));
         });
 
         it("deletes the stream object", async function() {
@@ -144,9 +129,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const balance = await this.token.balanceOf(sender);
           await this.sablier.cancel(streamId, opts);
           const newBalance = await this.token.balanceOf(sender);
-          balance.should.bignumber.satisfy(function(num) {
-            return num.isEqualTo(newBalance.minus(deposit)) || num.isEqualTo(newBalance.minus(deposit).plus(ONE_UNIT));
-          });
+          balance.should.be.bignumber.equal(newBalance.minus(deposit));
         });
 
         it("deletes the stream object", async function() {
@@ -176,23 +159,12 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           await this.sablier.cancel(streamId, opts);
           const newSenderBalance = await this.token.balanceOf(sender);
           const newRecipientBalance = await this.token.balanceOf(recipient);
-          senderBalance.should.bignumber.satisfy(function(num) {
-            return (
-              num.isEqualTo(newSenderBalance.plus(FIVE_UNITS).minus(deposit)) ||
-              num.isEqualTo(
-                newSenderBalance
-                  .plus(FIVE_UNITS)
-                  .minus(deposit)
-                  .plus(ONE_UNIT),
-              )
-            );
-          });
-          recipientBalance.should.bignumber.satisfy(function(num) {
-            return (
-              num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS)) ||
-              num.isEqualTo(newRecipientBalance.minus(FIVE_UNITS).minus(ONE_UNIT))
-            );
-          });
+          senderBalance.should.tolerateTheBlockTimeVariation(newSenderBalance.plus(FIVE_UNITS).minus(deposit));
+          const addTheBlockTimeAverage = false;
+          recipientBalance.should.tolerateTheBlockTimeVariation(
+            newRecipientBalance.minus(FIVE_UNITS),
+            addTheBlockTimeAverage,
+          );
         });
 
         it("deletes the stream object", async function() {
@@ -225,9 +197,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           const balance = await this.token.balanceOf(recipient);
           await this.sablier.cancel(streamId, opts);
           const newBalance = await this.token.balanceOf(recipient);
-          balance.should.bignumber.satisfy(function(num) {
-            return num.isEqualTo(newBalance.minus(deposit)) || num.isEqualTo(newBalance.minus(deposit).plus(ONE_UNIT));
-          });
+          balance.should.be.bignumber.equal(newBalance.minus(deposit));
         });
 
         it("deletes the stream object", async function() {

@@ -77,19 +77,13 @@ function shouldBehaveLikeERC1620(alice, bob, carol, eve) {
 
         it("returns the pro rata balance for the sender of the stream", async function() {
           const balance = await this.sablier.balanceOf(streamId, sender, opts);
-          balance.should.be.bignumber.satisfy(function(num) {
-            return (
-              num.isEqualTo(new BigNumber(STANDARD_SALARY).minus(FIVE_UNITS)) ||
-              num.isEqualTo(new BigNumber(STANDARD_SALARY).minus(FIVE_UNITS).minus(ONE_UNIT))
-            );
-          });
+          const addTheBlockTimeAverage = false;
+          balance.should.tolerateTheBlockTimeVariation(STANDARD_SALARY.minus(FIVE_UNITS), addTheBlockTimeAverage);
         });
 
         it("returns the pro rata balance for the recipient of the stream", async function() {
           const balance = await this.sablier.balanceOf(streamId, recipient, opts);
-          balance.should.be.bignumber.satisfy(function(num) {
-            return num.isEqualTo(FIVE_UNITS) || num.isEqualTo(FIVE_UNITS.plus(ONE_UNIT));
-          });
+          balance.should.tolerateTheBlockTimeVariation(FIVE_UNITS);
         });
 
         it("returns 0 for anyone else", async function() {
@@ -179,9 +173,7 @@ function shouldBehaveLikeERC1620(alice, bob, carol, eve) {
 
         it("returns the time the number of seconds that passed since the start time", async function() {
           const delta = await this.sablier.deltaOf(streamId, opts);
-          delta.should.bignumber.satisfy(function(num) {
-            return num.isEqualTo(new BigNumber(5)) || num.isEqualTo(new BigNumber(5).plus(1));
-          });
+          delta.should.tolerateTheBlockTimeVariation(new BigNumber(5));
         });
 
         afterEach(async function() {
@@ -238,6 +230,9 @@ function shouldBehaveLikeERC1620(alice, bob, carol, eve) {
       });
 
       it("returns the stream", async function() {
+        // const j = 10;
+        // j.should.be.withinTheBlockTime(20);
+
         const stream = await this.sablier.getStream(streamId);
         stream.sender.should.be.equal(sender);
         stream.recipient.should.be.equal(recipient);

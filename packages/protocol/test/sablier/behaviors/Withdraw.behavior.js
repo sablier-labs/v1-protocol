@@ -52,12 +52,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
               const balance = await this.token.balanceOf(recipient);
               await this.sablier.withdraw(streamId, FIVE_UNITS, opts);
               const newBalance = await this.token.balanceOf(recipient);
-              balance.should.bignumber.satisfy(function(num) {
-                return (
-                  num.isEqualTo(newBalance.minus(FIVE_UNITS)) ||
-                  num.isEqualTo(newBalance.minus(FIVE_UNITS).plus(ONE_UNIT))
-                );
-              });
+              balance.should.be.bignumber.equal(newBalance.minus(FIVE_UNITS));
             });
 
             it("emits a withdraw event", async function() {
@@ -69,12 +64,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
               const balance = await this.sablier.balanceOf(streamId, recipient);
               await this.sablier.withdraw(streamId, FIVE_UNITS, opts);
               const newBalance = await this.sablier.balanceOf(streamId, recipient);
-              balance.should.bignumber.satisfy(function(num) {
-                return (
-                  num.isEqualTo(newBalance.plus(FIVE_UNITS)) ||
-                  num.isEqualTo(newBalance.plus(FIVE_UNITS).plus(ONE_UNIT))
-                );
-              });
+              balance.should.tolerateTheBlockTimeVariation(newBalance.plus(FIVE_UNITS));
             });
           });
 
@@ -204,12 +194,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
               const balance = await this.token.balanceOf(recipient);
               await this.sablier.withdraw(streamId, FIVE_UNITS, opts);
               const newBalance = await this.token.balanceOf(recipient);
-              balance.should.bignumber.satisfy(function(num) {
-                return (
-                  num.isEqualTo(newBalance.minus(FIVE_UNITS)) ||
-                  num.isEqualTo(newBalance.minus(FIVE_UNITS).plus(ONE_UNIT))
-                );
-              });
+              balance.should.be.bignumber.equal(newBalance.minus(FIVE_UNITS));
             });
 
             it("emits a withdraw event", async function() {
@@ -221,12 +206,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
               const balance = await this.sablier.balanceOf(streamId, recipient);
               await this.sablier.withdraw(streamId, FIVE_UNITS, opts);
               const newBalance = await this.sablier.balanceOf(streamId, recipient);
-              balance.should.bignumber.satisfy(function(num) {
-                return (
-                  num.isEqualTo(newBalance.plus(FIVE_UNITS)) ||
-                  num.isEqualTo(newBalance.plus(FIVE_UNITS).plus(ONE_UNIT))
-                );
-              });
+              balance.should.tolerateTheBlockTimeVariation(newBalance.plus(FIVE_UNITS));
             });
           });
 
