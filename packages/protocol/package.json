@@ -17,6 +17,7 @@
     "@0x/sol-coverage": "^3.0.10",
     "@0x/sol-profiler": "^3.1.12",
     "@0x/sol-trace": "^2.0.18",
+    "@sablier/chai-eth": "0.0.1",
     "@sablier/dev-utils": "0.0.1",
     "@sablier/eslint-config": "0.0.1",
     "bignumber.js": "8.1.1",
