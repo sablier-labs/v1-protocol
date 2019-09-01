@@ -1,10 +1,10 @@
 pragma solidity 0.5.10;
 
-/// @dev Forked from OpenZeppelin's ERC20
-/// @author Paul Razvan Berg - <paul@sablier.app>
-
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./NonStandardIERC20.sol";
+
+/// @dev Forked from OpenZeppelin's ERC20
+/// @author Paul Razvan Berg - <paul@sablier.app>
 
 contract NonStandardERC20 is NonStandardIERC20 {
     using SafeMath for uint256;

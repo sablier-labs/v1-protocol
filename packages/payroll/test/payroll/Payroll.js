@@ -8,8 +8,8 @@ const Sablier = artifacts.require("./Sablier.sol");
 
 ERC20Mock.numberFormat = "BigNumber";
 NonStandardERC20Mock.numberFormat = "BigNumber";
-Sablier.numberFormat = "BigNumber";
 Payroll.numberFormat = "BigNumber";
+Sablier.numberFormat = "BigNumber";
 
 const { STANDARD_SALARY } = devConstants;
 
