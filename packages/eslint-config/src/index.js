@@ -36,6 +36,7 @@ module.exports = {
       "error",
       {
         allow: ["_id", "__REDUX_DEVTOOLS_EXTENSION_COMPOSE__"],
+        allowAfterThis: true,
       },
     ],
     "no-unused-vars": [
