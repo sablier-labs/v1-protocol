@@ -36,7 +36,7 @@
     "shx": "^0.3.2",
     "solc": "0.5.10",
     "solhint": "^2.1.2",
-    "truffle": "^5.0.30",
+    "truffle": "^5.0.34",
     "truffle-assert": "^0.9.1",
     "truffle-assertions": "^0.8.2",
     "truffle-hdwallet-provider": "^1.0.15",

@@ -33,7 +33,7 @@
     "shx": "^0.3.2",
     "solc": "0.5.10",
     "solhint": "^2.1.2",
-    "truffle": "^5.0.32",
+    "truffle": "^5.0.34",
     "truffle-hdwallet-provider": "^1.0.16",
     "web3": "1.2.1",
     "web3-provider-engine": "^15.0.3",
