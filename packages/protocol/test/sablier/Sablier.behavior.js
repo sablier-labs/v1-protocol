@@ -173,7 +173,9 @@ function shouldBehaveLikeERC1620(alice, bob, carol, eve) {
 
         it("returns the time the number of seconds that passed since the start time", async function() {
           const delta = await this.sablier.deltaOf(streamId, opts);
-          delta.should.tolerateTheBlockTimeVariation(new BigNumber(5));
+          delta.should.bignumber.satisfy(function(num) {
+            return num.isEqualTo(new BigNumber(5)) || num.isEqualTo(new BigNumber(5).plus(1));
+          });
         });
 
         afterEach(async function() {
