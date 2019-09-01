@@ -225,7 +225,7 @@ export class Parser {
     // 15 seconds.
     const paymentBN = new BN(rawStream.payment);
     const payment = getUnitValue(paymentBN, rawStream.token.decimals);
-    const minutes = this.getMinutesForBlockDelta(rawStream.interval);
+    const minutes = Parser.getMinutesForBlockDelta(rawStream.interval);
 
     const formattedInterval = formatDuration(translations, minutes)
       .replace(`1 ${translations("month")}`, translations("month"))
@@ -258,7 +258,7 @@ export class Parser {
     const { startBlock, stopBlock } = rawStream;
 
     const blockNumberBN = new BN(block.number);
-    const intervalInMinutes = this.getMinutesForBlockDelta(rawStream.interval);
+    const intervalInMinutes = Parser.getMinutesForBlockDelta(rawStream.interval);
     let startTime;
     let stopTime;
 
@@ -266,33 +266,33 @@ export class Parser {
     // Before the start of the stream
     if (block.number.isLessThanOrEqualTo(startBlock)) {
       const startBlockDelta = startBlock.minus(block.number);
-      const startDate = this.getTimeForBlockDelta(startBlockDelta, false);
+      const startDate = Parser.getTimeForBlockDelta(startBlockDelta, false);
       startTime = formatTime(translations, startDate, { minimumInterval: intervalInMinutes, prettyPrint: true });
 
       const stopBlockDelta = stopBlock.minus(block.number);
-      const stopDate = this.getTimeForBlockDelta(stopBlockDelta, false);
+      const stopDate = Parser.getTimeForBlockDelta(stopBlockDelta, false);
       stopTime = formatTime(translations, stopDate, { minimumInterval: intervalInMinutes, prettyPrint: true });
     }
     // During the stream
     else if (block.number.isLessThanOrEqualTo(stopBlock)) {
       const startBlockDelta = blockNumberBN.minus(startBlock);
-      const startMinutes = this.getMinutesForBlockDelta(startBlockDelta);
+      const startMinutes = Parser.getMinutesForBlockDelta(startBlockDelta);
       const startDuration = formatDuration(translations, startMinutes, intervalInMinutes).toLowerCase();
       startTime = `${startDuration} ${translations("ago").toLowerCase()}`;
 
       const stopBlockDelta = stopBlock.minus(block.number);
-      const stopMinutes = this.getMinutesForBlockDelta(stopBlockDelta);
+      const stopMinutes = Parser.getMinutesForBlockDelta(stopBlockDelta);
       const stopDuration = formatDuration(translations, stopMinutes, intervalInMinutes).toLowerCase();
       stopTime = `${stopDuration} ${translations("left").toLowerCase()}`;
     }
     // After the end of the stream
     else {
       const startBlockDelta = blockNumberBN.minus(startBlock);
-      const startDate = this.getTimeForBlockDelta(startBlockDelta, true);
+      const startDate = Parser.getTimeForBlockDelta(startBlockDelta, true);
       startTime = formatTime(translations, startDate, { minimumInterval: intervalInMinutes, prettyPrint: true });
 
       const stopBlockDelta = blockNumberBN.minus(stopBlock);
-      const stopDate = this.getTimeForBlockDelta(stopBlockDelta, true);
+      const stopDate = Parser.getTimeForBlockDelta(stopBlockDelta, true);
       stopTime = formatTime(translations, stopDate, { minimumInterval: intervalInMinutes, prettyPrint: true });
     }
 
