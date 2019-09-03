@@ -74,7 +74,7 @@ workflows:
       - test:
           requires:
             - build
-      # - coverage:
-      #     requires:
-      #       - lint
-      #       - test
+      - coverage:
+          requires:
+            - lint
+            - test

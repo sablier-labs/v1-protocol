@@ -16,7 +16,4 @@ flags:
   protocol:
     paths:
       - packages/protocol/
-
-fixes:
-  - "packages/payroll/::"
-  - "packages/protocol/::"
+      
