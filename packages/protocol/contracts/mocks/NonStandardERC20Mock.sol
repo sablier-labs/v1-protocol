@@ -1,6 +1,6 @@
 pragma solidity 0.5.10;
 
-import "./NonStandardERC20.sol";
+import "../test/NonStandardERC20.sol";
 
 /// @dev Mock class using NotERC20
 /// @author Paul Razvan Berg - <paul@sablier.app>

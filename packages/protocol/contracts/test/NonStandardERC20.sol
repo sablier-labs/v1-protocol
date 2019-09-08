@@ -1,12 +1,11 @@
 pragma solidity 0.5.10;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "./NonStandardIERC20.sol";
 
 /// @dev Forked from OpenZeppelin's ERC20
 /// @author Paul Razvan Berg - <paul@sablier.app>
 
-contract NonStandardERC20 is NonStandardIERC20 {
+contract NonStandardERC20 {
     using SafeMath for uint256;
 
     mapping(address => uint256) private _balances;
@@ -14,6 +13,20 @@ contract NonStandardERC20 is NonStandardIERC20 {
     mapping(address => mapping(address => uint256)) private _allowances;
 
     uint256 private _totalSupply;
+
+    /**
+     * @dev Emitted when `value` tokens are moved from one account (`from`) to
+     * another (`to`).
+     *
+     * Note that `value` may be zero.
+     */
+    event NonStandardTransfer(address indexed from, address indexed to, uint256 value);
+
+    /**
+     * @dev Emitted when the nonStandardAllowance of a `spender` for an `owner` is set by
+     * a call to `nonStandardApprove`. `value` is the new nonStandardAllowance.
+     */
+    event NonStandardApproval(address indexed owner, address indexed spender, uint256 value);
 
     /**
      * @dev See `IERC20.nonStandardTotalSupply`.
