@@ -12,4 +12,11 @@ library Types {
         uint256 stopTime;
         address tokenAddress;
     }
+
+    struct Compound {
+        uint256 exchangeRate;
+        bool isEntity;
+        uint256 senderShare;
+        uint256 recipientShare;
+    }
 }

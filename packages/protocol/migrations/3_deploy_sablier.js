@@ -21,6 +21,6 @@ module.exports = (deployer, network, accounts) => {
     const stopTime = startTime.plus(3600);
 
     const opts = { from: accounts[0] };
-    await sablier.create(recipient, deposit, tokenAddress, startTime, stopTime, opts);
+    await sablier.createStream(recipient, deposit, tokenAddress, startTime, stopTime, opts);
   });
 };
