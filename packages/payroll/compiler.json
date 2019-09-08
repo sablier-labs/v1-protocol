@@ -2,7 +2,14 @@
   "compilerSettings": {
     "outputSelection": {
       "*": {
-        "*": ["abi", "evm.bytecode.object", "evm.deployedBytecode.object", "metadata"],
+        "*": [
+          "abi",
+          "evm.bytecode.object",
+          "evm.bytecode.sourceMap",
+          "evm.deployedBytecode.object",
+          "evm.deployedBytecode.sourceMap",
+          "metadata"
+        ],
         "": ["ast"]
       }
     }
