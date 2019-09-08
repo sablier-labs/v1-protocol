@@ -10,7 +10,10 @@ import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "@sablier/protocol/contracts/interfaces/IERC1620.sol";
 import "@sablier/protocol/contracts/Types.sol";
 
-/// @title Payroll dapp contracts
+import "./compound/Exponential.sol";
+import "./interfaces/ICERC20.sol";
+
+/// @title Payroll dapp contract
 /// @author Paul Razvan Berg - <paul@sablier.app>
 
 contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
@@ -18,22 +21,27 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
 
     struct Salary {
         address company;
-        bool isAccruing;
+        bool isCompounding;
         bool isEntity;
         uint256 streamId;
     }
+    struct Token {
+        uint256 listPointer;
+        address cTokenAddress;
+    }
 
-    uint256 public constant MAX_ALLOWANCE = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-    uint256 public fee;
+    uint256 public earnings;
     uint256 public nonce;
     mapping(address => mapping(uint256 => bool)) public relayers;
     IERC1620 public sablier;
     mapping(uint256 => Salary) salaries;
+    address[] public tokenList;
+    mapping(address => Token) public tokenStructs;
 
-    event AddSalary(uint256 indexed salaryId, uint256 indexed streamId, bool isAccruing);
+    event AddSalary(uint256 indexed salaryId, uint256 indexed streamId, bool isCompounding);
     event CancelSalary(uint256 indexed salaryId);
-    event DiscardCToken(address indexed cTokenAddress);
-    event WhitelistCToken(address indexed cTokenAddress, address underlyingAddress);
+    event DiscardToken(address indexed tokenAddress);
+    event WhitelistToken(address indexed tokenAddress, address cTokenAddress);
     event WithdrawFromSalary(uint256 indexed salaryId, uint256 amount);
 
     modifier onlyCompanyOrEmployee(uint256 salaryId) {
@@ -67,96 +75,36 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
         nonce = 1;
     }
 
-    function getSalary(uint256 salaryId)
-        public
-        view
-        salaryExists(salaryId)
-        returns (
-            address company,
-            address employee,
-            uint256 salary,
-            address tokenAddress,
-            uint256 startTime,
-            uint256 stopTime,
-            uint256 balance,
-            uint256 rate,
-            bool isAccruing
-        )
-    {
-        company = salaries[salaryId].company;
-        (, employee, salary, tokenAddress, startTime, stopTime, balance, rate) = sablier.getStream(
-            salaries[salaryId].streamId
-        );
-        isAccruing = salaries[salaryId].isAccruing;
-    }
+    /* Admin */
 
-    function resetSablierAllowance(address tokenAddress) public onlyOwner {
-        IERC20 tokenContract = IERC20(tokenAddress);
-        require(tokenContract.approve(address(sablier), MAX_ALLOWANCE), "token approval failure");
-    }
-
-    function addSalary(
-        address employee,
-        uint256 salary,
-        address tokenAddress,
-        uint256 startTime,
-        uint256 stopTime,
-        bool isAccruing
-    ) public returns (uint256 salaryId) {
-        IERC20 token = IERC20(tokenAddress);
-        require(token.transferFrom(_msgSender(), address(this), salary), "token transfer failure");
-
-        uint256 streamId = sablier.create(employee, salary, tokenAddress, startTime, stopTime);
-        salaryId = nonce;
-        salaries[nonce] = Salary({ company: _msgSender(), isAccruing: isAccruing, isEntity: true, streamId: streamId });
-
-        emit AddSalary(nonce, streamId, isAccruing);
-        nonce = nonce.add(1);
-    }
-
-    function cancelSalary(uint256 salaryId) public salaryExists(salaryId) onlyCompanyOrEmployee(salaryId) {
-        Salary memory salary = salaries[salaryId];
-        (, , , address tokenAddress, , , , ) = sablier.getStream(salary.streamId);
-        uint256 companyBalance = sablier.balanceOf(salary.streamId, address(this));
-
-        deleteSalary(salaryId);
-        emit CancelSalary(salaryId);
-        sablier.cancel(salary.streamId);
-
-        if (companyBalance > 0)
-            require(IERC20(tokenAddress).transfer(salary.company, companyBalance), "company token transfer failure");
-    }
-
-    function deleteSalary(uint256 salaryId) public salaryExists(salaryId) onlyCompanyOrEmployee(salaryId) {
-        salaries[salaryId].company = address(0x00);
-        salaries[salaryId].isAccruing = false;
-        salaries[salaryId].isEntity = false;
-        salaries[salaryId].streamId = 0;
-    }
-
-    function withdrawFromSalary(uint256 salaryId, uint256 amount)
-        public
-        salaryExists(salaryId)
-        onlyEmployeeOrRelayer(salaryId)
-    {
-        Salary memory salary = salaries[salaryId];
-        sablier.withdraw(salary.streamId, amount);
-        emit WithdrawFromSalary(salaryId, amount);
-    }
-
-    /* Sablier Relayer Network */
-
-    function addRelayer(address relayer, uint256 salaryId) public onlyOwner salaryExists(salaryId) {
-        require(relayers[relayer][salaryId] == false, "relayer exists");
+    function whitelistRelayer(address relayer, uint256 salaryId) external onlyOwner salaryExists(salaryId) {
+        require(relayers[relayer][salaryId] == false, "relayer is whitelisted");
         relayers[relayer][salaryId] = true;
     }
 
-    function removeRelayer(address relayer, uint256 salaryId) public onlyOwner salaryExists(salaryId) {
-        require(relayers[relayer][salaryId] == true, "relayer does not exist");
+    function discardRelayer(address relayer, uint256 salaryId) external onlyOwner salaryExists(salaryId) {
+        require(relayers[relayer][salaryId] == true, "relayer is not whitelisted");
         relayers[relayer][salaryId] = false;
     }
 
-    /* Gas Station Network */
+    function whitelistToken(address tokenAddress, address cTokenAddress) external onlyOwner {
+        require(!isWhitelistedToken(tokenAddress), "token is whitelisted");
+        tokenStructs[cTokenAddress].cTokenAddress = cTokenAddress;
+        tokenStructs[cTokenAddress].listPointer = tokenList.push(cTokenAddress).sub(1);
+        emit WhitelistToken(tokenAddress, cTokenAddress);
+    }
+
+    function discardToken(address tokenAddress) external onlyOwner {
+        require(isWhitelistedToken(tokenAddress), "token is not whitelisted");
+        uint256 rowToDelete = tokenStructs[tokenAddress].listPointer;
+        address keyToMove = tokenList[tokenList.length.sub(1)];
+        tokenList[rowToDelete] = keyToMove;
+        tokenStructs[keyToMove].listPointer = rowToDelete;
+        tokenList.length = tokenList.length.sub(1);
+        emit DiscardToken(tokenAddress);
+    }
+
+    /* View */
 
     function acceptRelayedCall(
         address relay,
@@ -185,5 +133,134 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
         } else {
             return _rejectRelayedCall(uint256(GSNBouncerSignatureErrorCodes.INVALID_SIGNER));
         }
+    }
+
+    function getSalary(uint256 salaryId)
+        public
+        view
+        salaryExists(salaryId)
+        returns (
+            address company,
+            address employee,
+            uint256 salary,
+            address tokenAddress,
+            uint256 startTime,
+            uint256 stopTime,
+            uint256 balance,
+            uint256 rate,
+            bool isCompounding
+        )
+    {
+        company = salaries[salaryId].company;
+        (, employee, salary, tokenAddress, startTime, stopTime, balance, rate) = sablier.getStream(
+            salaries[salaryId].streamId
+        );
+        isCompounding = salaries[salaryId].isCompounding;
+    }
+
+    function isWhitelistedToken(address tokenAddress) public view returns (bool isIndeed) {
+        if (tokenList.length == 0) return false;
+        return (tokenList[tokenStructs[tokenAddress].listPointer] == tokenAddress);
+    }
+
+    /* Public */
+
+    function addSalary(
+        address employee,
+        uint256 salary,
+        address tokenAddress,
+        uint256 startTime,
+        uint256 stopTime,
+        bool isCompounding
+    ) external returns (uint256 salaryId) {
+        require(IERC20(tokenAddress).transferFrom(_msgSender(), address(this), salary), "token transfer failure");
+        if (!isCompounding) {
+            salaryId = addSalaryInternal(employee, salary, tokenAddress, startTime, stopTime);
+        } else {
+            salaryId = addCompoundingSalaryInternal(employee, salary, tokenAddress, startTime, stopTime);
+        }
+    }
+
+    function cancelSalary(uint256 salaryId) external salaryExists(salaryId) onlyCompanyOrEmployee(salaryId) {
+        Salary memory salary = salaries[salaryId];
+        (, , , address tokenAddress, , , , ) = sablier.getStream(salary.streamId);
+        uint256 companyBalance = sablier.balanceOf(salary.streamId, address(this));
+
+        deleteSalary(salaryId);
+        emit CancelSalary(salaryId);
+        sablier.cancelStream(salary.streamId);
+
+        if (companyBalance > 0)
+            require(IERC20(tokenAddress).transfer(salary.company, companyBalance), "company token transfer failure");
+    }
+
+    function deleteSalary(uint256 salaryId) public salaryExists(salaryId) onlyCompanyOrEmployee(salaryId) {
+        salaries[salaryId].company = address(0x00);
+        salaries[salaryId].isCompounding = false;
+        salaries[salaryId].isEntity = false;
+        salaries[salaryId].streamId = 0;
+    }
+
+    function withdrawFromSalary(uint256 salaryId, uint256 amount)
+        external
+        salaryExists(salaryId)
+        onlyEmployeeOrRelayer(salaryId)
+    {
+        Salary memory salary = salaries[salaryId];
+        sablier.withdrawFromStream(salary.streamId, amount);
+        emit WithdrawFromSalary(salaryId, amount);
+    }
+
+    /* Internal */
+
+    function addSalaryInternal(
+        address employee,
+        uint256 salary,
+        address tokenAddress,
+        uint256 startTime,
+        uint256 stopTime
+    ) internal returns (uint256 salaryId) {
+        require(IERC20(tokenAddress).approve(address(sablier), salary), "token approval failure");
+        uint256 streamId = sablier.createStream(employee, salary, tokenAddress, startTime, stopTime);
+        salaryId = nonce;
+        salaries[nonce] = Salary({ company: _msgSender(), isCompounding: false, isEntity: true, streamId: streamId });
+
+        emit AddSalary(nonce, streamId, false);
+        nonce = nonce.add(1);
+    }
+
+    function addCompoundingSalaryInternal(
+        address employee,
+        uint256 salary,
+        address tokenAddress,
+        uint256 startTime,
+        uint256 stopTime
+    ) internal returns (uint256 salaryId) {
+        require(isWhitelistedToken(tokenAddress), "token not whitelisted");
+        address cTokenAddress = tokenStructs[tokenAddress].cTokenAddress;
+        ICERC20 cToken = ICERC20(cTokenAddress);
+        uint256 preMintCTokenBalance = cToken.balanceOf(address(this));
+        require(IERC20(tokenAddress).approve(cTokenAddress, salary), "token approval failure");
+        require(cToken.mint(salary) == 0, "token minting failure");
+        uint256 postMintCTokenBalance = cToken.balanceOf(address(this));
+        uint256 mintAmount = postMintCTokenBalance.sub(preMintCTokenBalance);
+
+        require(cToken.approve(address(sablier), mintAmount), "token approval failure");
+        uint256 senderShare = 100;
+        uint256 recipientShare = 0;
+        uint256 streamId = sablier.createCompoundingStream(
+            employee,
+            mintAmount,
+            tokenAddress,
+            startTime,
+            stopTime,
+            senderShare,
+            recipientShare
+        );
+        salaryId = nonce;
+        salaries[nonce] = Salary({ company: _msgSender(), isCompounding: true, isEntity: true, streamId: streamId });
+
+        emit AddSalary(nonce, streamId, true);
+        nonce = nonce.add(1);
     }
 }
