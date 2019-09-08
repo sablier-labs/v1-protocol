@@ -23,51 +23,35 @@ function shouldBehaveLikeAddSalary(alice, bob) {
         stopTime = startTime.plus(STANDARD_TIME_DELTA);
       });
 
-      describe("when the sablier contract has enough allowance", function() {
-        beforeEach(async function() {
-          await this.token.approve(this.payroll.address, STANDARD_SALARY.toString(10), opts);
-          await this.payroll.resetSablierAllowance(this.token.address, opts);
-        });
-
-        it("adds the salary", async function() {
-          const balance = await this.token.balanceOf(company);
-          await this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts);
-          const newBalance = await this.token.balanceOf(company);
-          balance.should.be.bignumber.equal(newBalance.plus(STANDARD_SALARY));
-        });
-
-        it("increases the salary nonce", async function() {
-          const nonce = await this.sablier.nonce();
-          await this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts);
-          const newNonce = await this.sablier.nonce();
-          nonce.should.be.bignumber.equal(newNonce.minus(1));
-        });
-
-        it("emits an addsalary event", async function() {
-          const result = await this.payroll.addSalary(
-            employee,
-            salary,
-            this.token.address,
-            startTime,
-            stopTime,
-            isAccruing,
-            opts,
-          );
-          truffleAssert.eventEmitted(result, "AddSalary");
-        });
+      beforeEach(async function() {
+        await this.token.approve(this.payroll.address, STANDARD_SALARY.toString(10), opts);
       });
 
-      describe("when the sablier contract does not have enough allowance", function() {
-        beforeEach(async function() {
-          await this.token.approve(this.payroll.address, STANDARD_SALARY.toString(10), opts);
-        });
+      it("adds the salary", async function() {
+        const balance = await this.token.balanceOf(company);
+        await this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts);
+        const newBalance = await this.token.balanceOf(company);
+        balance.should.be.bignumber.equal(newBalance.plus(STANDARD_SALARY));
+      });
 
-        it("reverts", async function() {
-          await truffleAssert.reverts(
-            this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts),
-            truffleAssert.ErrorType.REVERT,
-          );
-        });
+      it("increases the salary nonce", async function() {
+        const nonce = await this.sablier.nonce();
+        await this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts);
+        const newNonce = await this.sablier.nonce();
+        nonce.should.be.bignumber.equal(newNonce.minus(1));
+      });
+
+      it("emits an addsalary event", async function() {
+        const result = await this.payroll.addSalary(
+          employee,
+          salary,
+          this.token.address,
+          startTime,
+          stopTime,
+          isAccruing,
+          opts,
+        );
+        truffleAssert.eventEmitted(result, "AddSalary");
       });
     });
 

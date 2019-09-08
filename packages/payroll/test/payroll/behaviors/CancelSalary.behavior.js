@@ -22,7 +22,7 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
     beforeEach(async function() {
       const opts = { from: company };
       await this.token.approve(this.payroll.address, salary, opts);
-      await this.payroll.resetSablierAllowance(this.token.address, opts);
+      // await this.payroll.resetSablierAllowance(this.token.address, opts);
       startTime = now.plus(STANDARD_TIME_OFFSET);
       stopTime = startTime.plus(STANDARD_TIME_DELTA);
       const result = await this.payroll.addSalary(
@@ -56,12 +56,12 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
         await this.payroll.cancelSalary(salaryId, opts);
         const newSenderBalance = await this.token.balanceOf(company);
         const newRecipientBalance = await this.token.balanceOf(employee);
-        senderBalance.should.tolerateTheBlockTimeVariation(newSenderBalance.plus(FIVE_UNITS).minus(salary));
         const addTheBlockTimeAverage = false;
-        recipientBalance.should.tolerateTheBlockTimeVariation(
-          newRecipientBalance.minus(FIVE_UNITS),
+        senderBalance.should.tolerateTheBlockTimeVariation(
+          newSenderBalance.minus(salary).minus(FIVE_UNITS),
           addTheBlockTimeAverage,
         );
+        recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(FIVE_UNITS));
       });
 
       it("deletes the salary object", async function() {
@@ -93,13 +93,12 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
         await this.payroll.cancelSalary(salaryId, opts);
         const newSenderBalance = await this.token.balanceOf(company);
         const newRecipientBalance = await this.token.balanceOf(employee);
-
-        senderBalance.should.tolerateTheBlockTimeVariation(newSenderBalance.plus(FIVE_UNITS).minus(salary));
         const addTheBlockTimeAverage = false;
-        recipientBalance.should.tolerateTheBlockTimeVariation(
-          newRecipientBalance.minus(FIVE_UNITS),
+        senderBalance.should.tolerateTheBlockTimeVariation(
+          newSenderBalance.minus(salary).plus(FIVE_UNITS),
           addTheBlockTimeAverage,
         );
+        recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(FIVE_UNITS));
       });
 
       it("deletes the salary object", async function() {

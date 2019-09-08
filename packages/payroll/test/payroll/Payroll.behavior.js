@@ -37,7 +37,6 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
 
       beforeEach(async function() {
         await this.token.approve(this.payroll.address, salary, opts);
-        await this.payroll.resetSablierAllowance(this.token.address, opts);
         startTime = now.plus(STANDARD_TIME_OFFSET);
         stopTime = startTime.plus(STANDARD_TIME_DELTA);
         const result = await this.payroll.addSalary(
@@ -89,7 +88,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
     shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve);
   });
 
-  describe("addRelayer", function() {
+  describe("whitelistRelayer", function() {
     const now = new BigNumber(dayjs().unix());
 
     describe("when the salary exists", function() {
@@ -105,7 +104,6 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
 
       beforeEach(async function() {
         await this.token.approve(this.payroll.address, salary, opts);
-        await this.payroll.resetSablierAllowance(this.token.address, opts);
         startTime = now.plus(STANDARD_TIME_OFFSET);
         stopTime = startTime.plus(STANDARD_TIME_DELTA);
         const result = await this.payroll.addSalary(
@@ -120,16 +118,18 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
         salaryId = result.logs[0].args.salaryId;
       });
 
-      it("adds the relayer", async function() {
-        await this.payroll.addRelayer(relayer, salaryId, opts);
-        const result = await this.payroll.relayers(relayer, salaryId);
-        result.should.be.equal(true);
+      describe("when the relayer is not whitelisted", function() {
+        it("whitelists the relayer", async function() {
+          await this.payroll.whitelistRelayer(relayer, salaryId, opts);
+          const result = await this.payroll.relayers(relayer, salaryId, opts);
+          result.should.be.equal(true);
+        });
       });
 
-      describe("when the relayer already exists", function() {
+      describe("when the relayer is whitelisted", function() {
         it("reverts", async function() {
-          await this.payroll.addRelayer(relayer, salaryId, opts);
-          await truffleAssert.reverts(this.payroll.addRelayer(relayer, salaryId, opts), "relayer exists");
+          await this.payroll.whitelistRelayer(relayer, salaryId, opts);
+          await truffleAssert.reverts(this.payroll.whitelistRelayer(relayer, salaryId, opts), "relayer is whitelisted");
         });
       });
     });
@@ -140,12 +140,12 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
 
       it("reverts", async function() {
         const salaryId = new BigNumber(419863);
-        await truffleAssert.reverts(this.payroll.addRelayer(relayer, salaryId, opts), "salary does not exist");
+        await truffleAssert.reverts(this.payroll.whitelistRelayer(relayer, salaryId, opts), "salary does not exist");
       });
     });
   });
 
-  describe("removeRelayer", function() {
+  describe("discardRelayer", function() {
     const now = new BigNumber(dayjs().unix());
 
     describe("when the salary exists", function() {
@@ -161,7 +161,6 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
 
       beforeEach(async function() {
         await this.token.approve(this.payroll.address, salary, opts);
-        await this.payroll.resetSablierAllowance(this.token.address, opts);
         startTime = now.plus(STANDARD_TIME_OFFSET);
         stopTime = startTime.plus(STANDARD_TIME_DELTA);
         const result = await this.payroll.addSalary(
@@ -176,16 +175,21 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
         salaryId = result.logs[0].args.salaryId;
       });
 
-      it("removes the relayer", async function() {
-        await this.payroll.addRelayer(relayer, salaryId, opts);
-        await this.payroll.removeRelayer(relayer, salaryId, opts);
-        const result = await this.payroll.relayers(relayer, salaryId);
-        result.should.be.equal(false);
+      describe("when the relayer is whitelisted", function() {
+        it("removes the relayer", async function() {
+          await this.payroll.whitelistRelayer(relayer, salaryId, opts);
+          await this.payroll.removeRelayer(relayer, salaryId, opts);
+          const result = await this.payroll.relayers(relayer, salaryId, opts);
+          result.should.be.equal(false);
+        });
       });
 
-      describe("when the relayer does not exist", function() {
+      describe("when the relayer is not whitelisted", function() {
         it("reverts", async function() {
-          await truffleAssert.reverts(this.payroll.removeRelayer(relayer, salaryId, opts), "relayer does not exist");
+          await truffleAssert.reverts(
+            this.payroll.removeRelayer(relayer, salaryId, opts),
+            "relayer is not whitelisted",
+          );
         });
       });
     });
