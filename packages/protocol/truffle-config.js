@@ -3,7 +3,7 @@ require("dotenv").config();
 const { CoverageSubprovider } = require("@0x/sol-coverage");
 const { ProfilerSubprovider } = require("@0x/sol-profiler");
 const { RevertTraceSubprovider, TruffleArtifactAdapter } = require("@0x/sol-trace");
-const HDWalletProvider = require("truffle-hdwallet-provider");
+const HDWalletProvider = require("@truffle/hdwallet-provider");
 const ProviderEngine = require("web3-provider-engine");
 const WebsocketSubprovider = require("web3-provider-engine/subproviders/websocket");
 const { toHex, toWei } = require("web3-utils");
@@ -32,7 +32,14 @@ const defaultFromAddress = "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1";
 const isVerbose = true;
 const coverageSubproviderConfig = {
   isVerbose,
-  ignoreFilesGlobs: ["**/Migrations.sol", "**/interfaces/**", "**/node_modules/**", "**/test/**"],
+  ignoreFilesGlobs: [
+    "**/Migrations.sol",
+    "**/compound/**",
+    "**/interfaces/**",
+    "**/mocks/**",
+    "**/node_modules/**",
+    "**/test/**",
+  ],
 };
 
 const projectRoot = "";
