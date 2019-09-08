@@ -1,26 +1,34 @@
 const { devConstants } = require("@sablier/dev-utils");
-const { shouldBehaveLikeERC1620 } = require("./Sablier.behavior");
+const { shouldBehaveLikeSablier } = require("./Sablier.behavior");
 
+const CERC20Mock = artifacts.require("./CERC20Mock.sol");
 const ERC20Mock = artifacts.require("./ERC20Mock.sol");
 const NonStandardERC20Mock = artifacts.require("./NonStandardERC20Mock.sol");
 const Sablier = artifacts.require("./Sablier.sol");
 
+CERC20Mock.numberFormat = "BigNumber";
 ERC20Mock.numberFormat = "BigNumber";
 NonStandardERC20Mock.numberFormat = "BigNumber";
 Sablier.numberFormat = "BigNumber";
 
-const { STANDARD_SALARY } = devConstants;
+const { INITIAL_EXCHANGE_RATE, STANDARD_SALARY } = devConstants;
 
-contract("Sablier", function sablier([_, alice, bob, carol, eve]) {
+contract("Sablier", function sablier([alice, bob, carol, eve]) {
   beforeEach(async function() {
-    this.token = await ERC20Mock.new();
-    await this.token.mint(alice, STANDARD_SALARY.toString(10));
+    const opts = { from: alice };
+    this.token = await ERC20Mock.new(opts);
+    await this.token.mint(alice, STANDARD_SALARY.multipliedBy(2).toString(10), opts);
 
-    this.nonStandardERC20Token = await NonStandardERC20Mock.new();
-    this.nonStandardERC20Token.nonStandardMint(alice, STANDARD_SALARY.toString(10));
+    const cTokenDecimals = 8;
+    this.cToken = await CERC20Mock.new(this.token.address, INITIAL_EXCHANGE_RATE.toString(10), cTokenDecimals, opts);
+    await this.token.approve(this.cToken.address, STANDARD_SALARY.multipliedBy(2).toString(10), opts);
+    await this.cToken.mint(STANDARD_SALARY.toString(10), opts);
+
+    this.nonStandardERC20Token = await NonStandardERC20Mock.new(opts);
+    this.nonStandardERC20Token.nonStandardMint(alice, STANDARD_SALARY.toString(10), opts);
 
     this.sablier = await Sablier.new();
   });
 
-  shouldBehaveLikeERC1620(alice, bob, carol, eve);
+  shouldBehaveLikeSablier(alice, bob, carol, eve);
 });
