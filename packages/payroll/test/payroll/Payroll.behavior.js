@@ -32,7 +32,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
       const salary = STANDARD_SALARY.toString(10);
       let startTime;
       let stopTime;
-      const isAccruing = false;
+      const isCompounding = false;
       const opts = { from: company };
 
       beforeEach(async function() {
@@ -45,7 +45,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
           this.token.address,
           startTime,
           stopTime,
-          isAccruing,
+          isCompounding,
           opts,
         );
         salaryId = result.logs[0].args.salaryId;
@@ -61,7 +61,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
         result.stopTime.should.be.bignumber.equal(stopTime);
         result.balance.should.be.bignumber.equal(salary);
         result.rate.should.be.bignumber.equal(STANDARD_RATE);
-        result.isAccruing.should.be.equal(false);
+        result.isCompounding.should.be.equal(false);
       });
     });
 
@@ -98,7 +98,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
       const salary = STANDARD_SALARY.toString(10);
       let startTime;
       let stopTime;
-      const isAccruing = false;
+      const isCompounding = false;
       const relayer = carol;
       const opts = { from: company };
 
@@ -112,7 +112,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
           this.token.address,
           startTime,
           stopTime,
-          isAccruing,
+          isCompounding,
           opts,
         );
         salaryId = result.logs[0].args.salaryId;
@@ -155,7 +155,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
       const salary = STANDARD_SALARY.toString(10);
       let startTime;
       let stopTime;
-      const isAccruing = false;
+      const isCompounding = false;
       const relayer = carol;
       const opts = { from: company };
 
@@ -169,7 +169,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
           this.token.address,
           startTime,
           stopTime,
-          isAccruing,
+          isCompounding,
           opts,
         );
         salaryId = result.logs[0].args.salaryId;
@@ -178,7 +178,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
       describe("when the relayer is whitelisted", function() {
         it("removes the relayer", async function() {
           await this.payroll.whitelistRelayer(relayer, salaryId, opts);
-          await this.payroll.removeRelayer(relayer, salaryId, opts);
+          await this.payroll.discardRelayer(relayer, salaryId, opts);
           const result = await this.payroll.relayers(relayer, salaryId, opts);
           result.should.be.equal(false);
         });
@@ -187,7 +187,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
       describe("when the relayer is not whitelisted", function() {
         it("reverts", async function() {
           await truffleAssert.reverts(
-            this.payroll.removeRelayer(relayer, salaryId, opts),
+            this.payroll.discardRelayer(relayer, salaryId, opts),
             "relayer is not whitelisted",
           );
         });
@@ -200,7 +200,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
 
       it("reverts", async function() {
         const salaryId = new BigNumber(419863);
-        await truffleAssert.reverts(this.payroll.removeRelayer(relayer, salaryId, opts), "salary does not exist");
+        await truffleAssert.reverts(this.payroll.discardRelayer(relayer, salaryId, opts), "salary does not exist");
       });
     });
   });

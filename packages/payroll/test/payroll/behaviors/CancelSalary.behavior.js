@@ -4,7 +4,7 @@ const dayjs = require("dayjs");
 const traveler = require("ganache-time-traveler");
 const truffleAssert = require("truffle-assertions");
 
-const { FIVE_UNITS, ONE_UNIT, STANDARD_SALARY, STANDARD_TIME_DELTA, STANDARD_TIME_OFFSET, ZERO_ADDRESS } = devConstants;
+const { FIVE_UNITS, STANDARD_SALARY, STANDARD_SCALE, STANDARD_TIME_DELTA, STANDARD_TIME_OFFSET } = devConstants;
 
 function shouldBehaveLikeCancelSalary(alice, bob, eve) {
   const now = new BigNumber(dayjs().unix());
@@ -16,13 +16,12 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
     const salary = STANDARD_SALARY.toString(10);
     let startTime;
     let stopTime;
-    const isAccruing = false;
+    const isCompounding = false;
     let streamId;
 
     beforeEach(async function() {
       const opts = { from: company };
       await this.token.approve(this.payroll.address, salary, opts);
-      // await this.payroll.resetSablierAllowance(this.token.address, opts);
       startTime = now.plus(STANDARD_TIME_OFFSET);
       stopTime = startTime.plus(STANDARD_TIME_DELTA);
       const result = await this.payroll.addSalary(
@@ -31,7 +30,7 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
         this.token.address,
         startTime,
         stopTime,
-        isAccruing,
+        isCompounding,
         opts,
       );
       salaryId = result.logs[0].args.salaryId;
@@ -59,9 +58,10 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
         const addTheBlockTimeAverage = false;
         senderBalance.should.tolerateTheBlockTimeVariation(
           newSenderBalance.minus(salary).minus(FIVE_UNITS),
+          STANDARD_SCALE,
           addTheBlockTimeAverage,
         );
-        recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(FIVE_UNITS));
+        recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(FIVE_UNITS), STANDARD_SCALE);
       });
 
       it("deletes the salary object", async function() {
@@ -96,9 +96,10 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
         const addTheBlockTimeAverage = false;
         senderBalance.should.tolerateTheBlockTimeVariation(
           newSenderBalance.minus(salary).plus(FIVE_UNITS),
+          STANDARD_SCALE,
           addTheBlockTimeAverage,
         );
-        recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(FIVE_UNITS));
+        recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(FIVE_UNITS), STANDARD_SCALE);
       });
 
       it("deletes the salary object", async function() {

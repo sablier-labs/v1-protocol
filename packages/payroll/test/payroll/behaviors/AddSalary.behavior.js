@@ -16,7 +16,7 @@ function shouldBehaveLikeAddSalary(alice, bob) {
       const salary = STANDARD_SALARY.toString(10);
       let startTime;
       let stopTime;
-      const isAccruing = false;
+      const isCompounding = false;
 
       beforeEach(async function() {
         startTime = now.plus(STANDARD_TIME_OFFSET);
@@ -29,14 +29,14 @@ function shouldBehaveLikeAddSalary(alice, bob) {
 
       it("adds the salary", async function() {
         const balance = await this.token.balanceOf(company);
-        await this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts);
+        await this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isCompounding, opts);
         const newBalance = await this.token.balanceOf(company);
         balance.should.be.bignumber.equal(newBalance.plus(STANDARD_SALARY));
       });
 
       it("increases the salary nonce", async function() {
         const nonce = await this.sablier.nonce();
-        await this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts);
+        await this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isCompounding, opts);
         const newNonce = await this.sablier.nonce();
         nonce.should.be.bignumber.equal(newNonce.minus(1));
       });
@@ -48,7 +48,7 @@ function shouldBehaveLikeAddSalary(alice, bob) {
           this.token.address,
           startTime,
           stopTime,
-          isAccruing,
+          isCompounding,
           opts,
         );
         truffleAssert.eventEmitted(result, "AddSalary");
@@ -59,7 +59,7 @@ function shouldBehaveLikeAddSalary(alice, bob) {
       const employee = bob;
       let startTime;
       let stopTime;
-      const isAccruing = false;
+      const isCompounding = false;
 
       beforeEach(async function() {
         startTime = now.plus(STANDARD_TIME_OFFSET);
@@ -72,7 +72,7 @@ function shouldBehaveLikeAddSalary(alice, bob) {
 
         it("reverts", async function() {
           await truffleAssert.reverts(
-            this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts),
+            this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isCompounding, opts),
             truffleAssert.ErrorType.REVERT,
           );
         });
@@ -83,7 +83,7 @@ function shouldBehaveLikeAddSalary(alice, bob) {
 
         it("reverts", async function() {
           await truffleAssert.reverts(
-            this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isAccruing, opts),
+            this.payroll.addSalary(employee, salary, this.token.address, startTime, stopTime, isCompounding, opts),
             truffleAssert.ErrorType.REVERT,
           );
         });
@@ -96,7 +96,7 @@ function shouldBehaveLikeAddSalary(alice, bob) {
     const salary = STANDARD_SALARY.toString(10);
     let startTime;
     let stopTime;
-    const isAccruing = false;
+    const isCompounding = false;
 
     beforeEach(async function() {
       startTime = now.plus(STANDARD_TIME_OFFSET);
@@ -116,7 +116,7 @@ function shouldBehaveLikeAddSalary(alice, bob) {
             this.nonStandardERC20Token.address,
             startTime,
             stopTime,
-            isAccruing,
+            isCompounding,
             opts,
           ),
           truffleAssert.ErrorType.REVERT,
@@ -127,7 +127,7 @@ function shouldBehaveLikeAddSalary(alice, bob) {
     describe("when the token contract is the zero address", function() {
       it("reverts", async function() {
         await truffleAssert.reverts(
-          this.payroll.addSalary(employee, salary, ZERO_ADDRESS, startTime, stopTime, isAccruing, opts),
+          this.payroll.addSalary(employee, salary, ZERO_ADDRESS, startTime, stopTime, isCompounding, opts),
           truffleAssert.ErrorType.REVERT,
         );
       });

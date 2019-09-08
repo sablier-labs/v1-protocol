@@ -4,7 +4,7 @@ const dayjs = require("dayjs");
 const traveler = require("ganache-time-traveler");
 const truffleAssert = require("truffle-assertions");
 
-const { FIVE_UNITS, ONE_UNIT, STANDARD_SALARY, STANDARD_TIME_DELTA, STANDARD_TIME_OFFSET, ZERO_ADDRESS } = devConstants;
+const { FIVE_UNITS, STANDARD_SALARY, STANDARD_SCALE, STANDARD_TIME_DELTA, STANDARD_TIME_OFFSET } = devConstants;
 
 function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
   const now = new BigNumber(dayjs().unix());
@@ -16,7 +16,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
     const salary = STANDARD_SALARY.toString(10);
     let startTime;
     let stopTime;
-    const isAccruing = false;
+    const isCompounding = false;
     let streamId;
     const relayer = carol;
 
@@ -32,7 +32,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
         this.token.address,
         startTime,
         stopTime,
-        isAccruing,
+        isCompounding,
         opts,
       );
       salaryId = result.logs[0].args.salaryId;
@@ -68,7 +68,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
           const balance = await this.sablier.balanceOf(streamId, employee);
           await this.payroll.withdrawFromSalary(salaryId, FIVE_UNITS, opts);
           const newBalance = await this.sablier.balanceOf(streamId, employee);
-          balance.should.tolerateTheBlockTimeVariation(newBalance.plus(FIVE_UNITS));
+          balance.should.tolerateTheBlockTimeVariation(newBalance.plus(FIVE_UNITS), STANDARD_SCALE);
         });
       });
 
@@ -78,7 +78,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
         it("reverts", async function() {
           await truffleAssert.reverts(
             this.payroll.withdrawFromSalary(salaryId, amount, opts),
-            "withdrawal exceeds the available balance",
+            "amount exceeds the available balance",
           );
         });
       });
@@ -88,7 +88,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
       const opts = { from: relayer };
 
       beforeEach(async function() {
-        await this.payroll.addRelayer(relayer, salaryId, { from: company });
+        await this.payroll.whitelistRelayer(relayer, salaryId, { from: company });
         await traveler.advanceBlockAndSetTime(
           now
             .plus(STANDARD_TIME_OFFSET)
@@ -114,7 +114,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
           const balance = await this.sablier.balanceOf(streamId, employee);
           await this.payroll.withdrawFromSalary(salaryId, FIVE_UNITS, opts);
           const newBalance = await this.sablier.balanceOf(streamId, employee);
-          balance.should.tolerateTheBlockTimeVariation(newBalance.plus(FIVE_UNITS));
+          balance.should.tolerateTheBlockTimeVariation(newBalance.plus(FIVE_UNITS), STANDARD_SCALE);
         });
       });
 
@@ -124,7 +124,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
         it("reverts", async function() {
           await truffleAssert.reverts(
             this.payroll.withdrawFromSalary(salaryId, amount, opts),
-            "withdrawal exceeds the available balance",
+            "amount exceeds the available balance",
           );
         });
       });
