@@ -22,6 +22,7 @@
     "@sablier/chai-eth": "0.0.1",
     "@sablier/dev-utils": "0.0.1",
     "@sablier/eslint-config": "0.0.1",
+    "@truffle/hdwallet-provider": "^1.0.18",
     "codecov": "^3.5.0",
     "dotenv": "^7.0.0",
     "eslint": "^6.1.0",
@@ -35,7 +36,6 @@
     "solc": "0.5.10",
     "solhint": "^2.1.2",
     "truffle": "^5.0.35",
-    "truffle-hdwallet-provider": "^1.0.16",
     "web3": "1.2.1",
     "web3-provider-engine": "^15.0.3",
     "web3-utils": "1.2.1"
