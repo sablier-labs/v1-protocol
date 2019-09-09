@@ -58,7 +58,12 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
 
         // The exchange rate increased because the block number incremented
         const compound = await this.sablier.getCompoundForStream(streamId);
-        compound.exchangeRate.should.be.bignumber.equal(exchangeRate.plus(EXCHANGE_RATE_BLOCK_DELTA));
+        // We have to account for variation because solidity-coverage makes the `getStream` function
+        // increase the block number, whereas normally that doesn't happen
+        compound.exchangeRate.should.tolerateTheBlockTimeVariation(
+          exchangeRate.plus(EXCHANGE_RATE_BLOCK_DELTA),
+          new BigNumber(1e6),
+        );
         compound.senderShare.should.be.bignumber.equal(senderShare);
         compound.recipientShare.should.be.bignumber.equal(recipientShare);
       });

@@ -13,14 +13,23 @@ cleanup() {
   fi
 }
 
-ganache_port=8545
+if [ "$MODE" = "coverage" ]; then
+  ganache_port=8555
+else
+  ganache_port=8545
+fi
 
 ganache_running() {
   nc -z localhost "$ganache_port"
 }
 
 start_ganache() {
-  npx ganache-cli --gasLimit 0xfffffffffff --port "$ganache_port" --networkId 1234 > /dev/null &
+  echo "$MODE";
+  if [ "$MODE" = "coverage" ]; then
+    npx testrpc-sc --allowUnlimitedContractSize true --gasLimit 0xfffffffffffff --port "$ganache_port" --networkId 1234 > /dev/null &
+  else
+    npx ganache-cli --gasLimit 0xfffffffffff --port "$ganache_port" > /dev/null &
+  fi
 
   ganache_pid=$!
 
@@ -41,14 +50,9 @@ else
 fi
 
 yarn truffle version
-yarn truffle test "$@"
 
 if [ "$MODE" = "coverage" ]; then
-  yarn istanbul report html lcov
-
-  if [ "$CI" = true ]; then
-    cat ./coverage/lcov.info | yarn codecov
-  fi
+  yarn solidity-coverage
+else
+  yarn truffle test "$@"
 fi
-
-
