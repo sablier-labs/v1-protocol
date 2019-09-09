@@ -45,8 +45,10 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           opts,
         );
 
-        const streamId = result.logs[0].args.streamId;
-        const stream = await this.sablier.getStream(streamId);
+        const streamId = Number(result.logs[0].args.streamId);
+        // We have to force-call the `getStream` method via the web3.eth.Contract api, otherwise
+        // solidity-coverage will turn it into a state-changing method
+        const stream = await this.sablier.contract.methods.getStream(streamId).call();
         stream.sender.should.be.equal(sender);
         stream.recipient.should.be.equal(recipient);
         stream.deposit.should.be.bignumber.equal(deposit);
@@ -56,10 +58,10 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
         stream.balance.should.be.bignumber.equal(deposit);
         stream.rate.should.be.bignumber.equal(STANDARD_RATE_CTOKEN);
 
-        // The exchange rate increased because the block number incremented
-        const compound = await this.sablier.getCompoundForStream(streamId);
+        // The exchange rate increased because the block number increase
+        const compound = await this.sablier.contract.methods.getCompoundForStream(streamId).call();
         // We have to account for variation because solidity-coverage makes the `getStream` function
-        // increase the block number, whereas normally that doesn't happen
+        // increase the block number, whereas in normal conditions that doesn't happen
         compound.exchangeRate.should.tolerateTheBlockTimeVariation(
           exchangeRate.plus(EXCHANGE_RATE_BLOCK_DELTA),
           new BigNumber(1e6),

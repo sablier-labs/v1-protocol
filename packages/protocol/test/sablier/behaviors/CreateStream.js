@@ -37,7 +37,9 @@ function shouldBehaveLikeERC1620Stream(alice, bob) {
                     stopTime,
                     opts,
                   );
-                  const stream = await this.sablier.getStream(result.logs[0].args.streamId);
+                  // We have to force-call the `getStream` method via the web3.eth.Contract api, otherwise
+                  // solidity-coverage will turn it into a state-changing method
+                  const stream = await this.sablier.getStream(Number(result.logs[0].args.streamId));
                   stream.sender.should.be.equal(sender);
                   stream.recipient.should.be.equal(recipient);
                   stream.deposit.should.be.bignumber.equal(deposit);

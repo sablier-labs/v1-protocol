@@ -24,7 +24,6 @@ ganache_running() {
 }
 
 start_ganache() {
-  echo "$MODE";
   if [ "$MODE" = "coverage" ]; then
     npx testrpc-sc --allowUnlimitedContractSize true --gasLimit 0xfffffffffffff --port "$ganache_port" --networkId 1234 > /dev/null &
   else
