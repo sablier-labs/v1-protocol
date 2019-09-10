@@ -16,4 +16,7 @@ flags:
   protocol:
     paths:
       - packages/protocol/
-      
+
+fixes:
+  - "contracts/::packages/protocol/contracts/"
+
