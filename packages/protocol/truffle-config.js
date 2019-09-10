@@ -38,6 +38,9 @@ module.exports = {
     bail: true,
     enableTimeouts: false,
   },
+  plugins: [
+    "solidity-coverage"
+  ],
   networks: {
     development: {
       host: "127.0.0.1",
