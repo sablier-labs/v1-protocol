@@ -1,7 +1,7 @@
 pragma solidity 0.5.10;
 
-import "@openzeppelin/contracts-ethereum-package/contracts/GSN/bouncers/GSNBouncerSignature.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipient.sol";
+// import "@openzeppelin/contracts-ethereum-package/contracts/GSN/bouncers/GSNBouncerSignature.sol";
+// import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipient.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
@@ -16,7 +16,7 @@ import "./interfaces/ICERC20.sol";
 /// @title Payroll dapp contract
 /// @author Paul Razvan Berg - <paul@sablier.app>
 
-contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
+contract Payroll is Initializable, Ownable {
     using SafeMath for uint256;
 
     struct Salary {
@@ -38,7 +38,7 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
     address[] public tokenList;
     mapping(address => Token) public tokenStructs;
 
-    event AddSalary(uint256 indexed salaryId, uint256 indexed streamId, bool isCompounding);
+    event CreateSalary(uint256 indexed salaryId, uint256 indexed streamId, bool isCompounding);
     event CancelSalary(uint256 indexed salaryId);
     event DiscardToken(address indexed tokenAddress);
     event WhitelistToken(address indexed tokenAddress, address cTokenAddress);
@@ -106,34 +106,34 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
 
     /* View */
 
-    function acceptRelayedCall(
-        address relay,
-        address from,
-        bytes calldata encodedFunction,
-        uint256 transactionFee,
-        uint256 gasPrice,
-        uint256 gasLimit,
-        uint256 _nonce,
-        bytes calldata approvalData,
-        uint256
-    ) external view returns (uint256, bytes memory) {
-        bytes memory blob = abi.encodePacked(
-            relay,
-            from,
-            encodedFunction,
-            transactionFee,
-            gasPrice,
-            gasLimit,
-            _nonce, // Prevents replays on RelayHub
-            getHubAddr(), // Prevents replays in multiple RelayHubs
-            address(this) // Prevents replays in multiple recipients
-        );
-        if (keccak256(blob).toEthSignedMessageHash().recover(approvalData) == owner()) {
-            return _approveRelayedCall();
-        } else {
-            return _rejectRelayedCall(uint256(GSNBouncerSignatureErrorCodes.INVALID_SIGNER));
-        }
-    }
+    // function acceptRelayedCall(
+    //     address relay,
+    //     address from,
+    //     bytes calldata encodedFunction,
+    //     uint256 transactionFee,
+    //     uint256 gasPrice,
+    //     uint256 gasLimit,
+    //     uint256 _nonce,
+    //     bytes calldata approvalData,
+    //     uint256
+    // ) external view returns (uint256, bytes memory) {
+    //     bytes memory blob = abi.encodePacked(
+    //         relay,
+    //         from,
+    //         encodedFunction,
+    //         transactionFee,
+    //         gasPrice,
+    //         gasLimit,
+    //         _nonce, // Prevents replays on RelayHub
+    //         getHubAddr(), // Prevents replays in multiple RelayHubs
+    //         address(this) // Prevents replays in multiple recipients
+    //     );
+    //     if (keccak256(blob).toEthSignedMessageHash().recover(approvalData) == owner()) {
+    //         return _approveRelayedCall();
+    //     } else {
+    //         return _rejectRelayedCall(uint256(GSNBouncerSignatureErrorCodes.INVALID_SIGNER));
+    //     }
+    // }
 
     function getSalary(uint256 salaryId)
         public
@@ -165,7 +165,7 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
 
     /* Public */
 
-    function addSalary(
+    function createSalary(
         address employee,
         uint256 salary,
         address tokenAddress,
@@ -175,9 +175,9 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
     ) external returns (uint256 salaryId) {
         require(IERC20(tokenAddress).transferFrom(_msgSender(), address(this), salary), "token transfer failure");
         if (!isCompounding) {
-            salaryId = addSalaryInternal(employee, salary, tokenAddress, startTime, stopTime);
+            salaryId = createSalaryInternal(employee, salary, tokenAddress, startTime, stopTime);
         } else {
-            salaryId = addCompoundingSalaryInternal(employee, salary, tokenAddress, startTime, stopTime);
+            salaryId = createCompoundingSalaryInternal(employee, salary, tokenAddress, startTime, stopTime);
         }
     }
 
@@ -213,7 +213,7 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
 
     /* Internal */
 
-    function addSalaryInternal(
+    function createSalaryInternal(
         address employee,
         uint256 salary,
         address tokenAddress,
@@ -225,11 +225,11 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
         salaryId = nonce;
         salaries[nonce] = Salary({ company: _msgSender(), isCompounding: false, isEntity: true, streamId: streamId });
 
-        emit AddSalary(nonce, streamId, false);
+        emit CreateSalary(nonce, streamId, false);
         nonce = nonce.add(1);
     }
 
-    function addCompoundingSalaryInternal(
+    function createCompoundingSalaryInternal(
         address employee,
         uint256 salary,
         address tokenAddress,
@@ -260,7 +260,7 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
         salaryId = nonce;
         salaries[nonce] = Salary({ company: _msgSender(), isCompounding: true, isEntity: true, streamId: streamId });
 
-        emit AddSalary(nonce, streamId, true);
+        emit CreateSalary(nonce, streamId, true);
         nonce = nonce.add(1);
     }
 }

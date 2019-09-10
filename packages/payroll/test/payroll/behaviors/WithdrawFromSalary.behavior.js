@@ -26,7 +26,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
       // await this.payroll.resetSablierAllowance(this.token.address, opts);
       startTime = now.plus(STANDARD_TIME_OFFSET);
       stopTime = startTime.plus(STANDARD_TIME_DELTA);
-      const result = await this.payroll.addSalary(
+      const result = await this.payroll.createSalary(
         employee,
         salary,
         this.token.address,

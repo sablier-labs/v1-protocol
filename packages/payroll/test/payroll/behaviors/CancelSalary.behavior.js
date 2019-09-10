@@ -24,7 +24,7 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
       await this.token.approve(this.payroll.address, salary, opts);
       startTime = now.plus(STANDARD_TIME_OFFSET);
       stopTime = startTime.plus(STANDARD_TIME_DELTA);
-      const result = await this.payroll.addSalary(
+      const result = await this.payroll.createSalary(
         employee,
         salary,
         this.token.address,

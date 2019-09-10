@@ -16,9 +16,6 @@
     "@sablier/protocol": "0.1.0"
   },
   "devDependencies": {
-    "@0x/sol-coverage": "^3.0.10",
-    "@0x/sol-profiler": "^3.1.12",
-    "@0x/sol-trace": "^2.0.18",
     "@sablier/dev-utils": "0.0.1",
     "@sablier/eslint-config": "0.0.1",
     "@truffle/hdwallet-provider": "^1.0.18",
@@ -27,6 +24,7 @@
     "eslint": "^6.1.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
+    "ethereumjs-testrpc-sc": "6.5.1-sc.0",
     "fixpack": "^2.3.1",
     "ganache-cli": "^6.5.1",
     "ganache-time-traveler": "^1.0.5",
@@ -34,9 +32,9 @@
     "shx": "^0.3.2",
     "solc": "0.5.10",
     "solhint": "^2.1.2",
+    "solidity-coverage": "0.6.5",
     "truffle": "^5.0.35",
     "web3": "1.2.1",
-    "web3-provider-engine": "^15.0.3",
     "web3-utils": "1.2.1"
   },
   "files": [
@@ -52,7 +50,7 @@
     "url": "git+https://github.com/sablierhq/sablier.git"
   },
   "scripts": {
-    "clean": "shx rm -rf ./.0x-artifacts ./artifacts ./build ./coverage",
+    "clean": "shx rm -rf ./.0x-artifacts ./artifacts ./build ./coverage ./coverage.json",
     "coverage": "scripts/coverage.sh",
     "lint": "yarn lint:js && yarn lint:sol",
     "lint:js": "eslint --ignore-path ../../.eslintignore .",

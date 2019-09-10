@@ -4,7 +4,7 @@ const dayjs = require("dayjs");
 const traveler = require("ganache-time-traveler");
 const truffleAssert = require("truffle-assertions");
 
-const shouldBehaveLikeAddSalary = require("./behaviors/AddSalary.behavior");
+const shouldBehaveLikeCreateSalary = require("./behaviors/CreateSalary.behavior");
 const shouldBehaveLikeCancelSalary = require("./behaviors/CancelSalary.behavior");
 const shouldBehaveLikeWithdrawFromSalary = require("./behaviors/WithdrawFromSalary.behavior");
 
@@ -23,48 +23,6 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
   });
 
   describe("getSalary", function() {
-    const now = new BigNumber(dayjs().unix());
-
-    describe("when the salary exists", function() {
-      let salaryId;
-      const company = alice;
-      const employee = bob;
-      const salary = STANDARD_SALARY.toString(10);
-      let startTime;
-      let stopTime;
-      const isCompounding = false;
-      const opts = { from: company };
-
-      beforeEach(async function() {
-        await this.token.approve(this.payroll.address, salary, opts);
-        startTime = now.plus(STANDARD_TIME_OFFSET);
-        stopTime = startTime.plus(STANDARD_TIME_DELTA);
-        const result = await this.payroll.addSalary(
-          employee,
-          salary,
-          this.token.address,
-          startTime,
-          stopTime,
-          isCompounding,
-          opts,
-        );
-        salaryId = result.logs[0].args.salaryId;
-      });
-
-      it("returns the salary", async function() {
-        const result = await this.payroll.getSalary(salaryId, opts);
-        result.company.should.be.equal(company);
-        result.employee.should.be.equal(employee);
-        result.salary.should.be.bignumber.equal(salary);
-        result.tokenAddress.should.be.equal(this.token.address);
-        result.startTime.should.be.bignumber.equal(startTime);
-        result.stopTime.should.be.bignumber.equal(stopTime);
-        result.balance.should.be.bignumber.equal(salary);
-        result.rate.should.be.bignumber.equal(STANDARD_RATE);
-        result.isCompounding.should.be.equal(false);
-      });
-    });
-
     describe("when the salary does not exist", function() {
       const company = alice;
       const opts = { from: company };
@@ -76,8 +34,8 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
     });
   });
 
-  describe("addSalary", function() {
-    shouldBehaveLikeAddSalary(alice, bob);
+  describe("createSalary", function() {
+    shouldBehaveLikeCreateSalary(alice, bob);
   });
 
   describe("cancelSalary", function() {
@@ -106,7 +64,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
         await this.token.approve(this.payroll.address, salary, opts);
         startTime = now.plus(STANDARD_TIME_OFFSET);
         stopTime = startTime.plus(STANDARD_TIME_DELTA);
-        const result = await this.payroll.addSalary(
+        const result = await this.payroll.createSalary(
           employee,
           salary,
           this.token.address,
@@ -163,7 +121,7 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
         await this.token.approve(this.payroll.address, salary, opts);
         startTime = now.plus(STANDARD_TIME_OFFSET);
         stopTime = startTime.plus(STANDARD_TIME_DELTA);
-        const result = await this.payroll.addSalary(
+        const result = await this.payroll.createSalary(
           employee,
           salary,
           this.token.address,
