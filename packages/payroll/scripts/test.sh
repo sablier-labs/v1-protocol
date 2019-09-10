@@ -13,11 +13,7 @@ cleanup() {
   fi
 }
 
-if [ "$MODE" = "coverage" ]; then
-  ganache_port=8555
-else
-  ganache_port=8545
-fi
+ganache_port=8545
 
 ganache_running() {
   nc -z localhost "$ganache_port"
@@ -25,7 +21,8 @@ ganache_running() {
 
 start_ganache() {
   if [ "$MODE" = "coverage" ]; then
-    npx testrpc-sc --allowUnlimitedContractSize true --gasLimit 0xfffffffffffff --port "$ganache_port" --networkId 1234 > /dev/null &
+    echo "Using in-process ganache-core provider for coverage"
+    return
   else
     npx ganache-cli --gasLimit 0xfffffffffff --port "$ganache_port" > /dev/null &
   fi
@@ -51,7 +48,7 @@ fi
 yarn truffle version
 
 if [ "$MODE" = "coverage" ]; then
-  yarn solidity-coverage
+  yarn truffle run coverage --solcoverjs ./../../.solcover.js
 else
   yarn truffle test "$@"
 fi
