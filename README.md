@@ -58,7 +58,7 @@ If you want to run it locally:
 
 ```bash
 $ cd packages/frontend
-$ yarn install
+$ yarn install && yarn build
 ```
 
 If you want to test Sablier on Rinkeby, make sure to create a `.env` file and mirror the contents of
