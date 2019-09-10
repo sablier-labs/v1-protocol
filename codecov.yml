@@ -9,14 +9,3 @@ coverage:
         target: 95%
         flags: protocol
 
-flags:
-  payroll:
-    paths:
-      - packages/payroll/
-  protocol:
-    paths:
-      - packages/protocol/
-
-fixes:
-  - "contracts/::packages/protocol/contracts/"
-

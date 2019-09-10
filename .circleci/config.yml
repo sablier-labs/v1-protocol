@@ -63,6 +63,9 @@ jobs:
       - run:
           name: "Cover Packages"
           command: yarn coverage
+      - run:
+          name: "Merge Results and Upload to Codecov"
+          command: "yarn lcov-result-merger \"packages/**/coverage/lcov.info\"| yarn codecov"
 workflows:
   version: 2
   main:
