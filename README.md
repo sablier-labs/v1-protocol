@@ -9,8 +9,8 @@
   <a href="https://circleci.com/gh/sablierhq/sablier" alt="CircleCI">
     <img src="https://circleci.com/gh/sablierhq/sablier.svg?style=svg">
   </a>
-  <a href="https://codecov.io/gh/sablierhq/sablier">
-    <img src="https://codecov.io/gh/sablierhq/sablier/branch/develop/graph/badge.svg" />
+  <a href='https://coveralls.io/github/sablierhq/sablier?branch=develop'>
+    <img src='https://coveralls.io/repos/github/sablierhq/sablier/badge.svg?branch=develop' alt='Coverage Status' />
   </a>
   <a href="https://prettier.io">
     <img src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg" alt="Styled with Prettier">

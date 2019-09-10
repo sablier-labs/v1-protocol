@@ -62,7 +62,7 @@ jobs:
             - repo-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: "Cover Packages"
-          command: PKG=@sablier/protocol yarn coverage
+          command: yarn coverage
 workflows:
   version: 2
   main:
