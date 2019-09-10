@@ -6,6 +6,7 @@
 artifacts/
 build/
 coverage/
+coverageEnv/
 lib/
 node_modules/
 
@@ -15,5 +16,6 @@ node_modules/
 coverage.json
 lerna-debug.log*
 npm-debug.log*
+scTopics
 yarn-debug.log*
 yarn-error.log*
