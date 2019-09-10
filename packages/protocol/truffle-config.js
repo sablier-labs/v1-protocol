@@ -47,14 +47,6 @@ module.exports = {
       port: 8545,
       skipDryRun: true,
     },
-    coverage: {
-      host: "127.0.0.1",
-      gas: "0xfffffffffff",
-      gasPrice: "0x01",
-      network_id: "*",
-      port: 8555,
-      skipDryRun: true,
-    },
     kovan: {
       provider: createProvider("kovan"),
       gas: 6000000,
