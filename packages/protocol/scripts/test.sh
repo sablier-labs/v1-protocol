@@ -24,7 +24,7 @@ start_ganache() {
     echo "Using in-process ganache-core provider for coverage"
     return
   else
-    npx ganache-cli --gasLimit 0xfffffffffff --port "$ganache_port" > /dev/null &
+    npx ganache-cli --gasLimit 0xfffffffffff --networkId 1234 --port "$ganache_port" > /dev/null &
   fi
 
   ganache_pid=$!
@@ -48,7 +48,7 @@ fi
 yarn truffle version
 
 if [ "$MODE" = "coverage" ]; then
-  yarn truffle run coverage --solcoverjs ./../../.solcover.js
+  yarn truffle run coverage --solcoverjs ../../.solcover.js
 else
   yarn truffle test "$@"
 fi
