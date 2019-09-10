@@ -21,6 +21,7 @@
     "chai": "^4.2.0",
     "chai-bignumber": "3.0.0",
     "codecov": "^3.5.0",
+    "coveralls": "^3.0.6",
     "dayjs": "^1.8.15",
     "dotenv": "^7.0.0",
     "eslint": "^6.1.0",
