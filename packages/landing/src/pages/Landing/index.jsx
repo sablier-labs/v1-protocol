@@ -105,7 +105,7 @@ class Landing extends Component {
             <div className="landing__label-container">
               <span className="landing__title-label">
                 Earn your <br />
-                salary by the minute.
+                salary in real-time.
               </span>
               <span className="landing__subtitle-label">
                 Paydays don&apos;t make sense any more. Sign up below to have instant access to your earnings through a
