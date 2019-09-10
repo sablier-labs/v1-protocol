@@ -24,7 +24,6 @@
     "eslint": "^6.1.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
-    "ethereumjs-testrpc-sc": "6.5.1-sc.0",
     "fixpack": "^2.3.1",
     "ganache-cli": "^6.5.1",
     "ganache-time-traveler": "^1.0.5",
