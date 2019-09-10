@@ -1,6 +1,6 @@
 <p align="center"><img src="https://i.imgur.com/q6UHTt1.png" width="280px"/></p>
 
-<p align="center">Sablier is a decentralised app for continuous salaries on Ethereum. Read <a href="https://medium.com/sablier-app/introducing-sablier-continuous-payments-on-ethereum-c2bf04446d31" target="_blank">this article</a> to find our more about our mission. Fore a demo, check out <a href="https://www.youtube.com/watch?v=2onYeCwAY3c" target="_blank">this video</a>.</p>
+<p align="center">Sablier is a decentralised app for continuous salaries on Ethereum. Read <a href="https://medium.com/sablier-app/introducing-sablier-continuous-payments-on-ethereum-c2bf04446d31" target="_blank">this article</a> to find out more about our mission. For a demo, see <a href="https://www.youtube.com/watch?v=2onYeCwAY3c" target="_blank">this video</a>.</p>
 
 <p align="center">
   <a href="https://app.netlify.com/sites/infallible-visvesvaraya-6d594e/deploys" alt="Netlify">
