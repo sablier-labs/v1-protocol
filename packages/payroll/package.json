@@ -19,7 +19,7 @@
     "@sablier/dev-utils": "0.0.1",
     "@sablier/eslint-config": "0.0.1",
     "@truffle/hdwallet-provider": "^1.0.18",
-    "codecov": "^3.5.0",
+    "coveralls": "^3.0.6",
     "dotenv": "^7.0.0",
     "eslint": "^6.1.0",
     "eslint-config-airbnb-base": "^14.0.0",

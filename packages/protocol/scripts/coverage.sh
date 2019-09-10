@@ -8,5 +8,4 @@ yarn istanbul report html lcov
 
 if [ "$CI" = true ]; then
   cat ./coverage/lcov.info | yarn coveralls
-  # cat ./coverage/lcov.info | yarn codecov
 fi
