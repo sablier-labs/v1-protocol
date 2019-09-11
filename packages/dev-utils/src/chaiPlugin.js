@@ -1,6 +1,8 @@
 /* eslint-disable func-names, no-else-return, no-param-reassign */
 const BigNumber = require("bignumber.js");
 
+const devConstants = require("./constants");
+
 module.exports = (chai, _utils) => {
   // see https://twitter.com/nicksdjohnson/status/1132394932361023488
   const convert = (value) => {
@@ -27,15 +29,15 @@ module.exports = (chai, _utils) => {
    */
   chai.Assertion.addMethod("tolerateTheBlockTimeVariation", function(
     expected,
-    scale = new BigNumber(1e18),
-    addTheBlockTimeAverage = true,
+    scale = devConstants.STANDARD_SCALE,
+    tolerateByAddition = true,
   ) {
     const actual = convert(this._obj);
     expected = convert(expected);
     scale = convert(scale);
 
     const blockTimeAverage = new BigNumber(14).multipliedBy(scale);
-    if (addTheBlockTimeAverage) {
+    if (tolerateByAddition) {
       const expectedCeiling = actual.plus(blockTimeAverage);
 
       return this.assert(
