@@ -172,7 +172,7 @@ function shouldBehaveLikeSablierAdmin(alice, bob, carol, eve) {
               recipientShare,
               opts,
             );
-            streamId = result.logs[0].args.streamId;
+            streamId = Number(result.logs[0].args.streamId);
             // Advancing the block number simulates earning interest on Compound
             for (let i = 0; i < 5; i += 1) {
               await traveler.advanceBlock();

@@ -23,7 +23,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
       startTime = now.plus(STANDARD_TIME_OFFSET);
       stopTime = startTime.plus(STANDARD_TIME_DELTA);
       const result = await this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts);
-      streamId = result.logs[0].args.streamId;
+      streamId = Number(result.logs[0].args.streamId);
     });
 
     describe("when the caller is the sender of the stream", function() {
@@ -49,6 +49,8 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
       });
 
       describe("when the stream did start but not end", function() {
+        const amount = FIVE_UNITS;
+
         beforeEach(async function() {
           await traveler.advanceBlockAndSetTime(
             now
@@ -64,13 +66,13 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           await this.sablier.cancelStream(streamId, opts);
           const newSenderBalance = await this.token.balanceOf(sender);
           const newRecipientBalance = await this.token.balanceOf(recipient);
-          const addTheBlockTimeAverage = false;
+          const tolerateByAddition = false;
           senderBalance.should.tolerateTheBlockTimeVariation(
-            newSenderBalance.plus(FIVE_UNITS).minus(deposit),
+            newSenderBalance.plus(amount).minus(deposit),
             STANDARD_SCALE,
-            addTheBlockTimeAverage,
+            tolerateByAddition,
           );
-          recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(FIVE_UNITS), STANDARD_SCALE);
+          recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(amount), STANDARD_SCALE);
         });
 
         it("deletes the stream object", async function() {
@@ -99,7 +101,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           );
         });
 
-        it("cancels the stream and transfers all tokens to the recipient", async function() {
+        it("cancels the stream and transfers all tokens to the recipient of the stream", async function() {
           const balance = await this.token.balanceOf(recipient);
           await this.sablier.cancelStream(streamId, opts);
           const newBalance = await this.token.balanceOf(recipient);
@@ -145,6 +147,8 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
       });
 
       describe("when the stream did start but not end", function() {
+        const amount = FIVE_UNITS;
+
         beforeEach(async function() {
           await traveler.advanceBlockAndSetTime(
             now
@@ -160,13 +164,13 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           await this.sablier.cancelStream(streamId, opts);
           const newSenderBalance = await this.token.balanceOf(sender);
           const newRecipientBalance = await this.token.balanceOf(recipient);
-          const addTheBlockTimeAverage = false;
+          const tolerateByAddition = false;
           senderBalance.should.tolerateTheBlockTimeVariation(
-            newSenderBalance.plus(FIVE_UNITS).minus(deposit),
+            newSenderBalance.plus(amount).minus(deposit),
             STANDARD_SCALE,
-            addTheBlockTimeAverage,
+            tolerateByAddition,
           );
-          recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(FIVE_UNITS), STANDARD_SCALE);
+          recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(amount), STANDARD_SCALE);
         });
 
         it("deletes the stream object", async function() {
@@ -195,7 +199,7 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           );
         });
 
-        it("cancels the stream and transfers all tokens to the recipient", async function() {
+        it("cancels the stream and transfers all tokens to the recipient of the stream", async function() {
           const balance = await this.token.balanceOf(recipient);
           await this.sablier.cancelStream(streamId, opts);
           const newBalance = await this.token.balanceOf(recipient);

@@ -46,7 +46,7 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
           recipientShare,
           opts,
         );
-        streamId = result.logs[0].args.streamId;
+        streamId = Number(result.logs[0].args.streamId);
         await traveler.advanceBlockAndSetTime(
           now
             .plus(STANDARD_TIME_OFFSET)
@@ -77,7 +77,7 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
         balance.should.be.bignumber.equal(newBalance.minus(senderInterest));
       });
 
-      it("pays the interest to the recipient", async function() {
+      it("pays the interest to the recipient of the stream", async function() {
         const balance = await this.cToken.balanceOf(recipient);
         const result = await this.sablier.withdrawFromStream(streamId, amount, opts);
         const senderInterest = result.logs[1].args.senderInterest;
@@ -102,8 +102,8 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
         const newEarnings = await this.sablier.earnings(this.cToken.address);
         const newBalance = await this.cToken.balanceOf(this.sablier.address);
 
-        // The sender and the recipient's interests are included in `amount`, so we don't put
-        // them in the equation again
+        // The sender and the recipient's interests are included in `amount`, so we don't
+        // subtract them again
         earnings.should.be.bignumber.equal(newEarnings.minus(sablierInterest));
         balance.should.be.bignumber.equal(newBalance.plus(amount).minus(sablierInterest));
       });
@@ -161,7 +161,7 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
         recipientShare,
         opts,
       );
-      streamId = result.logs[0].args.streamId;
+      streamId = Number(result.logs[0].args.streamId);
       await traveler.advanceBlockAndSetTime(
         now
           .plus(STANDARD_TIME_OFFSET)

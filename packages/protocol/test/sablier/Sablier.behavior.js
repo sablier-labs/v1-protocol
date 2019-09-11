@@ -54,7 +54,7 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
             stopTime,
             opts,
           );
-          streamId = result.logs[0].args.streamId;
+          streamId = Number(result.logs[0].args.streamId);
         });
 
         describe("when the stream did not start", function() {
@@ -86,11 +86,11 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
 
           it("returns the pro rata balance for the sender of the stream", async function() {
             const balance = await this.sablier.balanceOf(streamId, sender, opts);
-            const addTheBlockTimeAverage = false;
+            const tolerateByAddition = false;
             balance.should.tolerateTheBlockTimeVariation(
               STANDARD_SALARY.minus(FIVE_UNITS),
               STANDARD_SCALE,
-              addTheBlockTimeAverage,
+              tolerateByAddition,
             );
           });
 
@@ -171,7 +171,7 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
             stopTime,
             opts,
           );
-          streamId = result.logs[0].args.streamId;
+          streamId = Number(result.logs[0].args.streamId);
         });
 
         describe("when the stream did not start", function() {
@@ -279,9 +279,9 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
       shouldBehaveLikeERC1620CancelStream(alice, bob, eve);
     });
 
-    // describe("cancelCompoundingStream", function() {
-    // shouldBehaveLikeCancelCompoundingStream(alice, bob, eve);
-    // });
+    describe("cancelCompoundingStream", function() {
+      shouldBehaveLikeCancelCompoundingStream(alice, bob, eve);
+    });
   });
 }
 

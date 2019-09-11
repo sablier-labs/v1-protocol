@@ -2,6 +2,7 @@ const { devConstants } = require("@sablier/dev-utils");
 const BigNumber = require("bignumber.js");
 const dayjs = require("dayjs");
 const traveler = require("ganache-time-traveler");
+const truffleAssert = require("truffle-assertions");
 
 const {
   FIVE_UNITS_CTOKEN,
@@ -26,6 +27,7 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
     const senderShare = STANDARD_SENDER_SHARE;
     const recipientShare = STANDARD_RECIPIENT_SHARE;
     const opts = { from: sender };
+    const amount = FIVE_UNITS_CTOKEN;
 
     describe("when the fee is not 0", function() {
       beforeEach(async function() {
@@ -41,7 +43,7 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
           recipientShare,
           opts,
         );
-        streamId = result.logs[0].args.streamId;
+        streamId = Number(result.logs[0].args.streamId);
         await traveler.advanceBlockAndSetTime(
           now
             .plus(STANDARD_TIME_OFFSET)
@@ -53,31 +55,85 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
       it("cancels the compounding stream and transfers the tokens on a pro rata basis", async function() {
         const senderBalance = await this.cToken.balanceOf(sender);
         const recipientBalance = await this.cToken.balanceOf(recipient);
+        const sablierBalance = await this.cToken.balanceOf(this.sablier.address);
         await this.sablier.cancelStream(streamId, opts);
         const newSenderBalance = await this.cToken.balanceOf(sender);
         const newRecipientBalance = await this.cToken.balanceOf(recipient);
-        const addTheBlockTimeAverage = false;
-        senderBalance.should.tolerateTheBlockTimeVariation(
-          newSenderBalance.plus(FIVE_UNITS_CTOKEN).minus(deposit),
+        const newSablierBalance = await this.cToken.balanceOf(this.sablier.address);
+
+        const sum = senderBalance.plus(recipientBalance).plus(sablierBalance);
+        const newSum = newSenderBalance.plus(newRecipientBalance).plus(newSablierBalance);
+        sum.should.be.bignumber.equal(newSum);
+      });
+
+      it("pays the interest to the sender of the stream", async function() {
+        const balance = await this.cToken.balanceOf(sender);
+        const result = await this.sablier.cancelStream(streamId, opts);
+        const sablierInterest = result.logs[1].args.sablierInterest;
+        const newBalance = await this.cToken.balanceOf(sender);
+
+        // The sender receives the deposit back, minus what has been streamed so far, `amount`,
+        // plus their earned interest
+        const tolerateByAddition = false;
+        balance.should.tolerateTheBlockTimeVariation(
+          newBalance
+            .minus(deposit)
+            .plus(amount)
+            .plus(sablierInterest),
           STANDARD_SCALE_CTOKEN,
-          addTheBlockTimeAverage,
+          tolerateByAddition,
         );
-        recipientBalance.should.tolerateTheBlockTimeVariation(
-          newRecipientBalance.minus(FIVE_UNITS_CTOKEN),
-          STANDARD_SCALE_CTOKEN,
+      });
+
+      it("pays the interest to the recipient of the stream", async function() {
+        const balance = await this.cToken.balanceOf(recipient);
+        const result = await this.sablier.cancelStream(streamId, opts);
+        const sablierInterest = result.logs[1].args.sablierInterest;
+        const newBalance = await this.cToken.balanceOf(recipient);
+
+        // The recipient receives what has been streamed so far, `amount`,
+        // plus their earned interest
+        balance.should.tolerateTheBlockTimeVariation(
+          newBalance.minus(amount).plus(sablierInterest),
+          STANDARD_SALARY_CTOKEN,
         );
+      });
+
+      it("pays the interest to the sablier contract", async function() {
+        const earnings = await this.sablier.earnings(this.cToken.address);
+        const balance = await this.cToken.balanceOf(this.sablier.address);
+        const stream = await this.sablier.contract.methods.getStream(streamId).call();
+        const result = await this.sablier.cancelStream(streamId, opts);
+        const sablierInterest = result.logs[1].args.sablierInterest;
+        const newEarnings = await this.sablier.earnings(this.cToken.address);
+        const newBalance = await this.cToken.balanceOf(this.sablier.address);
+
+        // The sender and the recipient's interests are included in `stream.balance`, so we don't
+        // subtract them again
+        earnings.should.be.bignumber.equal(newEarnings.minus(sablierInterest));
+        balance.should.be.bignumber.equal(newBalance.plus(stream.balance).minus(sablierInterest));
+      });
+
+      it("emits a cancelstream event", async function() {
+        const result = await this.sablier.cancelStream(streamId, opts);
+        await truffleAssert.eventEmitted(result, "CancelStream");
+      });
+
+      it("emits a payinterest event", async function() {
+        const result = await this.sablier.cancelStream(streamId, opts);
+        await truffleAssert.eventEmitted(result, "PayInterest");
+      });
+
+      it("deletes the storage objects", async function() {
+        await this.sablier.cancelStream(streamId, opts);
+        await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+        await truffleAssert.reverts(this.sablier.getCompoundForStream(streamId), "stream does not exist");
       });
 
       afterEach(async function() {
         await traveler.advanceBlockAndSetTime(now.toNumber());
       });
     });
-
-    // describe("when the fee is 0", function() {
-    //   beforeEach(async function() {
-    //     await this.sablier.updateFee(new BigNumber(0));
-    //   });
-    // });
   });
 
   describe("when the stream did end", function() {});

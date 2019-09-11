@@ -21,7 +21,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
       const opts = { from: sender };
       await this.token.approve(this.sablier.address, deposit, opts);
       const result = await this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts);
-      streamId = result.logs[0].args.streamId;
+      streamId = Number(result.logs[0].args.streamId);
     });
 
     describe("when the caller is the sender of the stream", function() {
