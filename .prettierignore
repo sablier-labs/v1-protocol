@@ -4,5 +4,9 @@
 artifacts/
 build/
 coverage/
+coverageEnv/
 lib/
 node_modules/
+
+# files
+coverage.json
