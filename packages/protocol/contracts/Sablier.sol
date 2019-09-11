@@ -242,6 +242,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential {
         // Compute exchange rate delta
         ICERC20 cToken = ICERC20(stream.tokenAddress);
         uint256 exchangeRateCurrent = cToken.exchangeRateCurrent();
+        require(exchangeRateCurrent > 0, "exchange rate current is 0");
         uint256 exchangeRateDelta = exchangeRateCurrent.sub(compound.exchangeRate);
 
         // How much interest has the withdrawal amount generated
@@ -251,16 +252,21 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential {
         return splitInterest(streamId, interest);
     }
 
-    event DebugInterest(uint256 senderInterest, uint256 recipientInterest, uint256 sablierInterest);
+    event DebugInterest(
+        uint256 netInterest,
+        uint256 senderInterest,
+        uint256 recipientInterest,
+        uint256 sablierInterest
+    );
 
-    function splitInterest(uint256 streamId, uint256 interest) internal view returns (uint256, uint256, uint256) {
+    function splitInterest(uint256 streamId, uint256 interest) internal returns (uint256, uint256, uint256) {
         Types.Compound memory compound = compounds[streamId];
         uint256 sablierInterest = interest.mul(fee).div(100);
         uint256 netInterest = interest.sub(sablierInterest);
         uint256 senderInterest = netInterest.mul(compound.senderShare).div(100);
         uint256 recipientInterest = netInterest.mul(compound.recipientShare).div(100);
-        // emit DebugInterest(senderInterest, recipientInterest, sablierInterest);
-        assert(senderInterest.add(recipientInterest) == netInterest);
+        // emit DebugInterest(netInterest, senderInterest, recipientInterest, sablierInterest);
+        // assert(senderInterest.add(recipientInterest) == netInterest);
         return (senderInterest, recipientInterest, sablierInterest);
     }
 
@@ -317,6 +323,8 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential {
         emit CancelStream(streamId, stream.sender, stream.recipient, senderAmount, recipientAmount);
     }
 
+    event DebugCancelCompoundingStreamInternal(uint256 senderNetAmount, uint256 recipientNetAmount);
+
     function cancelCompoundingStreamInternal(uint256 streamId) internal {
         Types.Stream memory stream = streams[streamId];
         uint256 balance = stream.balance;
@@ -328,8 +336,8 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential {
             streamId,
             balance
         );
-        uint256 senderNetAmount = senderBalance.add(senderInterest);
-        uint256 recipientNetAmount = recipientBalance.add(recipientInterest);
+        uint256 senderNetAmount = senderBalance.sub(sablierInterest.div(2));
+        uint256 recipientNetAmount = recipientBalance.sub(sablierInterest.div(2));
 
         // Update storage
         earnings[stream.tokenAddress] = earnings[stream.tokenAddress].add(sablierInterest);
@@ -345,5 +353,6 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential {
 
         emit CancelStream(streamId, stream.sender, stream.recipient, senderNetAmount, recipientNetAmount);
         emit PayInterest(streamId, senderInterest, recipientInterest, sablierInterest);
+        emit DebugCancelCompoundingStreamInternal(senderNetAmount, recipientNetAmount);
     }
 }
