@@ -1,5 +1,6 @@
 # folders
 .0x-artifacts/
+.coverage-artifacts/
 .nyc_output/
 .openzeppelin/dev-*.json
 .openzeppelin/.session
