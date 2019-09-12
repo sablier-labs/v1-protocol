@@ -17,7 +17,7 @@ export function formatDuration(translations, duration, minimumInterval = INTERVA
     return translations("aLot");
   }
 
-  let adjustedDuration;
+  let adjustedDuration = duration;
   const result = [];
 
   const months = Math.floor(duration / INTERVAL_MINUTES.month);
