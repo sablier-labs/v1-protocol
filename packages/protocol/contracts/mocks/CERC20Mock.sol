@@ -92,6 +92,6 @@ contract CERC20Mock is TokenErrorReporter, ERC20 {
      * @return Calculated exchange rate scaled by 1e18
      */
     function exchangeRateCurrent() public view returns (uint256) {
-        return initialExchangeRate + block.number.sub(initialBlockNumber).mul(1e6);
+        return initialExchangeRate + block.number.sub(initialBlockNumber).mul(1e18);
     }
 }

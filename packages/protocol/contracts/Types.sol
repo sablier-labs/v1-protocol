@@ -1,5 +1,7 @@
 pragma solidity 0.5.10;
 
+import "./compound/Exponential.sol";
+
 library Types {
     struct Stream {
         uint256 balance;
@@ -13,10 +15,11 @@ library Types {
         address tokenAddress;
     }
 
-    struct Compound {
-        uint256 exchangeRate;
+    struct CompoundingStreamVars {
+        Exponential.Exp exchangeRateInitial;
         bool isEntity;
-        uint256 senderShare;
-        uint256 recipientShare;
+        Exponential.Exp senderShare;
+        Exponential.Exp recipientShare;
+        Exponential.Exp underlyingRate;
     }
 }

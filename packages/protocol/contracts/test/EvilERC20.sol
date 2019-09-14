@@ -14,6 +14,14 @@ contract EvilERC20 is ERC20 {
         shouldDisableTransferFrom = false;
     }
 
+    function setShouldDisableTransfer(bool value) external {
+        shouldDisableTransfer = value;
+    }
+
+    function setShouldDisableTransferFrom(bool value) external {
+        shouldDisableTransferFrom = value;
+    }
+
     /**
      * @dev Transfers token to a specified address, unless `shouldDisableTransfer` is `true`.
      * @param to The address to transfer to.
