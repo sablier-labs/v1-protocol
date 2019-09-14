@@ -252,10 +252,7 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
       describe("when the stream does not exist", function() {
         it("reverts", async function() {
           const streamId = new BigNumber(419863);
-          await truffleAssert.reverts(
-            this.sablier.getCompoundingStreamVars(streamId, opts),
-            "stream does not exist",
-          );
+          await truffleAssert.reverts(this.sablier.getCompoundingStreamVars(streamId, opts), "stream does not exist");
         });
       });
     });
