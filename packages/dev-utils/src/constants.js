@@ -3,7 +3,7 @@ const BigNumber = require("bignumber.js");
 const STANDARD_SALARY = new BigNumber(3600).multipliedBy(1e18);
 
 module.exports = {
-  EXCHANGE_RATE_BLOCK_DELTA: new BigNumber(1e6),
+  EXCHANGE_RATE_BLOCK_DELTA: new BigNumber(1e18),
   FIVE_UNITS: new BigNumber(5).multipliedBy(1e18),
   FIVE_UNITS_CTOKEN: new BigNumber(5).multipliedBy(1e8),
   GAS_LIMIT: 6721975,
