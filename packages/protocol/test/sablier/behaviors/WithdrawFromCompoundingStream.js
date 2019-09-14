@@ -17,36 +17,45 @@ const {
 } = devConstants;
 
 function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
+  let streamId;
+  const sender = alice;
+  const recipient = bob;
+  const deposit = STANDARD_SALARY_CTOKEN.toString(10);
+  const opts = { from: sender };
   const now = new BigNumber(dayjs().unix());
+  const startTime = now.plus(STANDARD_TIME_OFFSET);
+  const stopTime = startTime.plus(STANDARD_TIME_DELTA);
 
-  describe("when the stream did start but not end", function() {
-    let streamId;
-    const sender = alice;
-    const recipient = bob;
-    const deposit = STANDARD_SALARY_CTOKEN.toString(10);
-    const startTime = now.plus(STANDARD_TIME_OFFSET);
-    const stopTime = startTime.plus(STANDARD_TIME_DELTA);
+  beforeEach(async function() {
+    await this.sablier.updateFee(STANDARD_SABLIER_FEE);
+    await this.sablier.whitelistCToken(this.cToken.address, opts);
+    await this.cToken.approve(this.sablier.address, deposit, opts);
+  });
+
+  describe("when the sender's interest share is not zero and the recipient's interest share is not zero", function() {
     const senderShare = STANDARD_SENDER_SHARE;
     const recipientShare = STANDARD_RECIPIENT_SHARE;
-    const opts = { from: sender };
-    const amount = FIVE_UNITS_CTOKEN.toString(10);
 
-    describe("when the fee is not 0", function() {
+    beforeEach(async function() {
+      const result = await this.sablier.createCompoundingStream(
+        recipient,
+        deposit,
+        this.cToken.address,
+        startTime,
+        stopTime,
+        senderShare,
+        recipientShare,
+        opts,
+      );
+      streamId = Number(result.logs[0].args.streamId);
+    });
+
+    describe("when the stream did not start", function() {});
+
+    describe("when the stream did start but not end", function() {
+      const amount = FIVE_UNITS_CTOKEN.toString(10);
+
       beforeEach(async function() {
-        await this.sablier.updateFee(STANDARD_SABLIER_FEE);
-        await this.sablier.whitelistCToken(this.cToken.address, opts);
-        await this.cToken.approve(this.sablier.address, deposit, opts);
-        const result = await this.sablier.createCompoundingStream(
-          recipient,
-          deposit,
-          this.cToken.address,
-          startTime,
-          stopTime,
-          senderShare,
-          recipientShare,
-          opts,
-        );
-        streamId = Number(result.logs[0].args.streamId);
         await traveler.advanceBlockAndSetTime(
           now
             .plus(STANDARD_TIME_OFFSET)
@@ -130,27 +139,37 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
       });
     });
 
-    // describe("when the fee is 0", function() {
-    //   beforeEach(async function() {
-    //     await this.sablier.updateFee(new BigNumber(0));
-    //   });
-    // });
+    describe("when the stream did end", function() {
+      const amount = STANDARD_SALARY_CTOKEN.toString(10);
+
+      beforeEach(async function() {
+        await traveler.advanceBlockAndSetTime(
+          now
+            .plus(STANDARD_TIME_OFFSET)
+            .plus(STANDARD_TIME_DELTA)
+            .plus(5)
+            .toNumber(),
+        );
+      });
+
+      it("deletes the storage objects", async function() {
+        await this.sablier.withdrawFromStream(streamId, amount, opts);
+        await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+        await truffleAssert.reverts(this.sablier.getCompoundingStreamVars(streamId), "stream does not exist");
+      });
+
+      afterEach(async function() {
+        await traveler.advanceBlockAndSetTime(now.toNumber());
+      });
+    });
   });
 
-  describe("when the stream did end", function() {
-    let streamId;
-    const sender = alice;
-    const recipient = bob;
-    const deposit = STANDARD_SALARY_CTOKEN.toString(10);
-    const startTime = now.plus(STANDARD_TIME_OFFSET);
-    const stopTime = startTime.plus(STANDARD_TIME_DELTA);
-    const senderShare = STANDARD_SENDER_SHARE;
-    const recipientShare = STANDARD_RECIPIENT_SHARE;
-    const opts = { from: sender };
+  describe("when the sender's interest share is zero", function() {
+    const amount = FIVE_UNITS_CTOKEN.toString(10);
+    const senderShare = new BigNumber(0);
+    const recipientShare = new BigNumber(100);
 
     beforeEach(async function() {
-      await this.sablier.whitelistCToken(this.cToken.address, opts);
-      await this.cToken.approve(this.sablier.address, deposit, opts);
       const result = await this.sablier.createCompoundingStream(
         recipient,
         deposit,
@@ -162,33 +181,84 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
         opts,
       );
       streamId = Number(result.logs[0].args.streamId);
-      await traveler.advanceBlockAndSetTime(
-        now
-          .plus(STANDARD_TIME_OFFSET)
-          .plus(STANDARD_TIME_DELTA)
-          .plus(5)
-          .toNumber(),
-      );
     });
 
-    describe("when the balance is withdrawn in full", function() {
-      const amount = STANDARD_SALARY_CTOKEN.toString(10);
+    describe("when the stream did start but not end", function() {
+      beforeEach(async function() {
+        await traveler.advanceBlockAndSetTime(
+          now
+            .plus(STANDARD_TIME_OFFSET)
+            .plus(5)
+            .toNumber(),
+        );
+      });
 
-      describe("when the fee is not 0", function() {
-        beforeEach(async function() {
-          await this.sablier.updateFee(STANDARD_SABLIER_FEE);
-        });
+      it("makes the withdrawal", async function() {
+        const senderBalance = await this.cToken.balanceOf(sender);
+        const recipientBalance = await this.cToken.balanceOf(recipient);
+        const sablierBalance = await this.cToken.balanceOf(this.sablier.address);
+        await this.sablier.withdrawFromStream(streamId, amount, opts);
+        const newSenderBalance = await this.cToken.balanceOf(sender);
+        const newRecipientBalance = await this.cToken.balanceOf(recipient);
+        const newSablierBalance = await this.cToken.balanceOf(this.sablier.address);
 
-        it("deletes the storage objects", async function() {
-          await this.sablier.withdrawFromStream(streamId, amount, opts);
-          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
-          await truffleAssert.reverts(this.sablier.getCompoundForStream(streamId), "stream does not exist");
-        });
+        const sum = senderBalance.plus(recipientBalance).plus(sablierBalance);
+        const newSum = newSenderBalance.plus(newRecipientBalance).plus(newSablierBalance);
+        sum.should.be.bignumber.equal(newSum);
+      });
+
+      afterEach(async function() {
+        await traveler.advanceBlockAndSetTime(now.toNumber());
       });
     });
+  });
 
-    afterEach(async function() {
-      await traveler.advanceBlockAndSetTime(now.toNumber());
+  describe("when the recipient's interest share is zero", function() {
+    const amount = FIVE_UNITS_CTOKEN.toString(10);
+    const senderShare = new BigNumber(100);
+    const recipientShare = new BigNumber(0);
+
+    beforeEach(async function() {
+      const result = await this.sablier.createCompoundingStream(
+        recipient,
+        deposit,
+        this.cToken.address,
+        startTime,
+        stopTime,
+        senderShare,
+        recipientShare,
+        opts,
+      );
+      streamId = Number(result.logs[0].args.streamId);
+    });
+
+    describe("when the stream did start but not end", function() {
+      beforeEach(async function() {
+        await traveler.advanceBlockAndSetTime(
+          now
+            .plus(STANDARD_TIME_OFFSET)
+            .plus(5)
+            .toNumber(),
+        );
+      });
+
+      it("makes the withdrawal", async function() {
+        const senderBalance = await this.cToken.balanceOf(sender);
+        const recipientBalance = await this.cToken.balanceOf(recipient);
+        const sablierBalance = await this.cToken.balanceOf(this.sablier.address);
+        await this.sablier.withdrawFromStream(streamId, amount, opts);
+        const newSenderBalance = await this.cToken.balanceOf(sender);
+        const newRecipientBalance = await this.cToken.balanceOf(recipient);
+        const newSablierBalance = await this.cToken.balanceOf(this.sablier.address);
+
+        const sum = senderBalance.plus(recipientBalance).plus(sablierBalance);
+        const newSum = newSenderBalance.plus(newRecipientBalance).plus(newSablierBalance);
+        sum.should.be.bignumber.equal(newSum);
+      });
+
+      afterEach(async function() {
+        await traveler.advanceBlockAndSetTime(now.toNumber());
+      });
     });
   });
 }

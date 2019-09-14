@@ -77,15 +77,71 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
         sum.should.be.bignumber.equal(newSum);
       });
 
-      it("pays the interest to the sender of the stream", async function() {
-        const earnings = await this.sablier.earnings(this.cToken.address);
-        await this.sablier.cancelStream(streamId, opts);
-        const newEarnings = await this.sablier.earnings(this.cToken.address);
+      it.only("pays the interest to the sender of the stream", async function() {
+        // const stream = await this.sablier.streams(streamId);
+        // const compound = await this.sablier.compounds(streamId);
+        // console.log(require("util").inspect(stream, false, null, true /* enable colors */));
+        // console.log("stream.rate", stream.rate.toNumber());
+        // console.log(require("util").inspect(compound, false, null, true /* enable colors */));
+        // console.log("stream.exchangeRate", compound.exchangeRate.toNumber());
 
-        console.log({
-          earnings: earnings.toNumber(),
-          newEarnings: newEarnings.toNumber(),
-        });
+        // const balance = await this.cToken.balanceOf(sender);
+        await this.sablier.cancelStream(streamId, opts);
+
+        // const balance = await this.sablier.balanceOf(streamId, sender);
+        // const balanceOfUnderlyingWithoutInterest = await this.sablier.balanceOfUnderlyingWithoutInterest(
+        //   streamId,
+        //   sender,
+        // );
+        // const exchangeRateCurrent = await this.cToken.exchangeRateCurrent();
+
+        // console.log({
+        //   balance: balance.toNumber(),
+        //   balanceOfUnderlyingWithoutInterest: balanceOfUnderlyingWithoutInterest.toNumber(),
+        //   exchangeRateCurrent: exchangeRateCurrent.toNumber(),
+        // });
+
+        // const debuggingEventArgs = result.logs[2].args;
+        // console.log(debuggingEventArgs);
+
+        // const senderAmount = result.logs[0].args.senderAmount;
+        // const recipientAmount = result.logs[0].args.recipientAmount;
+
+        // const senderInterest = result.logs[1].args.senderInterest;
+        // const recipientInterest = result.logs[1].args.recipientInterest;
+        // const sablierInterest = result.logs[1].args.sablierInterest;
+        // const newBalance = await this.cToken.balanceOf(sender);
+
+        // console.log({
+        //   senderAmount,
+        //   recipientAmount,
+        // });
+
+        // console.log({
+        //   senderInterest,
+        //   recipientInterest,
+        //   sablierInterest,
+        // });
+
+        // The sender receives the deposit back, minus what has been streamed so far, `amount`,
+        // plus their earned interest
+        // newBalance.should.be.bignumber.equal(
+        //   balance
+        //     .plus(deposit)
+        //     .minus(amount)
+        //     .minus(senderInterest),
+        // .minus(sablierInterest),
+        // );
+
+        // const tolerateByAddition = false;
+        // balance.should.tolerateTheBlockTimeVariation(
+        //   newBalance
+        //     .minus(deposit)
+        //     .plus(amount)
+        //     .plus(sablierInterest),
+        //   STANDARD_SCALE_CTOKEN,
+        //   tolerateByAddition,
+        // );
       });
 
       it("pays the interest to the recipient of the stream", async function() {

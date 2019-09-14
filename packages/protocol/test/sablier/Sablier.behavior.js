@@ -245,14 +245,17 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
       });
     });
 
-    describe("getCompoundForStream", function() {
+    describe("getCompoundingStreamVars", function() {
       const sender = alice;
       const opts = { from: sender };
 
       describe("when the stream does not exist", function() {
         it("reverts", async function() {
           const streamId = new BigNumber(419863);
-          await truffleAssert.reverts(this.sablier.getCompoundForStream(streamId, opts), "stream does not exist");
+          await truffleAssert.reverts(
+            this.sablier.getCompoundingStreamVars(streamId, opts),
+            "stream does not exist",
+          );
         });
       });
     });
@@ -279,7 +282,7 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
       shouldBehaveLikeERC1620CancelStream(alice, bob, eve);
     });
 
-    describe("cancelCompoundingStream", function() {
+    describe.skip("cancelCompoundingStream", function() {
       shouldBehaveLikeCancelCompoundingStream(alice, bob, eve);
     });
   });

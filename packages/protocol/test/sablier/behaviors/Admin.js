@@ -117,7 +117,8 @@ function shouldBehaveLikeSablierAdmin(alice, bob, carol, eve) {
         it("updates the fee", async function() {
           await this.sablier.updateFee(newFee, opts);
           const result = await this.sablier.fee();
-          result.should.be.bignumber.equal(newFee);
+          // The new fee is a mantissa
+          result.should.be.bignumber.equal(newFee.multipliedBy(1e16));
         });
       });
 
