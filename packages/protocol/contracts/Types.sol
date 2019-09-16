@@ -1,7 +1,11 @@
 pragma solidity 0.5.10;
 
-import "./compound/Exponential.sol";
+import "@sablier/shared-contracts/compound/Exponential.sol";
 
+/**
+ * @title Sablier Types
+ * @author Sablier
+ */
 library Types {
     struct Stream {
         uint256 balance;
