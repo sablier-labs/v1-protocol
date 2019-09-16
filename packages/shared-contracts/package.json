@@ -33,6 +33,6 @@
     "url": "git+https://github.com/sablierhq/sablier.git"
   },
   "scripts": {
-    "lint": "solhint --config ../../.solhint.json --max-warnings 0 \"contracts/**/*.sol\""
+    "lint": "solhint --config ../../.solhint.json --max-warnings 0 'compound/**/*.sol' 'interfaces/**/*.sol' 'mocks/**/*.sol' 'test/**/*.sol'"
   }
 }

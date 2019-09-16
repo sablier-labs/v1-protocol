@@ -25,10 +25,7 @@ function shouldBehaveLikeDiscardCToken(alice, eve) {
 
     describe("when the ctoken is not whitelisted", function() {
       it("reverts", async function() {
-        await truffleAssert.reverts(
-          this.sablier.discardCToken(this.cToken.address, opts),
-          "ctoken is not whitelisted",
-        );
+        await truffleAssert.reverts(this.sablier.discardCToken(this.cToken.address, opts), "ctoken is not whitelisted");
       });
     });
   });

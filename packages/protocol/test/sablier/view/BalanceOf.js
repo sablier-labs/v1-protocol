@@ -56,11 +56,7 @@ function shouldBehaveLikeBalanceOf(alice, bob, carol) {
       it("returns the pro rata balance for the sender of the stream", async function() {
         const balance = await this.sablier.balanceOf(streamId, sender, opts);
         const tolerateByAddition = false;
-        balance.should.tolerateTheBlockTimeVariation(
-          STANDARD_SALARY.minus(amount),
-          STANDARD_SCALE,
-          tolerateByAddition,
-        );
+        balance.should.tolerateTheBlockTimeVariation(STANDARD_SALARY.minus(amount), STANDARD_SCALE, tolerateByAddition);
       });
 
       it("returns the pro rata balance for the recipient of the stream", async function() {
