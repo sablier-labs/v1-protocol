@@ -10,8 +10,8 @@ import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "@sablier/protocol/contracts/interfaces/IERC1620.sol";
 import "@sablier/protocol/contracts/Types.sol";
 
-import "./compound/Exponential.sol";
-import "./interfaces/ICERC20.sol";
+import "@sablier/shared-contracts/compound/Exponential.sol";
+import "@sablier/shared-contracts/interfaces/ICERC20.sol";
 
 /// @title Payroll dapp contract
 /// @author Paul Razvan Berg - <paul@sablier.app>
