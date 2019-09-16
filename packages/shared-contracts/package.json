@@ -1,0 +1,38 @@
+{
+  "name": "@sablier/shared-contracts",
+  "description": "Solidity contracts to be shared across Sablier packages",
+  "version": "0.0.1",
+  "author": {
+    "name": "Sablier",
+    "email": "paul@sablier.app",
+    "url": "https://sablier.app"
+  },
+  "bugs": {
+    "url": "https://github.com/sablierhq/sablier/issues"
+  },
+  "devDependencies": {
+    "fixpack": "^2.3.1",
+    "solc": "0.5.10",
+    "solhint": "^2.1.2",
+    "truffle": "^5.0.35"
+  },
+  "files": [
+    "/compound",
+    "/interfaces",
+    "/mocks",
+    "/test"
+  ],
+  "homepage": "https://github.com/sablierhq/sablier/tree/develop/packages/shared-contracts#readme",
+  "license": "LGPL-3.0",
+  "main": "./contracts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sablierhq/sablier.git"
+  },
+  "scripts": {
+    "lint": "solhint --config ../../.solhint.json --max-warnings 0 \"contracts/**/*.sol\""
+  }
+}
