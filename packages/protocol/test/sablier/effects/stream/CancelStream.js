@@ -30,16 +30,16 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
       const opts = { from: sender };
 
       describe("when the stream did not start", function() {
-        it("cancels the stream and transfers all tokens to the sender of the stream", async function() {
+        it("cancels the stream", async function() {
+          await this.sablier.cancelStream(streamId, opts);
+          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+        });
+
+        it("it transfers all tokens to the sender of the stream", async function() {
           const balance = await this.token.balanceOf(sender);
           await this.sablier.cancelStream(streamId, opts);
           const newBalance = await this.token.balanceOf(sender);
-          balance.should.be.bignumber.equal(newBalance.minus(deposit));
-        });
-
-        it("deletes the stream object", async function() {
-          await this.sablier.cancelStream(streamId, opts);
-          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+          newBalance.should.be.bignumber.equal(balance.plus(deposit));
         });
 
         it("emits a cancel event", async function() {
@@ -61,23 +61,30 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
         });
 
         it("cancels the stream and transfers the tokens on a pro rata basis", async function() {
+          await this.sablier.cancelStream(streamId, opts);
+          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+        });
+
+        it("transfers the tokens to the sender of the stream", async function() {
           const senderBalance = await this.token.balanceOf(sender);
-          const recipientBalance = await this.token.balanceOf(recipient);
           await this.sablier.cancelStream(streamId, opts);
           const newSenderBalance = await this.token.balanceOf(sender);
+          newSenderBalance.should.tolerateTheBlockTimeVariation(
+            senderBalance.minus(amount).plus(deposit),
+            STANDARD_SCALE,
+          );
+        });
+
+        it("transfers the tokens to the recipient of the stream", async function() {
+          const recipientBalance = await this.token.balanceOf(recipient);
+          await this.sablier.cancelStream(streamId, opts);
           const newRecipientBalance = await this.token.balanceOf(recipient);
           const tolerateByAddition = false;
-          senderBalance.should.tolerateTheBlockTimeVariation(
-            newSenderBalance.plus(amount).minus(deposit),
+          newRecipientBalance.should.tolerateTheBlockTimeVariation(
+            recipientBalance.plus(amount),
             STANDARD_SCALE,
             tolerateByAddition,
           );
-          recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(amount), STANDARD_SCALE);
-        });
-
-        it("deletes the stream object", async function() {
-          await this.sablier.cancelStream(streamId, opts);
-          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
         });
 
         it("emits a cancel event", async function() {
@@ -101,16 +108,16 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           );
         });
 
-        it("cancels the stream and transfers all tokens to the recipient of the stream", async function() {
+        it("cancels the stream", async function() {
+          await this.sablier.cancelStream(streamId, opts);
+          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+        });
+
+        it("transfers all tokens to the recipient of the stream", async function() {
           const balance = await this.token.balanceOf(recipient);
           await this.sablier.cancelStream(streamId, opts);
           const newBalance = await this.token.balanceOf(recipient);
-          balance.should.be.bignumber.equal(newBalance.minus(deposit));
-        });
-
-        it("deletes the stream object", async function() {
-          await this.sablier.cancelStream(streamId, opts);
-          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+          newBalance.should.be.bignumber.equal(balance.plus(deposit));
         });
 
         it("emits a cancel event", async function() {
@@ -128,16 +135,16 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
       const opts = { from: sender };
 
       describe("when the stream did not start", function() {
-        it("cancels the stream and transfers all tokens to the sender of the stream", async function() {
+        it("cancels the stream", async function() {
+          await this.sablier.cancelStream(streamId, opts);
+          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+        });
+
+        it("transfers all tokens to the sender of the stream", async function() {
           const balance = await this.token.balanceOf(sender);
           await this.sablier.cancelStream(streamId, opts);
           const newBalance = await this.token.balanceOf(sender);
-          balance.should.be.bignumber.equal(newBalance.minus(deposit));
-        });
-
-        it("deletes the stream object", async function() {
-          await this.sablier.cancelStream(streamId, opts);
-          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+          newBalance.should.be.bignumber.equal(balance.plus(deposit));
         });
 
         it("emits a cancel event", async function() {
@@ -158,24 +165,31 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           );
         });
 
-        it("cancels the stream and transfers the tokens on a pro rata basis", async function() {
+        it("cancels the stream", async function() {
+          await this.sablier.cancelStream(streamId, opts);
+          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+        });
+
+        it("transfers the tokens to the sender of the stream", async function() {
           const senderBalance = await this.token.balanceOf(sender);
-          const recipientBalance = await this.token.balanceOf(recipient);
           await this.sablier.cancelStream(streamId, opts);
           const newSenderBalance = await this.token.balanceOf(sender);
+          newSenderBalance.should.tolerateTheBlockTimeVariation(
+            senderBalance.minus(amount).plus(deposit),
+            STANDARD_SCALE,
+          );
+        });
+
+        it("transfers the tokens to the recipient of the stream", async function() {
+          const recipientBalance = await this.token.balanceOf(recipient);
+          await this.sablier.cancelStream(streamId, opts);
           const newRecipientBalance = await this.token.balanceOf(recipient);
           const tolerateByAddition = false;
-          senderBalance.should.tolerateTheBlockTimeVariation(
-            newSenderBalance.plus(amount).minus(deposit),
+          newRecipientBalance.should.tolerateTheBlockTimeVariation(
+            recipientBalance.plus(amount),
             STANDARD_SCALE,
             tolerateByAddition,
           );
-          recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(amount), STANDARD_SCALE);
-        });
-
-        it("deletes the stream object", async function() {
-          await this.sablier.cancelStream(streamId, opts);
-          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
         });
 
         it("emits a cancel event", async function() {
@@ -199,16 +213,16 @@ function shouldBehaveLikeERC1620Cancel(alice, bob, eve) {
           );
         });
 
-        it("cancels the stream and transfers all tokens to the recipient of the stream", async function() {
+        it("cancels the stream", async function() {
+          await this.sablier.cancelStream(streamId, opts);
+          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+        });
+
+        it("transfers all tokens to the recipient of the stream", async function() {
           const balance = await this.token.balanceOf(recipient);
           await this.sablier.cancelStream(streamId, opts);
           const newBalance = await this.token.balanceOf(recipient);
-          balance.should.be.bignumber.equal(newBalance.minus(deposit));
-        });
-
-        it("deletes the stream object", async function() {
-          await this.sablier.cancelStream(streamId, opts);
-          await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
+          newBalance.should.be.bignumber.equal(balance.plus(deposit));
         });
 
         it("emits a cancel event", async function() {

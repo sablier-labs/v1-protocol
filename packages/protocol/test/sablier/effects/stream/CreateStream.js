@@ -54,14 +54,14 @@ function shouldBehaveLikeERC1620Stream(alice, bob) {
                   const balance = await this.token.balanceOf(sender);
                   await this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts);
                   const newBalance = await this.token.balanceOf(sender);
-                  balance.should.be.bignumber.equal(newBalance.plus(STANDARD_SALARY));
+                  newBalance.should.be.bignumber.equal(balance.minus(STANDARD_SALARY));
                 });
 
                 it("increases the stream nonce", async function() {
                   const nonce = await this.sablier.nonce();
                   await this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts);
                   const newNonce = await this.sablier.nonce();
-                  nonce.should.be.bignumber.equal(newNonce.minus(1));
+                  newNonce.should.be.bignumber.equal(nonce.plus(1));
                 });
 
                 it("emits a stream event", async function() {

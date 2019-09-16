@@ -29,9 +29,11 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
 
       describe("when the withdrawal amount is higher than 0", function() {
         describe("when the stream did not start", function() {
+          const amount = FIVE_UNITS;
+
           it("reverts", async function() {
             await truffleAssert.reverts(
-              this.sablier.withdrawFromStream(streamId, FIVE_UNITS, opts),
+              this.sablier.withdrawFromStream(streamId, amount, opts),
               "amount exceeds the available balance",
             );
           });
@@ -50,11 +52,11 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
           describe("when the withdrawal amount does not exceed the available balance", function() {
             const amount = FIVE_UNITS.toString(10);
 
-            it("makes the withdrawal", async function() {
+            it("withdraws from the stream", async function() {
               const balance = await this.token.balanceOf(recipient);
               await this.sablier.withdrawFromStream(streamId, amount, opts);
               const newBalance = await this.token.balanceOf(recipient);
-              balance.should.be.bignumber.equal(newBalance.minus(FIVE_UNITS));
+              newBalance.should.be.bignumber.equal(balance.plus(FIVE_UNITS));
             });
 
             it("emits a withdrawfromstream event", async function() {
@@ -66,7 +68,12 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
               const balance = await this.sablier.balanceOf(streamId, recipient);
               await this.sablier.withdrawFromStream(streamId, amount, opts);
               const newBalance = await this.sablier.balanceOf(streamId, recipient);
-              balance.should.tolerateTheBlockTimeVariation(newBalance.plus(amount), STANDARD_SCALE);
+              const tolerateByAddition = false;
+              newBalance.should.tolerateTheBlockTimeVariation(
+                balance.minus(amount),
+                STANDARD_SCALE,
+                tolerateByAddition,
+              );
             });
           });
 
@@ -101,11 +108,11 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
             describe("when the balance is not withdrawn in full", function() {
               const amount = STANDARD_SALARY.dividedBy(2).toString(10);
 
-              it("makes the withdrawal", async function() {
+              it("withdraws from the stream", async function() {
                 const balance = await this.token.balanceOf(recipient);
                 await this.sablier.withdrawFromStream(streamId, amount, opts);
                 const newBalance = await this.token.balanceOf(recipient);
-                balance.should.be.bignumber.equal(newBalance.minus(amount));
+                newBalance.should.be.bignumber.equal(balance.plus(amount));
               });
 
               it("emits a withdrawfromstream event", async function() {
@@ -117,18 +124,18 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
                 const balance = await this.sablier.balanceOf(streamId, recipient);
                 await this.sablier.withdrawFromStream(streamId, amount, opts);
                 const newBalance = await this.sablier.balanceOf(streamId, recipient);
-                balance.should.be.bignumber.equal(newBalance.plus(amount));
+                newBalance.should.be.bignumber.equal(balance.minus(amount));
               });
             });
 
             describe("when the balance is withdrawn in full", function() {
               const amount = STANDARD_SALARY.toString(10);
 
-              it("makes the withdrawal", async function() {
+              it("withdraws from the stream", async function() {
                 const balance = await this.token.balanceOf(recipient);
                 await this.sablier.withdrawFromStream(streamId, amount, opts);
                 const newBalance = await this.token.balanceOf(recipient);
-                balance.should.be.bignumber.equal(newBalance.minus(amount));
+                newBalance.should.be.bignumber.equal(balance.plus(amount));
               });
 
               it("emits a withdrawfromstream event", async function() {
@@ -192,11 +199,11 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
           });
 
           describe("when the withdrawal amount does not exceed the available balance", function() {
-            it("makes the withdrawal", async function() {
+            it("withdraws from the stream", async function() {
               const balance = await this.token.balanceOf(recipient);
               await this.sablier.withdrawFromStream(streamId, FIVE_UNITS, opts);
               const newBalance = await this.token.balanceOf(recipient);
-              balance.should.be.bignumber.equal(newBalance.minus(FIVE_UNITS));
+              newBalance.should.be.bignumber.equal(balance.plus(FIVE_UNITS));
             });
 
             it("emits a withdrawfromstream event", async function() {
@@ -208,7 +215,12 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
               const balance = await this.sablier.balanceOf(streamId, recipient);
               await this.sablier.withdrawFromStream(streamId, FIVE_UNITS, opts);
               const newBalance = await this.sablier.balanceOf(streamId, recipient);
-              balance.should.tolerateTheBlockTimeVariation(newBalance.plus(FIVE_UNITS), STANDARD_SCALE);
+              const tolerateByAddition = false;
+              newBalance.should.tolerateTheBlockTimeVariation(
+                balance.minus(FIVE_UNITS),
+                STANDARD_SCALE,
+                tolerateByAddition,
+              );
             });
           });
 
@@ -243,11 +255,11 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
             describe("when the balance is withdrawn in full", function() {
               const amount = STANDARD_SALARY.toString(10);
 
-              it("makes the withdrawal", async function() {
+              it("withdraws from the stream", async function() {
                 const balance = await this.token.balanceOf(recipient);
                 await this.sablier.withdrawFromStream(streamId, amount, opts);
                 const newBalance = await this.token.balanceOf(recipient);
-                balance.should.be.bignumber.equal(newBalance.minus(amount));
+                newBalance.should.be.bignumber.equal(balance.plus(amount));
               });
 
               it("emits a withdrawfromstream event", async function() {
@@ -264,11 +276,11 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
             describe("when the balance is not withdrawn in full", function() {
               const amount = STANDARD_SALARY.dividedBy(2).toString(10);
 
-              it("makes the withdrawal", async function() {
+              it("withdraws from the stream", async function() {
                 const balance = await this.token.balanceOf(recipient);
                 await this.sablier.withdrawFromStream(streamId, amount, opts);
                 const newBalance = await this.token.balanceOf(recipient);
-                balance.should.be.bignumber.equal(newBalance.minus(amount));
+                newBalance.should.be.bignumber.equal(balance.plus(amount));
               });
 
               it("emits a withdrawfromstream event", async function() {
@@ -280,7 +292,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
                 const balance = await this.sablier.balanceOf(streamId, recipient);
                 await this.sablier.withdrawFromStream(streamId, amount, opts);
                 const newBalance = await this.sablier.balanceOf(streamId, recipient);
-                balance.should.be.bignumber.equal(newBalance.plus(amount));
+                newBalance.should.be.bignumber.equal(balance.minus(amount));
               });
             });
           });

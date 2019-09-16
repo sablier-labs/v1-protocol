@@ -84,7 +84,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           opts,
         );
         const newBalance = await this.cToken.balanceOf(sender);
-        balance.should.be.bignumber.equal(newBalance.plus(STANDARD_SALARY_CTOKEN));
+        newBalance.should.be.bignumber.equal(balance.minus(STANDARD_SALARY_CTOKEN));
       });
 
       it("emits a createcompoundingstream event", async function() {
