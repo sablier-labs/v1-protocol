@@ -261,7 +261,10 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
          * Calculate how much has been streamed.
          */
         uint256 delta = deltaOf(streamId);
-        (vars.mathErr, vars.recipientUnderlyingBalance) = mulScalar(compoundingStreamVars.underlyingRatePerSecond, delta);
+        (vars.mathErr, vars.recipientUnderlyingBalance) = mulScalar(
+            compoundingStreamVars.underlyingRatePerSecond,
+            delta
+        );
         require(vars.mathErr == MathError.NO_ERROR, "recipient underlying balance calculation error");
 
         if (who == stream.recipient) {
