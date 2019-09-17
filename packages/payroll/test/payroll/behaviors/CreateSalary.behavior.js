@@ -3,7 +3,13 @@ const BigNumber = require("bignumber.js");
 const dayjs = require("dayjs");
 const truffleAssert = require("truffle-assertions");
 
-const { STANDARD_RATE, STANDARD_SALARY, STANDARD_TIME_DELTA, STANDARD_TIME_OFFSET, ZERO_ADDRESS } = devConstants;
+const {
+  STANDARD_RATE_PER_SECOND,
+  STANDARD_SALARY,
+  STANDARD_TIME_DELTA,
+  STANDARD_TIME_OFFSET,
+  ZERO_ADDRESS,
+} = devConstants;
 
 function shouldBehaveLikeCreateSalary(alice, bob) {
   const company = alice;
@@ -49,7 +55,7 @@ function shouldBehaveLikeCreateSalary(alice, bob) {
         onchainSalary.startTime.should.be.bignumber.equal(startTime);
         onchainSalary.stopTime.should.be.bignumber.equal(stopTime);
         onchainSalary.balance.should.be.bignumber.equal(salary);
-        onchainSalary.rate.should.be.bignumber.equal(STANDARD_RATE);
+        onchainSalary.rate.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND);
         onchainSalary.isCompounding.should.be.equal(false);
       });
 
@@ -60,11 +66,11 @@ function shouldBehaveLikeCreateSalary(alice, bob) {
         balance.should.be.bignumber.equal(newBalance.plus(STANDARD_SALARY));
       });
 
-      it("increases the salary nonce", async function() {
-        const nonce = await this.sablier.nonce();
+      it("increases the salary next id", async function() {
+        const nextSalaryId = await this.payroll.nextSalaryId();
         await this.payroll.createSalary(employee, salary, this.token.address, startTime, stopTime, isCompounding, opts);
-        const newNonce = await this.sablier.nonce();
-        nonce.should.be.bignumber.equal(newNonce.minus(1));
+        const newNextSalaryId = await this.payroll.nextSalaryId();
+        nextSalaryId.should.be.bignumber.equal(newNextSalaryId.minus(1));
       });
 
       it("emits an createsalary event", async function() {
