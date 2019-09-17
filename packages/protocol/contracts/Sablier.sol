@@ -674,7 +674,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
          * Calculate our share from that interest.
          */
         if (fee.mantissa == hundredPercent) {
-            (vars.mathErr, vars.sablierInterest) = divExp(vars.sablierUnderlyingInterest, exchangeRateCurrent);
+            (vars.mathErr, vars.sablierInterest) = divExp(vars.underlyingInterest, exchangeRateCurrent);
             require(vars.mathErr == MathError.NO_ERROR, "sablier interest conversion failure");
             return (0, 0, truncate(vars.sablierInterest));
         } else if (fee.mantissa == 0) {
