@@ -7,11 +7,11 @@ const truffleAssert = require("truffle-assertions");
 const {
   FIVE_UNITS_CTOKEN,
   ONE_UNIT_CTOKEN,
-  STANDARD_RECIPIENT_SHARE,
+  STANDARD_RECIPIENT_SHARE_PERCENTAGE,
   STANDARD_SABLIER_FEE,
   STANDARD_SALARY_CTOKEN,
   STANDARD_SCALE_CTOKEN,
-  STANDARD_SENDER_SHARE,
+  STANDARD_SENDER_SHARE_PERCENTAGE,
   STANDARD_TIME_OFFSET,
   STANDARD_TIME_DELTA,
 } = devConstants;
@@ -37,8 +37,8 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
     });
 
     describe("when the sender's interest share is not zero and the recipient's interest share is not zero", function() {
-      const senderShare = STANDARD_SENDER_SHARE;
-      const recipientShare = STANDARD_RECIPIENT_SHARE;
+      const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+      const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
       beforeEach(async function() {
         const result = await this.sablier.createCompoundingStream(
@@ -47,8 +47,8 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderShare,
-          recipientShare,
+          senderSharePercentage,
+          recipientSharePercentage,
           opts,
         );
         streamId = Number(result.logs[0].args.streamId);
@@ -229,8 +229,8 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
 
     describe("when the sender's interest share is zero", function() {
       const amount = FIVE_UNITS_CTOKEN.toString(10);
-      const senderShare = new BigNumber(0);
-      const recipientShare = new BigNumber(100);
+      const senderSharePercentage = new BigNumber(0);
+      const recipientSharePercentage = new BigNumber(100);
 
       beforeEach(async function() {
         const result = await this.sablier.createCompoundingStream(
@@ -239,8 +239,8 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderShare,
-          recipientShare,
+          senderSharePercentage,
+          recipientSharePercentage,
           opts,
         );
         streamId = Number(result.logs[0].args.streamId);
@@ -273,8 +273,8 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
 
     describe("when the recipient's interest share is zero", function() {
       const amount = FIVE_UNITS_CTOKEN.toString(10);
-      const senderShare = new BigNumber(100);
-      const recipientShare = new BigNumber(0);
+      const senderSharePercentage = new BigNumber(100);
+      const recipientSharePercentage = new BigNumber(0);
 
       beforeEach(async function() {
         const result = await this.sablier.createCompoundingStream(
@@ -283,8 +283,8 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderShare,
-          recipientShare,
+          senderSharePercentage,
+          recipientSharePercentage,
           opts,
         );
         streamId = Number(result.logs[0].args.streamId);
@@ -318,8 +318,8 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
 
   describe("when the sablier fee is zero", function() {
     const amount = FIVE_UNITS_CTOKEN.toString(10);
-    const senderShare = STANDARD_SENDER_SHARE;
-    const recipientShare = STANDARD_RECIPIENT_SHARE;
+    const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+    const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
     beforeEach(async function() {
       await this.sablier.updateFee(new BigNumber(0));
@@ -329,8 +329,8 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
         this.cToken.address,
         startTime,
         stopTime,
-        senderShare,
-        recipientShare,
+        senderSharePercentage,
+        recipientSharePercentage,
         opts,
       );
       streamId = Number(result.logs[0].args.streamId);
@@ -363,8 +363,8 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
 
   describe("when the sablier fee is 100", function() {
     const amount = FIVE_UNITS_CTOKEN.toString(10);
-    const senderShare = STANDARD_SENDER_SHARE;
-    const recipientShare = STANDARD_RECIPIENT_SHARE;
+    const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+    const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
     beforeEach(async function() {
       await this.sablier.updateFee(new BigNumber(100));
@@ -374,8 +374,8 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
         this.cToken.address,
         startTime,
         stopTime,
-        senderShare,
-        recipientShare,
+        senderSharePercentage,
+        recipientSharePercentage,
         opts,
       );
       streamId = Number(result.logs[0].args.streamId);

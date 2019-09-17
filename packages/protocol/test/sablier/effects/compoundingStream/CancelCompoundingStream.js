@@ -6,11 +6,11 @@ const truffleAssert = require("truffle-assertions");
 
 const {
   FIVE_UNITS_CTOKEN,
-  STANDARD_RECIPIENT_SHARE,
+  STANDARD_RECIPIENT_SHARE_PERCENTAGE,
   STANDARD_SABLIER_FEE,
   STANDARD_SALARY_CTOKEN,
   STANDARD_SCALE_CTOKEN,
-  STANDARD_SENDER_SHARE,
+  STANDARD_SENDER_SHARE_PERCENTAGE,
   STANDARD_TIME_OFFSET,
   STANDARD_TIME_DELTA,
 } = devConstants;
@@ -36,8 +36,8 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
     });
 
     describe("when the sender's interest share is not zero and the recipient's interest share is not zero", function() {
-      const senderShare = STANDARD_SENDER_SHARE;
-      const recipientShare = STANDARD_RECIPIENT_SHARE;
+      const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+      const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
       beforeEach(async function() {
         const result = await this.sablier.createCompoundingStream(
@@ -46,8 +46,8 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderShare,
-          recipientShare,
+          senderSharePercentage,
+          recipientSharePercentage,
           opts,
         );
         streamId = Number(result.logs[0].args.streamId);
@@ -106,7 +106,7 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
             // The sender and the recipient's interests are included in `stream.balance`, so we don't
             // subtract them again
             earnings.should.be.bignumber.equal(newEarnings.minus(sablierInterest));
-            newBalance.should.be.bignumber.equal(balance.minus(stream.balance).plus(sablierInterest));
+            newBalance.should.be.bignumber.equal(balance.minus(stream.remainingBalance).plus(sablierInterest));
           });
 
           it("emits a cancelstream event", async function() {
@@ -169,7 +169,7 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
             // The sender and the recipient's interests are included in `stream.balance`, so we don't
             // subtract them again
             earnings.should.be.bignumber.equal(newEarnings.minus(sablierInterest));
-            newBalance.should.be.bignumber.equal(balance.minus(stream.balance).plus(sablierInterest));
+            newBalance.should.be.bignumber.equal(balance.minus(stream.remainingBalance).plus(sablierInterest));
           });
 
           it("emits a cancelstream event", async function() {
@@ -213,8 +213,8 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
     });
 
     describe("when the sender's interest share is zero", function() {
-      const senderShare = new BigNumber(0);
-      const recipientShare = new BigNumber(100);
+      const senderSharePercentage = new BigNumber(0);
+      const recipientSharePercentage = new BigNumber(100);
 
       beforeEach(async function() {
         const result = await this.sablier.createCompoundingStream(
@@ -223,8 +223,8 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderShare,
-          recipientShare,
+          senderSharePercentage,
+          recipientSharePercentage,
           opts,
         );
         streamId = Number(result.logs[0].args.streamId);
@@ -283,8 +283,8 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
     });
 
     describe("when the recipient's interest share is zero", function() {
-      const senderShare = new BigNumber(100);
-      const recipientShare = new BigNumber(0);
+      const senderSharePercentage = new BigNumber(100);
+      const recipientSharePercentage = new BigNumber(0);
 
       beforeEach(async function() {
         const result = await this.sablier.createCompoundingStream(
@@ -293,8 +293,8 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderShare,
-          recipientShare,
+          senderSharePercentage,
+          recipientSharePercentage,
           opts,
         );
         streamId = Number(result.logs[0].args.streamId);
@@ -354,8 +354,8 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
   });
 
   describe("when the sablier fee is zero", function() {
-    const senderShare = STANDARD_SENDER_SHARE;
-    const recipientShare = STANDARD_RECIPIENT_SHARE;
+    const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+    const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
     beforeEach(async function() {
       await this.sablier.updateFee(new BigNumber(0));
@@ -365,8 +365,8 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
         this.cToken.address,
         startTime,
         stopTime,
-        senderShare,
-        recipientShare,
+        senderSharePercentage,
+        recipientSharePercentage,
         opts,
       );
       streamId = Number(result.logs[0].args.streamId);
@@ -425,8 +425,8 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
   });
 
   describe("when the sablier fee is 100", function() {
-    const senderShare = STANDARD_SENDER_SHARE;
-    const recipientShare = STANDARD_RECIPIENT_SHARE;
+    const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+    const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
     beforeEach(async function() {
       await this.sablier.updateFee(new BigNumber(100));
@@ -436,8 +436,8 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
         this.cToken.address,
         startTime,
         stopTime,
-        senderShare,
-        recipientShare,
+        senderSharePercentage,
+        recipientSharePercentage,
         opts,
       );
       streamId = Number(result.logs[0].args.streamId);

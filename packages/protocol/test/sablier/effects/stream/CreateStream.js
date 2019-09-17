@@ -3,7 +3,13 @@ const BigNumber = require("bignumber.js");
 const dayjs = require("dayjs");
 const truffleAssert = require("truffle-assertions");
 
-const { STANDARD_RATE, STANDARD_SALARY, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA, ZERO_ADDRESS } = devConstants;
+const {
+  STANDARD_RATE_PER_SECOND,
+  STANDARD_SALARY,
+  STANDARD_TIME_OFFSET,
+  STANDARD_TIME_DELTA,
+  ZERO_ADDRESS,
+} = devConstants;
 
 function shouldBehaveLikeERC1620Stream(alice, bob) {
   const sender = alice;
@@ -46,8 +52,8 @@ function shouldBehaveLikeERC1620Stream(alice, bob) {
                   stream.tokenAddress.should.be.equal(this.token.address);
                   stream.startTime.should.be.bignumber.equal(startTime);
                   stream.stopTime.should.be.bignumber.equal(stopTime);
-                  stream.balance.should.be.bignumber.equal(deposit);
-                  stream.rate.should.be.bignumber.equal(STANDARD_RATE);
+                  stream.remainingBalance.should.be.bignumber.equal(deposit);
+                  stream.ratePerSecond.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND);
                 });
 
                 it("transfers the tokens", async function() {
@@ -57,11 +63,11 @@ function shouldBehaveLikeERC1620Stream(alice, bob) {
                   newBalance.should.be.bignumber.equal(balance.minus(STANDARD_SALARY));
                 });
 
-                it("increases the stream nonce", async function() {
-                  const nonce = await this.sablier.nonce();
+                it("increases the stream next stream id", async function() {
+                  const nextStreamId = await this.sablier.nextStreamId();
                   await this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts);
-                  const newNonce = await this.sablier.nonce();
-                  newNonce.should.be.bignumber.equal(nonce.plus(1));
+                  const newNextStreamId = await this.sablier.nextStreamId();
+                  newNextStreamId.should.be.bignumber.equal(nextStreamId.plus(1));
                 });
 
                 it("emits a stream event", async function() {
