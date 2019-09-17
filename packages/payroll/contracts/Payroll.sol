@@ -31,7 +31,7 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
     }
 
     uint256 public earnings;
-    uint256 public nonce;
+    uint256 public nextSalaryId;
     mapping(address => mapping(uint256 => bool)) public relayers;
     IERC1620 public sablier;
     mapping(uint256 => Salary) salaries;
@@ -72,7 +72,7 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
     function initialize(address _owner, IERC1620 _sablier) public initializer {
         Ownable.initialize(_owner);
         sablier = _sablier;
-        nonce = 1;
+        nextSalaryId = 1;
     }
 
     /* Admin */
@@ -113,7 +113,7 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
         uint256 transactionFee,
         uint256 gasPrice,
         uint256 gasLimit,
-        uint256 _nonce,
+        uint256 _nextSalaryId,
         bytes calldata approvalData,
         uint256
     ) external view returns (uint256, bytes memory) {
@@ -124,7 +124,7 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
             transactionFee,
             gasPrice,
             gasLimit,
-            _nonce, // Prevents replays on RelayHub
+            _nextSalaryId, // Prevents replays on RelayHub
             getHubAddr(), // Prevents replays in multiple RelayHubs
             address(this) // Prevents replays in multiple recipients
         );
@@ -222,11 +222,16 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
     ) internal returns (uint256 salaryId) {
         require(IERC20(tokenAddress).approve(address(sablier), salary), "token approval failure");
         uint256 streamId = sablier.createStream(employee, salary, tokenAddress, startTime, stopTime);
-        salaryId = nonce;
-        salaries[nonce] = Salary({ company: _msgSender(), isCompounding: false, isEntity: true, streamId: streamId });
+        salaryId = nextSalaryId;
+        salaries[nextSalaryId] = Salary({
+            company: _msgSender(),
+            isCompounding: false,
+            isEntity: true,
+            streamId: streamId
+        });
 
-        emit CreateSalary(nonce, streamId, false);
-        nonce = nonce.add(1);
+        emit CreateSalary(nextSalaryId, streamId, false);
+        nextSalaryId = nextSalaryId.add(1);
     }
 
     function createCompoundingSalaryInternal(
@@ -257,10 +262,15 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
             senderShare,
             recipientShare
         );
-        salaryId = nonce;
-        salaries[nonce] = Salary({ company: _msgSender(), isCompounding: true, isEntity: true, streamId: streamId });
+        salaryId = nextSalaryId;
+        salaries[nextSalaryId] = Salary({
+            company: _msgSender(),
+            isCompounding: true,
+            isEntity: true,
+            streamId: streamId
+        });
 
-        emit CreateSalary(nonce, streamId, true);
-        nonce = nonce.add(1);
+        emit CreateSalary(nextSalaryId, streamId, true);
+        nextSalaryId = nextSalaryId.add(1);
     }
 }
