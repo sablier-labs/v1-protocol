@@ -229,133 +229,6 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         return 0;
     }
 
-    struct UnderlyingBalanceWithoutInterestOfLocalVars {
-        MathError mathErr;
-        Exp underlyingBalanceInitial;
-        Exp recipientUnderlyingBalance;
-        uint256 balanceWithdrawn;
-        Exp underlyingBalanceWithdrawn;
-        Exp senderUnderlyingBalance;
-    }
-
-    /**
-     * @notice Returns the underlying balance for the given stream id and address,
-     *  as if there would be no interest-earning scheme.
-     * @dev Throws if `streamId` does not point to a valid stream.
-     * @param streamId The id of the stream for whom to query the underlying balance.
-     * @param who The address for whom to query the balance.
-     * @return The underlying balance for `who`.
-     */
-    function underlyingBalanceWithoutInterestOf(uint256 streamId, address who)
-        public
-        view
-        streamExists(streamId)
-        compoundingStreamVarsExist(streamId)
-        returns (uint256)
-    {
-        Types.Stream memory stream = streams[streamId];
-        Types.CompoundingStreamVars memory compoundingStreamVars = compoundingStreamsVars[streamId];
-        UnderlyingBalanceWithoutInterestOfLocalVars memory vars;
-
-        /*
-         * Calculate how much has been streamed.
-         */
-        uint256 delta = deltaOf(streamId);
-        (vars.mathErr, vars.recipientUnderlyingBalance) = mulScalar(
-            compoundingStreamVars.underlyingRatePerSecond,
-            delta
-        );
-        require(vars.mathErr == MathError.NO_ERROR, "recipient underlying balance calculation error");
-
-        if (who == stream.recipient) {
-            /*
-             * If the stream `balance` does not equal the `deposit`, it means there have been withdrawals.
-             * We have to subtract the total amount withdrawn from the existing balance of the recipient.
-             */
-            if (stream.deposit > stream.remainingBalance) {
-                (vars.mathErr, vars.balanceWithdrawn) = subUInt(stream.deposit, stream.remainingBalance);
-                assert(vars.mathErr == MathError.NO_ERROR);
-                (vars.mathErr, vars.underlyingBalanceWithdrawn) = mulScalar(
-                    compoundingStreamVars.exchangeRateInitial,
-                    vars.balanceWithdrawn
-                );
-                require(vars.mathErr == MathError.NO_ERROR, "underlying withdrawal balance calculation error");
-                (vars.mathErr, vars.recipientUnderlyingBalance) = subExp(
-                    vars.recipientUnderlyingBalance,
-                    vars.underlyingBalanceWithdrawn
-                );
-                require(
-                    vars.mathErr == MathError.NO_ERROR,
-                    "recipient underlying balance subtraction calculation error"
-                );
-            }
-
-            return truncate(vars.recipientUnderlyingBalance);
-        }
-
-        /*
-         * The sender gets back what has not been streamed yet.
-         */
-        if (who == stream.sender) {
-            /*
-             * Calculate the amount of underlying deposited initially.
-             */
-            (vars.mathErr, vars.underlyingBalanceInitial) = mulScalar(
-                compoundingStreamVars.exchangeRateInitial,
-                stream.deposit
-            );
-            require(vars.mathErr == MathError.NO_ERROR, "underlying balance calculation error");
-
-            (vars.mathErr, vars.senderUnderlyingBalance) = subExp(
-                vars.underlyingBalanceInitial,
-                vars.recipientUnderlyingBalance
-            );
-            require(vars.mathErr == MathError.NO_ERROR, "sender balance calculation error");
-            return truncate(vars.senderUnderlyingBalance);
-        }
-        return 0;
-    }
-
-    struct BalanceWithoutInterestOfLocalVars {
-        MathError mathErr;
-        Exp balance;
-    }
-
-    /**
-     * @notice Returns the balance for the given stream id and address, as if there would
-     *  be no interest-earning scheme.
-     * @dev We use `exchangeRateCurrent` not `exchangeRateInitial` since we are interested in precisely
-     *  the amount of cTokens that convert to the underlying balance without interest now.
-     *  Throws if `streamId` does not point to a valid stream.
-     * @param streamId The id of the stream for whom to query the underlying balance.
-     * @param who The address for whom to query the balance.
-     * @return The underlying balance for `who`.
-     */
-    function balanceWithoutInterestOf(uint256 streamId, address who)
-        public
-        streamExists(streamId)
-        compoundingStreamVarsExist(streamId)
-        returns (uint256)
-    {
-        Types.Stream memory stream = streams[streamId];
-        BalanceWithoutInterestOfLocalVars memory vars;
-
-        /**
-         * Since we can only infer the balance only without the interest by calculating the underlying balance
-         * as if there would be no interest-earning scheme, we have to use `underlyingBalanceWithoutInterestOf`.
-         */
-        if (who == stream.sender || who == stream.recipient) {
-            uint256 underlyingBalanceWithoutInterest = underlyingBalanceWithoutInterestOf(streamId, who);
-            (vars.mathErr, vars.balance) = divScalarByExp(
-                underlyingBalanceWithoutInterest,
-                Exp({ mantissa: ICERC20(stream.tokenAddress).exchangeRateCurrent() })
-            );
-            require(vars.mathErr == MathError.NO_ERROR, "balance conversion failure");
-            return truncate(vars.balance);
-        }
-        return 0;
-    }
-
     /**
      * @notice Returns either the delta in seconds between `block.timestmap and `startTime`
      *  or between `stopTime` and `startTime, whichever is smaller. If `block.timestamp` is before
@@ -756,10 +629,10 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     }
 
     /**
-     * @notice Makes the withdrawal to the recipient of the compounding stream and pays the
-     *  accrued interest to all parties.
-     * @dev If stream balance has been depleted to 0, the stream object to save gas
-     *  and optimise contract storage.
+     * @notice Makes the withdrawal to the recipient of the compounding stream and pays the accrued
+     *  interest to all parties.
+     * @dev If stream balance has been depleted to 0, the stream object to save gas and optimise
+     *  contract storage.
      *  Throws if there is a math error.
      *  Throws if the token transfer fails.
      */
@@ -778,14 +651,10 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         /*
          * Calculate the net withdrawal amount by subtracting `senderInterest` and `sablierInterest`.
          * Because the decimal points are lost when we truncate Exp variables, the recipient will earn
-         * `recipientInterest` + a tiny weeny amount of interest, max 0.00000001 in ctoken form.
+         * `recipientInterest` + a tiny weeny amount of interest, max 2e-8 in ctoken terms.
          */
-        if (senderInterest > 0) {
-            (vars.mathErr, vars.amountWithoutSenderInterest) = subUInt(amount, senderInterest);
-            require(vars.mathErr == MathError.NO_ERROR, "amount without sender interest calculation error");
-        } else {
-            vars.amountWithoutSenderInterest = amount;
-        }
+        (vars.mathErr, vars.amountWithoutSenderInterest) = subUInt(amount, senderInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "amount without sender interest calculation error");
         (vars.mathErr, vars.netWithdrawalAmount) = subUInt(vars.amountWithoutSenderInterest, sablierInterest);
         require(vars.mathErr == MathError.NO_ERROR, "net withdrawal amount calculation error");
 
@@ -842,67 +711,66 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         emit CancelStream(streamId, stream.sender, stream.recipient, senderBalance, recipientBalance);
     }
 
-    struct CancelCompoundingStreamInternalLocalVars {
+    struct CancelCompoundingStreamInternal {
         MathError mathErr;
-        uint256 senderBalance;
-        uint256 recipientBalance;
-        uint256 senderAndRecipientBalanceSum;
-        uint256 sablierInterest;
+        uint256 netSenderBalance;
+        uint256 recipientBalanceWithoutSenderInterest;
+        uint256 netRecipientBalance;
     }
 
     /**
-     * @notice Cancels the stream and transfers all tokens on pro rata basis.
-     * @dev The stream object gets deleted after this operation to save gas
-     *  and optimise contract storage.
+     * @notice Cancels the stream, transfers all tokens on a pro rata basis and pays the accrued
+     *  interest to all parties.
+     * @dev Importantly, the money that has not been streamed yet is not considered chargeable.
+     *  All the interest generated by that underlying will be returned to the sender.
      *  Throws if there is a math error.
      *  Throws if the token transfer fails.
      */
     function cancelCompoundingStreamInternal(uint256 streamId) internal {
         Types.Stream memory stream = streams[streamId];
+        CancelCompoundingStreamInternal memory vars;
 
         /*
-         * As if there would be no interest-earning scheme, calculate the underlying balances of the
-         * sender and the recipient, but converted to their cToken equivalent. We shall call these
-         * "base" balances.
+         * The sender gets back all the money that has not been streamed so far. By that, we mean both
+         * the underlying amount and the interest generated by it.
          */
-        uint256 senderBaseBalance = balanceWithoutInterestOf(streamId, stream.sender);
-        uint256 recipientBaseBalance = balanceWithoutInterestOf(streamId, stream.recipient);
+        uint256 senderBalance = balanceOf(streamId, stream.sender);
+        uint256 recipientBalance = balanceOf(streamId, stream.recipient);
 
         /*
-         * Calculate the interest earned by each party for keeping `stream.balance` in the smart contract.
+         * Calculate the interest earned by each party for keeping `recipientBalance` in the smart contract.
          */
-        (uint256 senderInterest, uint256 recipientInterest, ) = computeInterest(streamId, stream.remainingBalance);
+        (uint256 senderInterest, uint256 recipientInterest, uint256 sablierInterest) = computeInterest(
+            streamId,
+            recipientBalance
+        );
 
         /*
-         * Add the base balances to the interest earned by each party
+         * We add `senderInterest` to `senderBalance` to compute the net balance for the sender.
+         * After this, the rest of the function is similar to `withdrawFromCompoundingStreamInternal`, except that
+         * we add the sender's share of the interest generated by `recipientBalance` to `senderBalance`.
          */
-        CancelCompoundingStreamInternalLocalVars memory vars;
-        (vars.mathErr, vars.senderBalance) = addUInt(senderBaseBalance, senderInterest);
-        require(vars.mathErr == MathError.NO_ERROR, "sender balance calculation error");
-
-        (vars.mathErr, vars.recipientBalance) = addUInt(recipientBaseBalance, recipientInterest);
-        require(vars.mathErr == MathError.NO_ERROR, "recipient balance calculation error");
+        (vars.mathErr, vars.netSenderBalance) = addUInt(senderBalance, senderInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "net sender balance calculation error");
 
         /*
-         * We switch from cToken to underlying and vice-versa for several times. When we truncate an Exp,
-         * the point values after 1e18 to the right are lost. We truncate `senderInterest`, `recipientInterest`
-         * and `sablierInterest`, so the sum of `senderBalance`, `recipientBalance` and `sablierInterest` ends up
-         * not being equal to`stream.balance`. We fix this by making `sablierInterest` the difference
-         * between `stream.balance` and (`senderBalance` + `recipientBalance`).
+         * Calculate the net withdrawal amount by subtracting `senderInterest` and `sablierInterest`.
+         * Because the decimal points are lost when we truncate Exp variables, the recipient will earn
+         * `recipientInterest` + a tiny weeny amount of interest, max 2e-8 in ctoken terms.
          */
-        (vars.mathErr, vars.senderAndRecipientBalanceSum) = addUInt(vars.senderBalance, vars.recipientBalance);
-        require(vars.mathErr == MathError.NO_ERROR, "sender and recipient balance sum calculation error");
-        (vars.mathErr, vars.sablierInterest) = subUInt(stream.remainingBalance, vars.senderAndRecipientBalanceSum);
-        require(vars.mathErr == MathError.NO_ERROR, "sablier interest calculation error");
+        (vars.mathErr, vars.recipientBalanceWithoutSenderInterest) = subUInt(recipientBalance, senderInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "recipient balance without sender interest calculation error");
+        (vars.mathErr, vars.netRecipientBalance) = subUInt(vars.recipientBalanceWithoutSenderInterest, sablierInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "net recipient balance calculation error");
 
         /*
-         * Add the sablier interest to the earnings for this cToken.
+         * Add the sablier interest to the earnings attributed to this cToken.
          */
-        (vars.mathErr, earnings[stream.tokenAddress]) = addUInt(earnings[stream.tokenAddress], vars.sablierInterest);
+        (vars.mathErr, earnings[stream.tokenAddress]) = addUInt(earnings[stream.tokenAddress], sablierInterest);
         require(vars.mathErr == MathError.NO_ERROR, "earnings addition calculation error");
 
         /*
-         * Delete the objects from storage if the balance has been depleted to 0.
+         * Delete the objects from storage.
          */
         delete streams[streamId];
         delete compoundingStreamsVars[streamId];
@@ -911,12 +779,21 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
          * Transfer the tokens to the sender and the recipient.
          */
         IERC20 token = IERC20(stream.tokenAddress);
-        if (vars.senderBalance > 0)
-            require(token.transfer(stream.sender, vars.senderBalance), "sender token transfer failure");
-        if (vars.recipientBalance > 0)
-            require(token.transfer(stream.recipient, vars.recipientBalance), "recipient token transfer failure");
+        if (vars.netSenderBalance > 0)
+            require(token.transfer(stream.sender, vars.netSenderBalance), "sender token transfer failure");
+        if (vars.netRecipientBalance > 0)
+            require(token.transfer(stream.recipient, vars.netRecipientBalance), "recipient token transfer failure");
 
-        emit CancelStream(streamId, stream.sender, stream.recipient, vars.senderBalance, vars.recipientBalance);
-        emit PayInterest(streamId, senderInterest, recipientInterest, vars.sablierInterest);
+        emit CancelStream(streamId, stream.sender, stream.recipient, vars.netSenderBalance, vars.netRecipientBalance);
+        emit PayInterest(streamId, senderInterest, recipientInterest, sablierInterest);
+
+        // emit DebugCancelCompoundingStreamInternalV2(
+        //     senderBalance,
+        //     recipientBalance,
+        //     vars.netSenderBalance,
+        //     vars.netRecipientBalance,
+        //     sablierInterest
+        // );
+
     }
 }
