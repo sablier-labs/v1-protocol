@@ -5,10 +5,10 @@ const truffleAssert = require("truffle-assertions");
 
 const {
   EXCHANGE_RATE_BLOCK_DELTA,
-  STANDARD_RATE_CTOKEN,
-  STANDARD_RECIPIENT_SHARE,
+  STANDARD_RATE_PER_SECOND_CTOKEN,
+  STANDARD_RECIPIENT_SHARE_PERCENTAGE,
   STANDARD_SALARY_CTOKEN,
-  STANDARD_SENDER_SHARE,
+  STANDARD_SENDER_SHARE_PERCENTAGE,
   STANDARD_TIME_DELTA,
   STANDARD_TIME_OFFSET,
 } = devConstants;
@@ -29,8 +29,8 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
     });
 
     describe("when shares sum up to 100", function() {
-      const senderShare = STANDARD_SENDER_SHARE;
-      const recipientShare = STANDARD_RECIPIENT_SHARE;
+      const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+      const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
       it("creates the compounding stream", async function() {
         const exchangeRateInitial = await this.cToken.exchangeRateCurrent();
@@ -40,8 +40,8 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderShare,
-          recipientShare,
+          senderSharePercentage,
+          recipientSharePercentage,
           opts,
         );
 
@@ -55,8 +55,8 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
         stream.tokenAddress.should.be.equal(this.cToken.address);
         stream.startTime.should.be.bignumber.equal(startTime);
         stream.stopTime.should.be.bignumber.equal(stopTime);
-        stream.balance.should.be.bignumber.equal(deposit);
-        stream.rate.should.be.bignumber.equal(STANDARD_RATE_CTOKEN);
+        stream.remainingBalance.should.be.bignumber.equal(deposit);
+        stream.ratePerSecond.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND_CTOKEN);
 
         // The exchange rate increased because the block number increased
         const compoundingStreamVars = await this.sablier.contract.methods.getCompoundingStreamVars(streamId).call();
@@ -66,9 +66,11 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           exchangeRateInitial.plus(EXCHANGE_RATE_BLOCK_DELTA),
           new BigNumber(1e18),
         );
-        // senderShare and recipientShare are mantissas
-        compoundingStreamVars.senderShare.should.be.bignumber.equal(senderShare.multipliedBy(1e16));
-        compoundingStreamVars.recipientShare.should.be.bignumber.equal(recipientShare.multipliedBy(1e16));
+        // senderSharePercentage and recipientSharePercentage are mantissas
+        compoundingStreamVars.senderSharePercentage.should.be.bignumber.equal(senderSharePercentage.multipliedBy(1e16));
+        compoundingStreamVars.recipientSharePercentage.should.be.bignumber.equal(
+          recipientSharePercentage.multipliedBy(1e16),
+        );
       });
 
       it("transfers the token", async function() {
@@ -79,8 +81,8 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderShare,
-          recipientShare,
+          senderSharePercentage,
+          recipientSharePercentage,
           opts,
         );
         const newBalance = await this.cToken.balanceOf(sender);
@@ -94,8 +96,8 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderShare,
-          recipientShare,
+          senderSharePercentage,
+          recipientSharePercentage,
           opts,
         );
         await truffleAssert.eventEmitted(result, "CreateCompoundingStream");
@@ -103,8 +105,8 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
     });
 
     describe("when shares do not sum up to 100", function() {
-      const senderShare = new BigNumber(40);
-      const recipientShare = new BigNumber(40);
+      const senderSharePercentage = new BigNumber(40);
+      const recipientSharePercentage = new BigNumber(40);
 
       it("reverts", async function() {
         await truffleAssert.reverts(
@@ -114,8 +116,8 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
             this.cToken.address,
             startTime,
             stopTime,
-            senderShare,
-            recipientShare,
+            senderSharePercentage,
+            recipientSharePercentage,
             opts,
           ),
           "shares do not sum up to 100",
@@ -125,8 +127,8 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
   });
 
   describe("when the ctoken is not whitelisted", function() {
-    const senderShare = STANDARD_SENDER_SHARE;
-    const recipientShare = STANDARD_RECIPIENT_SHARE;
+    const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+    const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
     it("reverts", async function() {
       await truffleAssert.reverts(
@@ -136,8 +138,8 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderShare,
-          recipientShare,
+          senderSharePercentage,
+          recipientSharePercentage,
           opts,
         ),
         "ctoken is not whitelisted",

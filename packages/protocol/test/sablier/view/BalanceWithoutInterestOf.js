@@ -5,9 +5,9 @@ const traveler = require("ganache-time-traveler");
 const truffleAssert = require("truffle-assertions");
 
 const {
-  STANDARD_RECIPIENT_SHARE,
+  STANDARD_RECIPIENT_SHARE_PERCENTAGE,
   STANDARD_SALARY_CTOKEN,
-  STANDARD_SENDER_SHARE,
+  STANDARD_SENDER_SHARE_PERCENTAGE,
   STANDARD_TIME_OFFSET,
   STANDARD_TIME_DELTA,
 } = devConstants;
@@ -16,8 +16,8 @@ function shouldBehaveLikeBalanceWithoutInterestOf(alice, bob, carol) {
   const sender = alice;
   const recipient = bob;
   const deposit = STANDARD_SALARY_CTOKEN.toString(10);
-  const senderShare = STANDARD_SENDER_SHARE;
-  const recipientShare = STANDARD_RECIPIENT_SHARE;
+  const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+  const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
   const opts = { from: sender };
   const now = new BigNumber(dayjs().unix());
   const startTime = now.plus(STANDARD_TIME_OFFSET);
@@ -39,8 +39,8 @@ function shouldBehaveLikeBalanceWithoutInterestOf(alice, bob, carol) {
         this.cToken.address,
         startTime,
         stopTime,
-        senderShare,
-        recipientShare,
+        senderSharePercentage,
+        recipientSharePercentage,
         opts,
       );
       streamId = Number(result.logs[0].args.streamId);

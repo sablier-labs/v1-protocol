@@ -8,7 +8,7 @@ const shouldBehaveLikeCreateSalary = require("./behaviors/CreateSalary.behavior"
 const shouldBehaveLikeCancelSalary = require("./behaviors/CancelSalary.behavior");
 const shouldBehaveLikeWithdrawFromSalary = require("./behaviors/WithdrawFromSalary.behavior");
 
-const { STANDARD_RATE, STANDARD_SALARY, STANDARD_TIME_DELTA, STANDARD_TIME_OFFSET } = devConstants;
+const { STANDARD_RATE_PER_SECOND, STANDARD_SALARY, STANDARD_TIME_DELTA, STANDARD_TIME_OFFSET } = devConstants;
 
 function shouldBehaveLikePayroll(alice, bob, carol, eve) {
   let snapshotId;

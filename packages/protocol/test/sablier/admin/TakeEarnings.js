@@ -7,10 +7,10 @@ const truffleAssert = require("truffle-assertions");
 
 const {
   FIVE_UNITS_CTOKEN,
-  STANDARD_RECIPIENT_SHARE,
+  STANDARD_RECIPIENT_SHARE_PERCENTAGE,
   STANDARD_SALARY_CTOKEN,
   STANDARD_SABLIER_FEE,
-  STANDARD_SENDER_SHARE,
+  STANDARD_SENDER_SHARE_PERCENTAGE,
   STANDARD_TIME_DELTA,
   STANDARD_TIME_OFFSET,
 } = devConstants;
@@ -35,8 +35,8 @@ function shouldBehaveLikeTakeEarnings(alice, bob, eve) {
           let streamId;
           const recipient = bob;
           const deposit = STANDARD_SALARY_CTOKEN.toString(10);
-          const senderShare = STANDARD_SENDER_SHARE;
-          const recipientShare = STANDARD_RECIPIENT_SHARE;
+          const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+          const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
           const now = new BigNumber(dayjs().unix());
           const startTime = now.plus(STANDARD_TIME_OFFSET);
           const stopTime = startTime.plus(STANDARD_TIME_DELTA);
@@ -49,8 +49,8 @@ function shouldBehaveLikeTakeEarnings(alice, bob, eve) {
               this.cToken.address,
               startTime,
               stopTime,
-              senderShare,
-              recipientShare,
+              senderSharePercentage,
+              recipientSharePercentage,
               opts,
             );
             streamId = Number(result.logs[0].args.streamId);
