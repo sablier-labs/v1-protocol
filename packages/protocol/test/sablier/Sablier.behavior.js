@@ -6,8 +6,6 @@ const shouldBehaveLikeUpdateFee = require("./admin/UpdateFee");
 const shouldBehaveLikeTakeEarnings = require("./admin/TakeEarnings");
 
 const shouldBehaveLikeBalanceOf = require("./view/BalanceOf");
-const shouldBehaveLikeUnderlyingBalanceWithoutInterestOf = require("./view/UnderlyingBalanceWithoutInterestOf");
-const shouldBehaveLikeBalanceWithoutInterestOf = require("./view/BalanceWithoutInterestOf");
 const shouldBehaveLikeDeltaOf = require("./view/DeltaOf");
 const shouldBehaveLikeGetStream = require("./view/GetStream");
 const shouldBehaveLikeGetCompoundingStreamVars = require("./view/GetCompoundingStreamVars");
@@ -54,14 +52,6 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
   describe("view functions", function() {
     describe("balanceOf", function() {
       shouldBehaveLikeBalanceOf(alice, bob, carol);
-    });
-
-    describe("underlyingBalanceWithoutInterestOf", function() {
-      shouldBehaveLikeUnderlyingBalanceWithoutInterestOf(alice, bob, carol);
-    });
-
-    describe("balanceWithoutInterestOf", function() {
-      shouldBehaveLikeBalanceWithoutInterestOf(alice, bob, carol);
     });
 
     describe("deltaOf", function() {
