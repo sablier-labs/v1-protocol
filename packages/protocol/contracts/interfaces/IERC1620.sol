@@ -25,8 +25,8 @@ interface IERC1620 {
     event CreateCompoundingStream(
         uint256 indexed streamId,
         uint256 exchangeRate,
-        uint256 senderShare,
-        uint256 recipientShare
+        uint256 senderSharePercentage,
+        uint256 recipientSharePercentage
     );
 
     /**

@@ -17,6 +17,16 @@ import "./Types.sol";
  */
 contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorReporter {
     /**
+     * @notice In Exp terms, 1e16 is 0.01, or 1%
+     */
+    uint256 constant onePercent = 1e16;
+
+    /**
+     * @notice In Exp terms, 1e18 is 1, or 100%
+     */
+    uint256 constant hundredPercent = 1e18;
+
+    /**
      * @notice Stores information about the initial state of the underlying of the cToken.
      */
     mapping(uint256 => Types.CompoundingStreamVars) private compoundingStreamsVars;
@@ -39,7 +49,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     /**
      * @notice Used to create new stream ids.
      */
-    uint256 public nonce;
+    uint256 public nextStreamId;
 
     /**
      * @notice The stream objects themselves.
@@ -100,7 +110,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
 
     constructor() public {
         Ownable.initialize(msg.sender);
-        nonce = 1;
+        nextStreamId = 1;
     }
 
     /*** Admin Functions ***/
@@ -120,7 +130,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
 
     /**
      * @notice Discards a previously whitelisted cToken.
-     * @dev Throws is `cTokenAddress` has not been previously whitelisted.
+     * @dev Throws if `cTokenAddress` has not been previously whitelisted.
      * @param cTokenAddress The address of the cToken to discard.
      */
     function discardCToken(address cTokenAddress) external onlyOwner {
@@ -129,23 +139,28 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         emit DiscardCToken(cTokenAddress);
     }
 
-    struct UdateFeeLocalVars {
+    struct UpdateFeeLocalVars {
         MathError mathErr;
         uint256 feeMantissa;
     }
 
     /**
      * @notice Updates the Sablier fee.
-     * @dev Throws if `newFee` is not lower or equal to 100.
-     * @param newFee The new fee as a percentage.
+     * @dev Throws if `feePercentage` is not lower or equal to 100.
+     * @param feePercentage The new fee as a percentage.
      */
-    function updateFee(uint256 newFee) external onlyOwner {
-        require(newFee <= 100, "new fee higher than 100%");
-        UdateFeeLocalVars memory vars;
-        (vars.mathErr, vars.feeMantissa) = mulUInt(newFee, 1e16);
-        require(vars.mathErr == MathError.NO_ERROR, "new fee mantissa calculation error");
+    function updateFee(uint256 feePercentage) external onlyOwner {
+        require(feePercentage <= 100, "fee percentage higher than 100%");
+        UpdateFeeLocalVars memory vars;
+
+        /*
+         * `feePercentage` will be stored as a mantissa, so we scale it up by "one percent"
+         *  in Exp terms, which is 1e16.
+         */
+        (vars.mathErr, vars.feeMantissa) = mulUInt(feePercentage, onePercent);
+        require(vars.mathErr == MathError.NO_ERROR, "fee mantissa calculation error");
         fee = Exp({ mantissa: vars.feeMantissa });
-        emit UpdateFee(newFee);
+        emit UpdateFee(feePercentage);
     }
 
     struct TakeEarningsLocalVars {
@@ -191,15 +206,15 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         BalanceOfLocalVars memory vars;
 
         uint256 delta = deltaOf(streamId);
-        (vars.mathErr, vars.recipientBalance) = mulUInt(delta, stream.rate);
+        (vars.mathErr, vars.recipientBalance) = mulUInt(delta, stream.ratePerSecond);
         require(vars.mathErr == MathError.NO_ERROR, "recipient balance calculation error");
 
         /*
          * If the stream `balance` does not equal the `deposit`, it means there have been withdrawals.
          * We have to subtract the total amount withdrawn from the existing balance of the recipient.
          */
-        if (stream.deposit > stream.balance) {
-            (vars.mathErr, vars.withdrawalAmount) = subUInt(stream.deposit, stream.balance);
+        if (stream.deposit > stream.remainingBalance) {
+            (vars.mathErr, vars.withdrawalAmount) = subUInt(stream.deposit, stream.remainingBalance);
             assert(vars.mathErr == MathError.NO_ERROR);
             (vars.mathErr, vars.recipientBalance) = subUInt(vars.recipientBalance, vars.withdrawalAmount);
             require(vars.mathErr == MathError.NO_ERROR, "recipient balance subtraction calculation error");
@@ -207,144 +222,20 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
 
         if (who == stream.recipient) return vars.recipientBalance;
         if (who == stream.sender) {
-            (vars.mathErr, vars.senderBalance) = subUInt(stream.balance, vars.recipientBalance);
+            (vars.mathErr, vars.senderBalance) = subUInt(stream.remainingBalance, vars.recipientBalance);
             require(vars.mathErr == MathError.NO_ERROR, "sender balance calculation error");
             return vars.senderBalance;
         }
         return 0;
     }
 
-    struct UnderlyingBalanceWithoutInterestOfLocalVars {
-        MathError mathErr;
-        Exp underlyingBalanceInitial;
-        Exp recipientUnderlyingBalance;
-        uint256 balanceWithdrawn;
-        Exp underlyingBalanceWithdrawn;
-        Exp senderUnderlyingBalance;
-    }
-
     /**
-     * @notice Returns the underlying balance for the given stream id and address,
-     *  as if there would be no interest-earning scheme.
-     * @dev Throws if `streamId` does not point to a valid stream.
-     * @param streamId The id of the stream for whom to query the underlying balance.
-     * @param who The address for whom to query the balance.
-     * @return The underlying balance for `who`.
-     */
-    function underlyingBalanceWithoutInterestOf(uint256 streamId, address who)
-        public
-        view
-        streamExists(streamId)
-        compoundingStreamVarsExist(streamId)
-        returns (uint256)
-    {
-        Types.Stream memory stream = streams[streamId];
-        Types.CompoundingStreamVars memory compoundingStreamVars = compoundingStreamsVars[streamId];
-        UnderlyingBalanceWithoutInterestOfLocalVars memory vars;
-
-        /*
-         * Calculate how much has been streamed.
-         */
-        uint256 delta = deltaOf(streamId);
-        (vars.mathErr, vars.recipientUnderlyingBalance) = mulScalar(compoundingStreamVars.underlyingRate, delta);
-        require(vars.mathErr == MathError.NO_ERROR, "recipient underlying balance calculation error");
-
-        if (who == stream.recipient) {
-            /*
-             * If the stream `balance` does not equal the `deposit`, it means there have been withdrawals.
-             * We have to subtract the total amount withdrawn from the existing balance of the recipient.
-             */
-            if (stream.deposit > stream.balance) {
-                (vars.mathErr, vars.balanceWithdrawn) = subUInt(stream.deposit, stream.balance);
-                assert(vars.mathErr == MathError.NO_ERROR);
-                (vars.mathErr, vars.underlyingBalanceWithdrawn) = mulScalar(
-                    compoundingStreamVars.exchangeRateInitial,
-                    vars.balanceWithdrawn
-                );
-                require(vars.mathErr == MathError.NO_ERROR, "underlying withdrawal balance calculation error");
-                (vars.mathErr, vars.recipientUnderlyingBalance) = subExp(
-                    vars.recipientUnderlyingBalance,
-                    vars.underlyingBalanceWithdrawn
-                );
-                require(
-                    vars.mathErr == MathError.NO_ERROR,
-                    "recipient underlying balance subtraction calculation error"
-                );
-            }
-
-            return truncate(vars.recipientUnderlyingBalance);
-        }
-
-        /*
-         * The sender gets back what has not been streamed yet.
-         */
-        if (who == stream.sender) {
-            /*
-             * Calculate the amount of underlying deposited initially.
-             */
-            (vars.mathErr, vars.underlyingBalanceInitial) = mulScalar(
-                compoundingStreamVars.exchangeRateInitial,
-                stream.deposit
-            );
-            require(vars.mathErr == MathError.NO_ERROR, "underlying balance calculation error");
-
-            (vars.mathErr, vars.senderUnderlyingBalance) = subExp(
-                vars.underlyingBalanceInitial,
-                vars.recipientUnderlyingBalance
-            );
-            require(vars.mathErr == MathError.NO_ERROR, "sender balance calculation error");
-            return truncate(vars.senderUnderlyingBalance);
-        }
-        return 0;
-    }
-
-    struct BalanceWithoutInterestOfLocalVars {
-        MathError mathErr;
-        Exp balance;
-    }
-
-    /**
-     * @notice Returns the balance for the given stream id and address, as if there would
-     *  be no interest-earning scheme.
-     * @dev We use `exchangeRateCurrent` not `exchangeRateInitial` since we are interested in precisely
-     *  the amount of cTokens that convert to the underlying balance without interest now.
-     *  Throws if `streamId` does not point to a valid stream.
-     * @param streamId The id of the stream for whom to query the underlying balance.
-     * @param who The address for whom to query the balance.
-     * @return The underlying balance for `who`.
-     */
-    function balanceWithoutInterestOf(uint256 streamId, address who)
-        public
-        streamExists(streamId)
-        compoundingStreamVarsExist(streamId)
-        returns (uint256)
-    {
-        Types.Stream memory stream = streams[streamId];
-        BalanceWithoutInterestOfLocalVars memory vars;
-
-        /**
-         * Since we can only infer the balance only without the interest by calculating the underlying balance
-         * as if there would be no interest-earning scheme, we have to use `underlyingBalanceWithoutInterestOf`.
-         */
-        if (who == stream.sender || who == stream.recipient) {
-            uint256 underlyingBalanceWithoutInterest = underlyingBalanceWithoutInterestOf(streamId, who);
-            (vars.mathErr, vars.balance) = divScalarByExp(
-                underlyingBalanceWithoutInterest,
-                Exp({ mantissa: ICERC20(stream.tokenAddress).exchangeRateCurrent() })
-            );
-            require(vars.mathErr == MathError.NO_ERROR, "balance conversion failure");
-            return truncate(vars.balance);
-        }
-        return 0;
-    }
-
-    /**
-     * @notice Returns the smaller time delta between now and the `startTime`, and
-     * `stopTime` and `startTime.
+     * @notice Returns either the delta in seconds between `block.timestmap and `startTime`
+     *  or between `stopTime` and `startTime, whichever is smaller. If `block.timestamp` is before
+     *  `startTime`, it returns 0.
      * @dev Throws if `streamId` does not point to a valid stream.
      * @param streamId The id of the stream for whom to query the delta.
-     * @return The smaller time delta between now and the `startTime`, and
-     * `stopTime` and `startTime.
+     * @return The time delta in seconds.
      */
     function deltaOf(uint256 streamId) public view streamExists(streamId) returns (uint256 delta) {
         Types.Stream memory stream = streams[streamId];
@@ -370,8 +261,8 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
             address tokenAddress,
             uint256 startTime,
             uint256 stopTime,
-            uint256 balance,
-            uint256 rate
+            uint256 remainingBalance,
+            uint256 ratePerSecond
         )
     {
         Types.Stream memory stream = streams[streamId];
@@ -382,8 +273,8 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
             stream.tokenAddress,
             stream.startTime,
             stream.stopTime,
-            stream.balance,
-            stream.rate
+            stream.remainingBalance,
+            stream.ratePerSecond
         );
     }
 
@@ -398,7 +289,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         view
         streamExists(streamId)
         compoundingStreamVarsExist(streamId)
-        returns (uint256 exchangeRateInitial, uint256 senderShare, uint256 recipientShare)
+        returns (uint256 exchangeRateInitial, uint256 senderSharePercentage, uint256 recipientSharePercentage)
     {
         Types.CompoundingStreamVars memory compoundingStreamVars = compoundingStreamsVars[streamId];
         return (
@@ -413,7 +304,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     struct CreateStreamLocalVars {
         MathError mathErr;
         uint256 duration;
-        uint256 rate;
+        uint256 ratePerSecond;
     }
 
     /**
@@ -425,7 +316,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      *  Throws if the duration calculation has a math error.
      *  Throws if deposit is not a multiple of the time delta.
      *  Throws if the rate calculation has a math error.
-     *  Throws if the nonce calculation has a math error.
+     *  Throws if the next stream id calculation has a math error.
      *  Throws if the contract is not allowed to transfer more than `deposit` tokens.
      * @param recipient The account towards which the money will be streamed.
      * @param deposit The amount of money to be streamed.
@@ -451,15 +342,15 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         assert(vars.duration > 0);
         require(deposit % vars.duration == 0, "deposit not multiple of time delta");
 
-        (vars.mathErr, vars.rate) = divUInt(deposit, vars.duration);
+        (vars.mathErr, vars.ratePerSecond) = divUInt(deposit, vars.duration);
         require(vars.mathErr == MathError.NO_ERROR, "rate calculation error");
 
-        uint256 streamId = nonce;
+        uint256 streamId = nextStreamId;
         streams[streamId] = Types.Stream({
-            balance: deposit,
+            remainingBalance: deposit,
             deposit: deposit,
             isEntity: true,
-            rate: vars.rate,
+            ratePerSecond: vars.ratePerSecond,
             recipient: recipient,
             sender: msg.sender,
             startTime: startTime,
@@ -467,8 +358,8 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
             tokenAddress: tokenAddress
         });
 
-        (vars.mathErr, nonce) = addUInt(nonce, uint256(1));
-        require(vars.mathErr == MathError.NO_ERROR, "nonce calculation error");
+        (vars.mathErr, nextStreamId) = addUInt(nextStreamId, uint256(1));
+        require(vars.mathErr == MathError.NO_ERROR, "next stream id calculation error");
 
         require(IERC20(tokenAddress).transferFrom(msg.sender, address(this), deposit), "token transfer failure");
         emit CreateStream(streamId, msg.sender, recipient, deposit, tokenAddress, startTime, stopTime);
@@ -479,27 +370,27 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         MathError mathErr;
         uint256 shareSum;
         uint256 underlyingBalance;
-        Exp underlyingRate;
-        uint256 senderShare;
-        uint256 recipientShare;
+        Exp underlyingRatePerSecond;
+        uint256 senderShareMantissa;
+        uint256 recipientShareMantissa;
     }
 
     /**
      * @notice Creates a new compounding stream.
      * @dev Inherits all the security checks from `createStream`, but has more.
      *  Throws if the cToken is not whitelisted.
-     *  Throws if `senderShare` and `recipientShare` do not sum up to 100.
-     *  Throws if the `underlyingRate` calculation has a math error.
-     *  Throws if the `senderShare` mantissa calculation has a math error.
-     *  Throws if the `recipientShare` mantissa calculation has a math error.
+     *  Throws if `senderSharePercentage` and `recipientSharePercentage` do not sum up to 100.
+     *  Throws if the `underlyingRatePerSecond` calculation has a math error.
+     *  Throws if the `senderSharePercentage` mantissa calculation has a math error.
+     *  Throws if the `recipientSharePercentage` mantissa calculation has a math error.
      * @param recipient The account towards which the money will be streamed.
      * @param deposit The amount of money to be streamed.
      * @param tokenAddress The ERC20 token to use as streaming currency.
      * @param startTime The unix timestamp of when the stream starts.
      * @param stopTime The unix timestamp of when the stream stops.
-     * @param senderShare The sender's share of the interest, as a percentage.
-     * @param recipientShare The sender's share of the interest, as a percentage.
-     * @return the id of the newly created stream.
+     * @param senderSharePercentage The sender's share of the interest, as a percentage.
+     * @param recipientSharePercentage The sender's share of the interest, as a percentage.
+     * @return the id of the newly created compounding stream.
      */
     function createCompoundingStream(
         address recipient,
@@ -507,8 +398,8 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         address tokenAddress,
         uint256 startTime,
         uint256 stopTime,
-        uint256 senderShare,
-        uint256 recipientShare
+        uint256 senderSharePercentage,
+        uint256 recipientSharePercentage
     ) external returns (uint256) {
         require(cTokens[tokenAddress], "ctoken is not whitelisted");
         CreateCompoundingStreamLocalVars memory vars;
@@ -516,7 +407,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         /*
          * Ensure that the interest shares sum up to 100%
          */
-        (vars.mathErr, vars.shareSum) = addUInt(senderShare, recipientShare);
+        (vars.mathErr, vars.shareSum) = addUInt(senderSharePercentage, recipientSharePercentage);
         require(vars.mathErr == MathError.NO_ERROR, "share sum calculation error");
         require(vars.shareSum == 100, "shares do not sum up to 100");
 
@@ -526,17 +417,17 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
          * Calculate how much will be streamed per second, in the underlying equivalent
          */
         Exp memory exchangeRateCurrent = Exp({ mantissa: ICERC20(tokenAddress).exchangeRateCurrent() });
-        (vars.mathErr, vars.underlyingRate) = mulScalar(exchangeRateCurrent, streams[streamId].rate);
+        (vars.mathErr, vars.underlyingRatePerSecond) = mulScalar(exchangeRateCurrent, streams[streamId].ratePerSecond);
         require(vars.mathErr == MathError.NO_ERROR, "underyling rate calculation error");
 
         /*
-         * `senderShare` and `recipientShare` will be stored as mantissas, so we have to scale them by 1e16.
-         * In Exp terms, 1e16 = 0.01
+         * `senderSharePercentage` and `recipientSharePercentage` will be stored as mantissas, so scale them up
+         * by "one percent" in Exp terms, which is 1e16.
          */
-        (vars.mathErr, vars.senderShare) = mulUInt(senderShare, 1e16);
+        (vars.mathErr, vars.senderShareMantissa) = mulUInt(senderSharePercentage, onePercent);
         require(vars.mathErr == MathError.NO_ERROR, "sender share mantissa calculation error");
 
-        (vars.mathErr, vars.recipientShare) = mulUInt(recipientShare, 1e16);
+        (vars.mathErr, vars.recipientShareMantissa) = mulUInt(recipientSharePercentage, onePercent);
         require(vars.mathErr == MathError.NO_ERROR, "recipient share mantissa calculation error");
 
         /*
@@ -545,12 +436,17 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         compoundingStreamsVars[streamId] = Types.CompoundingStreamVars({
             exchangeRateInitial: exchangeRateCurrent,
             isEntity: true,
-            recipientShare: Exp({ mantissa: vars.recipientShare }),
-            senderShare: Exp({ mantissa: vars.senderShare }),
-            underlyingRate: vars.underlyingRate
+            recipientShare: Exp({ mantissa: vars.recipientShareMantissa }),
+            senderShare: Exp({ mantissa: vars.senderShareMantissa }),
+            underlyingRatePerSecond: vars.underlyingRatePerSecond
         });
 
-        emit CreateCompoundingStream(streamId, exchangeRateCurrent.mantissa, senderShare, recipientShare);
+        emit CreateCompoundingStream(
+            streamId,
+            exchangeRateCurrent.mantissa,
+            senderSharePercentage,
+            recipientSharePercentage
+        );
         return streamId;
     }
 
@@ -650,8 +546,8 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         /*
          * Calculate our share from that interest.
          */
-        if (fee.mantissa == 1e18) {
-            (vars.mathErr, vars.sablierInterest) = divExp(vars.sablierUnderlyingInterest, exchangeRateCurrent);
+        if (fee.mantissa == hundredPercent) {
+            (vars.mathErr, vars.sablierInterest) = divExp(vars.underlyingInterest, exchangeRateCurrent);
             require(vars.mathErr == MathError.NO_ERROR, "sablier interest conversion failure");
             return (0, 0, truncate(vars.sablierInterest));
         } else if (fee.mantissa == 0) {
@@ -717,10 +613,10 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     function withdrawFromStreamInternal(uint256 streamId, uint256 amount) internal {
         Types.Stream memory stream = streams[streamId];
         WithdrawFromStreamInternalLocalVars memory vars;
-        (vars.mathErr, streams[streamId].balance) = subUInt(stream.balance, amount);
+        (vars.mathErr, streams[streamId].remainingBalance) = subUInt(stream.remainingBalance, amount);
         require(vars.mathErr == MathError.NO_ERROR, "stream balance subtraction calculation error");
 
-        if (streams[streamId].balance == 0) delete streams[streamId];
+        if (streams[streamId].remainingBalance == 0) delete streams[streamId];
 
         require(IERC20(stream.tokenAddress).transfer(stream.recipient, amount), "token transfer failure");
         emit WithdrawFromStream(streamId, stream.recipient, amount);
@@ -733,10 +629,10 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     }
 
     /**
-     * @notice Makes the withdrawal to the recipient of the compounding stream and pays the
-     *  accrued interest to all parties.
-     * @dev If stream balance has been depleted to 0, the stream object to save gas
-     *  and optimise contract storage.
+     * @notice Makes the withdrawal to the recipient of the compounding stream and pays the accrued
+     *  interest to all parties.
+     * @dev If stream balance has been depleted to 0, the stream object to save gas and optimise
+     *  contract storage.
      *  Throws if there is a math error.
      *  Throws if the token transfer fails.
      */
@@ -755,27 +651,23 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         /*
          * Calculate the net withdrawal amount by subtracting `senderInterest` and `sablierInterest`.
          * Because the decimal points are lost when we truncate Exp variables, the recipient will earn
-         * `recipientInterest` + a tiny weeny amount of interest, max 0.00000001 in ctoken form.
+         * `recipientInterest` + a tiny weeny amount of interest, max 2e-8 in ctoken terms.
          */
-        if (senderInterest > 0) {
-            (vars.mathErr, vars.amountWithoutSenderInterest) = subUInt(amount, senderInterest);
-            require(vars.mathErr == MathError.NO_ERROR, "amount without sender interest calculation error");
-        } else {
-            vars.amountWithoutSenderInterest = amount;
-        }
+        (vars.mathErr, vars.amountWithoutSenderInterest) = subUInt(amount, senderInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "amount without sender interest calculation error");
         (vars.mathErr, vars.netWithdrawalAmount) = subUInt(vars.amountWithoutSenderInterest, sablierInterest);
         require(vars.mathErr == MathError.NO_ERROR, "net withdrawal amount calculation error");
 
         /*
          * Subtract `amount` from the balance of the stream.
          */
-        (vars.mathErr, streams[streamId].balance) = subUInt(stream.balance, amount);
+        (vars.mathErr, streams[streamId].remainingBalance) = subUInt(stream.remainingBalance, amount);
         require(vars.mathErr == MathError.NO_ERROR, "balance subtraction calculation error");
 
         /*
          * Delete the objects from storage if the balance has been depleted to 0.
          */
-        if (streams[streamId].balance == 0) {
+        if (streams[streamId].remainingBalance == 0) {
             delete streams[streamId];
             delete compoundingStreamsVars[streamId];
         }
@@ -819,67 +711,66 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         emit CancelStream(streamId, stream.sender, stream.recipient, senderBalance, recipientBalance);
     }
 
-    struct CancelCompoundingStreamInternalLocalVars {
+    struct CancelCompoundingStreamInternal {
         MathError mathErr;
-        uint256 senderBalance;
-        uint256 recipientBalance;
-        uint256 senderAndRecipientBalanceSum;
-        uint256 sablierInterest;
+        uint256 netSenderBalance;
+        uint256 recipientBalanceWithoutSenderInterest;
+        uint256 netRecipientBalance;
     }
 
     /**
-     * @notice Cancels the stream and transfers all tokens on pro rata basis.
-     * @dev The stream object gets deleted after this operation to save gas
-     *  and optimise contract storage.
+     * @notice Cancels the stream, transfers all tokens on a pro rata basis and pays the accrued
+     *  interest to all parties.
+     * @dev Importantly, the money that has not been streamed yet is not considered chargeable.
+     *  All the interest generated by that underlying will be returned to the sender.
      *  Throws if there is a math error.
      *  Throws if the token transfer fails.
      */
     function cancelCompoundingStreamInternal(uint256 streamId) internal {
         Types.Stream memory stream = streams[streamId];
+        CancelCompoundingStreamInternal memory vars;
 
         /*
-         * As if there would be no interest-earning scheme, calculate the underlying balances of the
-         * sender and the recipient, but converted to their cToken equivalent. We shall call these
-         * "base" balances.
+         * The sender gets back all the money that has not been streamed so far. By that, we mean both
+         * the underlying amount and the interest generated by it.
          */
-        uint256 senderBaseBalance = balanceWithoutInterestOf(streamId, stream.sender);
-        uint256 recipientBaseBalance = balanceWithoutInterestOf(streamId, stream.recipient);
+        uint256 senderBalance = balanceOf(streamId, stream.sender);
+        uint256 recipientBalance = balanceOf(streamId, stream.recipient);
 
         /*
-         * Calculate the interest earned by each party for keeping `stream.balance` in the smart contract.
+         * Calculate the interest earned by each party for keeping `recipientBalance` in the smart contract.
          */
-        (uint256 senderInterest, uint256 recipientInterest, ) = computeInterest(streamId, stream.balance);
+        (uint256 senderInterest, uint256 recipientInterest, uint256 sablierInterest) = computeInterest(
+            streamId,
+            recipientBalance
+        );
 
         /*
-         * Add the base balances to the interest earned by each party
+         * We add `senderInterest` to `senderBalance` to compute the net balance for the sender.
+         * After this, the rest of the function is similar to `withdrawFromCompoundingStreamInternal`, except that
+         * we add the sender's share of the interest generated by `recipientBalance` to `senderBalance`.
          */
-        CancelCompoundingStreamInternalLocalVars memory vars;
-        (vars.mathErr, vars.senderBalance) = addUInt(senderBaseBalance, senderInterest);
-        require(vars.mathErr == MathError.NO_ERROR, "sender balance calculation error");
-
-        (vars.mathErr, vars.recipientBalance) = addUInt(recipientBaseBalance, recipientInterest);
-        require(vars.mathErr == MathError.NO_ERROR, "recipient balance calculation error");
+        (vars.mathErr, vars.netSenderBalance) = addUInt(senderBalance, senderInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "net sender balance calculation error");
 
         /*
-         * We switch from cToken to underlying and vice-versa for several times. When we truncate an Exp,
-         * the point values after 1e18 to the right are lost. We truncate `senderInterest`, `recipientInterest`
-         * and `sablierInterest`, so the sum of `senderBalance`, `recipientBalance` and `sablierInterest` ends up
-         * not being equal to`stream.balance`. We fix this by making `sablierInterest` the difference
-         * between `stream.balance` and (`senderBalance` + `recipientBalance`).
+         * Calculate the net withdrawal amount by subtracting `senderInterest` and `sablierInterest`.
+         * Because the decimal points are lost when we truncate Exp variables, the recipient will earn
+         * `recipientInterest` + a tiny weeny amount of interest, max 2e-8 in ctoken terms.
          */
-        (vars.mathErr, vars.senderAndRecipientBalanceSum) = addUInt(vars.senderBalance, vars.recipientBalance);
-        require(vars.mathErr == MathError.NO_ERROR, "sender and recipient balance sum calculation error");
-        (vars.mathErr, vars.sablierInterest) = subUInt(stream.balance, vars.senderAndRecipientBalanceSum);
-        require(vars.mathErr == MathError.NO_ERROR, "sablier interest calculation error");
+        (vars.mathErr, vars.recipientBalanceWithoutSenderInterest) = subUInt(recipientBalance, senderInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "recipient balance without sender interest calculation error");
+        (vars.mathErr, vars.netRecipientBalance) = subUInt(vars.recipientBalanceWithoutSenderInterest, sablierInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "net recipient balance calculation error");
 
         /*
-         * Add the sablier interest to the earnings for this cToken.
+         * Add the sablier interest to the earnings attributed to this cToken.
          */
-        (vars.mathErr, earnings[stream.tokenAddress]) = addUInt(earnings[stream.tokenAddress], vars.sablierInterest);
+        (vars.mathErr, earnings[stream.tokenAddress]) = addUInt(earnings[stream.tokenAddress], sablierInterest);
         require(vars.mathErr == MathError.NO_ERROR, "earnings addition calculation error");
 
         /*
-         * Delete the objects from storage if the balance has been depleted to 0.
+         * Delete the objects from storage.
          */
         delete streams[streamId];
         delete compoundingStreamsVars[streamId];
@@ -888,12 +779,21 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
          * Transfer the tokens to the sender and the recipient.
          */
         IERC20 token = IERC20(stream.tokenAddress);
-        if (vars.senderBalance > 0)
-            require(token.transfer(stream.sender, vars.senderBalance), "sender token transfer failure");
-        if (vars.recipientBalance > 0)
-            require(token.transfer(stream.recipient, vars.recipientBalance), "recipient token transfer failure");
+        if (vars.netSenderBalance > 0)
+            require(token.transfer(stream.sender, vars.netSenderBalance), "sender token transfer failure");
+        if (vars.netRecipientBalance > 0)
+            require(token.transfer(stream.recipient, vars.netRecipientBalance), "recipient token transfer failure");
 
-        emit CancelStream(streamId, stream.sender, stream.recipient, vars.senderBalance, vars.recipientBalance);
-        emit PayInterest(streamId, senderInterest, recipientInterest, vars.sablierInterest);
+        emit CancelStream(streamId, stream.sender, stream.recipient, vars.netSenderBalance, vars.netRecipientBalance);
+        emit PayInterest(streamId, senderInterest, recipientInterest, sablierInterest);
+
+        // emit DebugCancelCompoundingStreamInternalV2(
+        //     senderBalance,
+        //     recipientBalance,
+        //     vars.netSenderBalance,
+        //     vars.netRecipientBalance,
+        //     sablierInterest
+        // );
+
     }
 }

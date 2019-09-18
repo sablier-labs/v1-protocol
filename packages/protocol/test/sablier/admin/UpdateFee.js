@@ -24,7 +24,7 @@ function shouldBehaveLikeUpdateFee(alice, eve) {
     describe("when the fee is not a valid percentage", function() {
       it("reverts", async function() {
         const newFee = new BigNumber(110);
-        await truffleAssert.reverts(this.sablier.updateFee(newFee, opts), "new fee higher than 100%");
+        await truffleAssert.reverts(this.sablier.updateFee(newFee, opts), "fee percentage higher than 100%");
       });
     });
   });
