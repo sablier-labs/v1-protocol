@@ -180,6 +180,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      */
     function takeEarnings(address tokenAddress, uint256 amount) external nonReentrant onlyOwner {
         require(cTokens[tokenAddress], "cToken is not whitelisted");
+        require(amount > 0, "amount is zero");
         require(earnings[tokenAddress] >= amount, "amount exceeds the available balance");
 
         TakeEarningsLocalVars memory vars;
