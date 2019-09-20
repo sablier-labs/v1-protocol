@@ -30,7 +30,7 @@ function shouldBehaveLikeCreateSalary(alice, bob) {
       });
 
       beforeEach(async function() {
-        await this.token.approve(this.payroll.address, STANDARD_SALARY.toString(10), opts);
+        await this.token.approve(this.payroll.address, salary, opts);
       });
 
       it("creates the salary", async function() {
@@ -45,32 +45,30 @@ function shouldBehaveLikeCreateSalary(alice, bob) {
         );
         // We have to force-call the `getSalary` method via the web3.eth.Contract api, otherwise
         // solidity-coverage will turn it into a state-changing method
-        const onchainSalary = await this.payroll.contract.methods
-          .getSalary(Number(result.logs[0].args.salaryId))
-          .call();
-        onchainSalary.company.should.be.equal(company);
-        onchainSalary.employee.should.be.equal(employee);
-        onchainSalary.salary.should.be.bignumber.equal(salary);
-        onchainSalary.tokenAddress.should.be.equal(this.token.address);
-        onchainSalary.startTime.should.be.bignumber.equal(startTime);
-        onchainSalary.stopTime.should.be.bignumber.equal(stopTime);
-        onchainSalary.balance.should.be.bignumber.equal(salary);
-        onchainSalary.rate.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND);
-        onchainSalary.isCompounding.should.be.equal(false);
+        const salaryObject = await this.payroll.contract.methods.getSalary(Number(result.logs[0].args.salaryId)).call();
+        salaryObject.company.should.be.equal(company);
+        salaryObject.employee.should.be.equal(employee);
+        salaryObject.salary.should.be.bignumber.equal(salary);
+        salaryObject.tokenAddress.should.be.equal(this.token.address);
+        salaryObject.startTime.should.be.bignumber.equal(startTime);
+        salaryObject.stopTime.should.be.bignumber.equal(stopTime);
+        salaryObject.balance.should.be.bignumber.equal(salary);
+        salaryObject.rate.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND);
+        salaryObject.isCompounding.should.be.equal(false);
       });
 
-      it("increases the token balance", async function() {
+      it("transfers the tokens", async function() {
         const balance = await this.token.balanceOf(company);
         await this.payroll.createSalary(employee, salary, this.token.address, startTime, stopTime, isCompounding, opts);
         const newBalance = await this.token.balanceOf(company);
-        balance.should.be.bignumber.equal(newBalance.plus(STANDARD_SALARY));
+        newBalance.should.be.bignumber.equal(balance.minus(salary));
       });
 
-      it("increases the salary next id", async function() {
+      it("increases the next salary id", async function() {
         const nextSalaryId = await this.payroll.nextSalaryId();
         await this.payroll.createSalary(employee, salary, this.token.address, startTime, stopTime, isCompounding, opts);
         const newNextSalaryId = await this.payroll.nextSalaryId();
-        nextSalaryId.should.be.bignumber.equal(newNextSalaryId.minus(1));
+        newNextSalaryId.should.be.bignumber.equal(nextSalaryId.plus(1));
       });
 
       it("emits an createsalary event", async function() {
@@ -137,7 +135,7 @@ function shouldBehaveLikeCreateSalary(alice, bob) {
 
     describe("when the token contract is non-compliant", function() {
       beforeEach(async function() {
-        await this.nonStandardERC20Token.nonStandardApprove(this.payroll.address, STANDARD_SALARY.toString(10), opts);
+        await this.nonStandardERC20Token.nonStandardApprove(this.payroll.address, salary, opts);
       });
 
       it("reverts", async function() {
