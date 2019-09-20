@@ -3,7 +3,6 @@ const BigNumber = require("bignumber.js");
 const STANDARD_SALARY = new BigNumber(3600).multipliedBy(1e18);
 
 module.exports = {
-  EXCHANGE_RATE_BLOCK_DELTA: new BigNumber(1e24),
   FIVE_UNITS: new BigNumber(5).multipliedBy(1e18),
   FIVE_UNITS_CTOKEN: new BigNumber(5).multipliedBy(1e8),
   GAS_LIMIT: 6721975,
@@ -24,6 +23,7 @@ module.exports = {
   STANDARD_TIME_DELTA: new BigNumber(3600),
   STANDARD_TIME_OFFSET: new BigNumber(300),
   STANDARD_SENDER_SHARE_PERCENTAGE: new BigNumber(50),
+  STANDARD_SUPPLY_AMOUNT: STANDARD_SALARY.multipliedBy(0.1),
   STANDARD_WITHDRAWAL: new BigNumber(1).multipliedBy(1e18),
   ZERO_ADDRESS: "0x0000000000000000000000000000000000000000",
 };
