@@ -1,325 +1,167 @@
-const { devConstants } = require("@sablier/dev-utils");
+const { devConstants, mochaContexts } = require("@sablier/dev-utils");
 const BigNumber = require("bignumber.js");
 const dayjs = require("dayjs");
-const traveler = require("ganache-time-traveler");
 const truffleAssert = require("truffle-assertions");
 
+const { contextForStreamDidEnd, contextForStreamDidStartButNotEnd } = mochaContexts;
 const { FIVE_UNITS, STANDARD_SALARY, STANDARD_SCALE, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA } = devConstants;
 
-function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
+function runTests() {
+  describe("when the withdrawal amount is higher than 0", function() {
+    describe("when the stream did not start", function() {
+      const amount = FIVE_UNITS;
+
+      it("reverts", async function() {
+        await truffleAssert.reverts(
+          this.sablier.withdrawFromStream(this.streamId, amount, this.opts),
+          "amount exceeds the available balance",
+        );
+      });
+    });
+
+    contextForStreamDidStartButNotEnd(function() {
+      describe("when the withdrawal amount does not exceed the available balance", function() {
+        const amount = FIVE_UNITS.toString(10);
+
+        it("withdraws from the stream", async function() {
+          const balance = await this.token.balanceOf(this.recipient);
+          await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
+          const newBalance = await this.token.balanceOf(this.recipient);
+          newBalance.should.be.bignumber.equal(balance.plus(FIVE_UNITS));
+        });
+
+        it("emits a withdrawfromstream event", async function() {
+          const result = await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
+          truffleAssert.eventEmitted(result, "WithdrawFromStream");
+        });
+
+        it("decreases the stream balance", async function() {
+          const balance = await this.sablier.balanceOf(this.streamId, this.recipient, this.opts);
+          await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
+          const newBalance = await this.sablier.balanceOf(this.streamId, this.recipient, this.opts);
+          // TODO: add note for why we have to tolerate the block time variation *by addition*
+          newBalance.should.tolerateTheBlockTimeVariation(balance.minus(amount), STANDARD_SCALE);
+        });
+      });
+
+      describe("when the withdrawal amount exceeds the available balance", function() {
+        const amount = FIVE_UNITS.multipliedBy(2).toString(10);
+
+        it("reverts", async function() {
+          await truffleAssert.reverts(
+            this.sablier.withdrawFromStream(this.streamId, amount, this.opts),
+            "amount exceeds the available balance",
+          );
+        });
+      });
+    });
+
+    contextForStreamDidEnd(function() {
+      describe("when the withdrawal amount does not exceed the available balance", function() {
+        describe("when the balance is not withdrawn in full", function() {
+          const amount = STANDARD_SALARY.dividedBy(2).toString(10);
+
+          it("withdraws from the stream", async function() {
+            const balance = await this.token.balanceOf(this.recipient);
+            await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
+            const newBalance = await this.token.balanceOf(this.recipient);
+            newBalance.should.be.bignumber.equal(balance.plus(amount));
+          });
+
+          it("emits a withdrawfromstream event", async function() {
+            const result = await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
+            truffleAssert.eventEmitted(result, "WithdrawFromStream");
+          });
+
+          it("decreases the stream balance", async function() {
+            const balance = await this.sablier.balanceOf(this.streamId, this.recipient);
+            await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
+            const newBalance = await this.sablier.balanceOf(this.streamId, this.recipient);
+            newBalance.should.be.bignumber.equal(balance.minus(amount));
+          });
+        });
+
+        describe("when the balance is withdrawn in full", function() {
+          const amount = STANDARD_SALARY.toString(10);
+
+          it("withdraws from the stream", async function() {
+            const balance = await this.token.balanceOf(this.recipient);
+            await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
+            const newBalance = await this.token.balanceOf(this.recipient);
+            newBalance.should.be.bignumber.equal(balance.plus(amount));
+          });
+
+          it("emits a withdrawfromstream event", async function() {
+            const result = await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
+            truffleAssert.eventEmitted(result, "WithdrawFromStream");
+          });
+
+          it("deletes the stream object", async function() {
+            await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
+            await truffleAssert.reverts(this.sablier.getStream(this.streamId), "stream does not exist");
+          });
+        });
+      });
+
+      describe("when the withdrawal amount exceeds the available balance", function() {
+        const amount = STANDARD_SALARY.plus(FIVE_UNITS).toString(10);
+
+        it("reverts", async function() {
+          await truffleAssert.reverts(
+            this.sablier.withdrawFromStream(this.streamId, amount, this.opts),
+            "amount exceeds the available balance",
+          );
+        });
+      });
+    });
+  });
+
+  describe("when the withdrawal amount is zero", function() {
+    it("reverts", async function() {
+      const amount = new BigNumber(0).toString(10);
+      await truffleAssert.reverts(this.sablier.withdrawFromStream(this.streamId, amount, this.opts), "amount is zero");
+    });
+  });
+}
+
+function shouldBehaveLikeERC1620WithdrawFromStream(alice, bob, eve) {
   const now = new BigNumber(dayjs().unix());
 
   describe("when the stream exists", function() {
-    let streamId;
-    const sender = alice;
-    const recipient = bob;
-    const deposit = STANDARD_SALARY.toString(10);
     const startTime = now.plus(STANDARD_TIME_OFFSET);
     const stopTime = startTime.plus(STANDARD_TIME_DELTA);
 
     beforeEach(async function() {
-      const opts = { from: sender };
-      await this.token.approve(this.sablier.address, deposit, opts);
-      const result = await this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts);
-      streamId = Number(result.logs[0].args.streamId);
+      this.sender = alice;
+      this.recipient = bob;
+      this.deposit = STANDARD_SALARY.toString(10);
+      const opts = { from: this.sender };
+      await this.token.approve(this.sablier.address, this.deposit, opts);
+      const result = await this.sablier.createStream(
+        this.recipient,
+        this.deposit,
+        this.token.address,
+        startTime,
+        stopTime,
+        opts,
+      );
+      this.streamId = Number(result.logs[0].args.streamId);
     });
 
     describe("when the caller is the sender of the stream", function() {
-      const opts = { from: sender };
-
-      describe("when the withdrawal amount is higher than 0", function() {
-        describe("when the stream did not start", function() {
-          const amount = FIVE_UNITS;
-
-          it("reverts", async function() {
-            await truffleAssert.reverts(
-              this.sablier.withdrawFromStream(streamId, amount, opts),
-              "amount exceeds the available balance",
-            );
-          });
-        });
-
-        describe("when the stream did start but not end", function() {
-          beforeEach(async function() {
-            await traveler.advanceBlockAndSetTime(
-              now
-                .plus(STANDARD_TIME_OFFSET)
-                .plus(5)
-                .toNumber(),
-            );
-          });
-
-          describe("when the withdrawal amount does not exceed the available balance", function() {
-            const amount = FIVE_UNITS.toString(10);
-
-            it("withdraws from the stream", async function() {
-              const balance = await this.token.balanceOf(recipient);
-              await this.sablier.withdrawFromStream(streamId, amount, opts);
-              const newBalance = await this.token.balanceOf(recipient);
-              newBalance.should.be.bignumber.equal(balance.plus(FIVE_UNITS));
-            });
-
-            it("emits a withdrawfromstream event", async function() {
-              const result = await this.sablier.withdrawFromStream(streamId, amount, opts);
-              truffleAssert.eventEmitted(result, "WithdrawFromStream");
-            });
-
-            it("decreases the stream balance", async function() {
-              const balance = await this.sablier.balanceOf(streamId, recipient);
-              await this.sablier.withdrawFromStream(streamId, amount, opts);
-              const newBalance = await this.sablier.balanceOf(streamId, recipient);
-              const tolerateByAddition = false;
-              newBalance.should.tolerateTheBlockTimeVariation(
-                balance.minus(amount),
-                STANDARD_SCALE,
-                tolerateByAddition,
-              );
-            });
-          });
-
-          describe("when the withdrawal amount exceeds the available balance", function() {
-            const amount = FIVE_UNITS.multipliedBy(2).toString(10);
-
-            it("reverts", async function() {
-              await truffleAssert.reverts(
-                this.sablier.withdrawFromStream(streamId, amount, opts),
-                "amount exceeds the available balance",
-              );
-            });
-          });
-
-          afterEach(async function() {
-            await traveler.advanceBlockAndSetTime(now.toNumber());
-          });
-        });
-
-        describe("when the stream did end", function() {
-          beforeEach(async function() {
-            await traveler.advanceBlockAndSetTime(
-              now
-                .plus(STANDARD_TIME_OFFSET)
-                .plus(STANDARD_TIME_DELTA)
-                .plus(5)
-                .toNumber(),
-            );
-          });
-
-          describe("when the withdrawal amount does not exceed the available balance", function() {
-            describe("when the balance is not withdrawn in full", function() {
-              const amount = STANDARD_SALARY.dividedBy(2).toString(10);
-
-              it("withdraws from the stream", async function() {
-                const balance = await this.token.balanceOf(recipient);
-                await this.sablier.withdrawFromStream(streamId, amount, opts);
-                const newBalance = await this.token.balanceOf(recipient);
-                newBalance.should.be.bignumber.equal(balance.plus(amount));
-              });
-
-              it("emits a withdrawfromstream event", async function() {
-                const result = await this.sablier.withdrawFromStream(streamId, amount, opts);
-                truffleAssert.eventEmitted(result, "WithdrawFromStream");
-              });
-
-              it("decreases the stream balance", async function() {
-                const balance = await this.sablier.balanceOf(streamId, recipient);
-                await this.sablier.withdrawFromStream(streamId, amount, opts);
-                const newBalance = await this.sablier.balanceOf(streamId, recipient);
-                newBalance.should.be.bignumber.equal(balance.minus(amount));
-              });
-            });
-
-            describe("when the balance is withdrawn in full", function() {
-              const amount = STANDARD_SALARY.toString(10);
-
-              it("withdraws from the stream", async function() {
-                const balance = await this.token.balanceOf(recipient);
-                await this.sablier.withdrawFromStream(streamId, amount, opts);
-                const newBalance = await this.token.balanceOf(recipient);
-                newBalance.should.be.bignumber.equal(balance.plus(amount));
-              });
-
-              it("emits a withdrawfromstream event", async function() {
-                const result = await this.sablier.withdrawFromStream(streamId, amount, opts);
-                truffleAssert.eventEmitted(result, "WithdrawFromStream");
-              });
-
-              it("deletes the stream object", async function() {
-                await this.sablier.withdrawFromStream(streamId, amount, opts);
-                await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
-              });
-            });
-          });
-
-          describe("when the withdrawal amount exceeds the available balance", function() {
-            const amount = STANDARD_SALARY.plus(FIVE_UNITS).toString(10);
-
-            it("reverts", async function() {
-              await truffleAssert.reverts(
-                this.sablier.withdrawFromStream(streamId, amount, opts),
-                "amount exceeds the available balance",
-              );
-            });
-          });
-
-          afterEach(async function() {
-            await traveler.advanceBlockAndSetTime(now.toNumber());
-          });
-        });
+      beforeEach(function() {
+        this.opts = { from: this.sender };
       });
 
-      describe("when the withdrawal amount is zero", function() {
-        it("reverts", async function() {
-          const amount = new BigNumber(0).toString(10);
-          await truffleAssert.reverts(this.sablier.withdrawFromStream(streamId, amount, opts), "amount is zero");
-        });
-      });
+      runTests();
     });
 
     describe("when the caller is the recipient of the stream", function() {
-      const opts = { from: recipient };
-
-      describe("when the withdrawal amount is higher than 0", function() {
-        describe("when the stream did not start", function() {
-          it("reverts", async function() {
-            await truffleAssert.reverts(
-              this.sablier.withdrawFromStream(streamId, FIVE_UNITS, opts),
-              "amount exceeds the available balance",
-            );
-          });
-        });
-
-        describe("when the stream did start but not end", function() {
-          beforeEach(async function() {
-            await traveler.advanceBlockAndSetTime(
-              now
-                .plus(STANDARD_TIME_OFFSET)
-                .plus(5)
-                .toNumber(),
-            );
-          });
-
-          describe("when the withdrawal amount does not exceed the available balance", function() {
-            it("withdraws from the stream", async function() {
-              const balance = await this.token.balanceOf(recipient);
-              await this.sablier.withdrawFromStream(streamId, FIVE_UNITS, opts);
-              const newBalance = await this.token.balanceOf(recipient);
-              newBalance.should.be.bignumber.equal(balance.plus(FIVE_UNITS));
-            });
-
-            it("emits a withdrawfromstream event", async function() {
-              const result = await this.sablier.withdrawFromStream(streamId, FIVE_UNITS, opts);
-              truffleAssert.eventEmitted(result, "WithdrawFromStream");
-            });
-
-            it("decreases the stream balance", async function() {
-              const balance = await this.sablier.balanceOf(streamId, recipient);
-              await this.sablier.withdrawFromStream(streamId, FIVE_UNITS, opts);
-              const newBalance = await this.sablier.balanceOf(streamId, recipient);
-              const tolerateByAddition = false;
-              newBalance.should.tolerateTheBlockTimeVariation(
-                balance.minus(FIVE_UNITS),
-                STANDARD_SCALE,
-                tolerateByAddition,
-              );
-            });
-          });
-
-          describe("when the withdrawal amount exceeds the available balance", function() {
-            const amount = FIVE_UNITS.multipliedBy(2).toString(10);
-
-            it("reverts", async function() {
-              await truffleAssert.reverts(
-                this.sablier.withdrawFromStream(streamId, amount, opts),
-                "amount exceeds the available balance",
-              );
-            });
-          });
-
-          afterEach(async function() {
-            await traveler.advanceBlockAndSetTime(now.toNumber());
-          });
-        });
-
-        describe("when the stream did end", function() {
-          beforeEach(async function() {
-            await traveler.advanceBlockAndSetTime(
-              now
-                .plus(STANDARD_TIME_OFFSET)
-                .plus(STANDARD_TIME_DELTA)
-                .plus(5)
-                .toNumber(),
-            );
-          });
-
-          describe("when the withdrawal amount does not exceed the available balance", function() {
-            describe("when the balance is withdrawn in full", function() {
-              const amount = STANDARD_SALARY.toString(10);
-
-              it("withdraws from the stream", async function() {
-                const balance = await this.token.balanceOf(recipient);
-                await this.sablier.withdrawFromStream(streamId, amount, opts);
-                const newBalance = await this.token.balanceOf(recipient);
-                newBalance.should.be.bignumber.equal(balance.plus(amount));
-              });
-
-              it("emits a withdrawfromstream event", async function() {
-                const result = await this.sablier.withdrawFromStream(streamId, amount, opts);
-                truffleAssert.eventEmitted(result, "WithdrawFromStream");
-              });
-
-              it("deletes the stream object", async function() {
-                await this.sablier.withdrawFromStream(streamId, amount, opts);
-                await truffleAssert.reverts(this.sablier.getStream(streamId), "stream does not exist");
-              });
-            });
-
-            describe("when the balance is not withdrawn in full", function() {
-              const amount = STANDARD_SALARY.dividedBy(2).toString(10);
-
-              it("withdraws from the stream", async function() {
-                const balance = await this.token.balanceOf(recipient);
-                await this.sablier.withdrawFromStream(streamId, amount, opts);
-                const newBalance = await this.token.balanceOf(recipient);
-                newBalance.should.be.bignumber.equal(balance.plus(amount));
-              });
-
-              it("emits a withdrawfromstream event", async function() {
-                const result = await this.sablier.withdrawFromStream(streamId, amount, opts);
-                truffleAssert.eventEmitted(result, "WithdrawFromStream");
-              });
-
-              it("decreases the stream balance", async function() {
-                const balance = await this.sablier.balanceOf(streamId, recipient);
-                await this.sablier.withdrawFromStream(streamId, amount, opts);
-                const newBalance = await this.sablier.balanceOf(streamId, recipient);
-                newBalance.should.be.bignumber.equal(balance.minus(amount));
-              });
-            });
-          });
-
-          describe("when the withdrawal amount exceeds the available balance", function() {
-            const amount = STANDARD_SALARY.plus(FIVE_UNITS).toString(10);
-
-            it("reverts", async function() {
-              await truffleAssert.reverts(
-                this.sablier.withdrawFromStream(streamId, amount, opts),
-                "amount exceeds the available balance",
-              );
-            });
-          });
-
-          afterEach(async function() {
-            await traveler.advanceBlockAndSetTime(now.toNumber());
-          });
-        });
+      beforeEach(function() {
+        this.opts = { from: this.recipient };
       });
 
-      describe("when the withdrawal amount is zero", function() {
-        it("reverts", async function() {
-          const amount = new BigNumber(0).toString(10);
-          await truffleAssert.reverts(this.sablier.withdrawFromStream(streamId, amount, opts), "amount is zero");
-        });
-      });
+      runTests();
     });
 
     describe("when the caller is not the sender or the recipient of the stream", function() {
@@ -327,7 +169,7 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
 
       it("reverts", async function() {
         await truffleAssert.reverts(
-          this.sablier.withdrawFromStream(streamId, FIVE_UNITS, opts),
+          this.sablier.withdrawFromStream(this.streamId, FIVE_UNITS, opts),
           "caller is not the sender or the recipient of the stream",
         );
       });
@@ -345,4 +187,4 @@ function shouldBehaveLikeERC1620Withdraw(alice, bob, eve) {
   });
 }
 
-module.exports = shouldBehaveLikeERC1620Withdraw;
+module.exports = shouldBehaveLikeERC1620WithdrawFromStream;

@@ -57,9 +57,9 @@ function shouldBehaveLikeERC1620Stream(alice, bob) {
                 });
 
                 it("transfers the tokens", async function() {
-                  const balance = await this.token.balanceOf(sender);
+                  const balance = await this.token.balanceOf(sender, opts);
                   await this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts);
-                  const newBalance = await this.token.balanceOf(sender);
+                  const newBalance = await this.token.balanceOf(sender, opts);
                   newBalance.should.be.bignumber.equal(balance.minus(STANDARD_SALARY));
                 });
 

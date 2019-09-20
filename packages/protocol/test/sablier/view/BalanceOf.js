@@ -1,10 +1,10 @@
-const { devConstants } = require("@sablier/dev-utils");
+const { devConstants, mochaContexts } = require("@sablier/dev-utils");
 const BigNumber = require("bignumber.js");
 const dayjs = require("dayjs");
-const traveler = require("ganache-time-traveler");
 const truffleAssert = require("truffle-assertions");
 
 const { FIVE_UNITS, STANDARD_SALARY, STANDARD_SCALE, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA } = devConstants;
+const { contextForStreamDidEnd, contextForStreamDidStartButNotEnd } = mochaContexts;
 
 function shouldBehaveLikeBalanceOf(alice, bob, carol) {
   const sender = alice;
@@ -41,17 +41,8 @@ function shouldBehaveLikeBalanceOf(alice, bob, carol) {
       });
     });
 
-    describe("when the stream did start but not end", function() {
+    contextForStreamDidStartButNotEnd(function() {
       const amount = FIVE_UNITS;
-
-      beforeEach(async function() {
-        await traveler.advanceBlockAndSetTime(
-          now
-            .plus(STANDARD_TIME_OFFSET)
-            .plus(5)
-            .toNumber(),
-        );
-      });
 
       it("returns the pro rata balance for the sender of the stream", async function() {
         const balance = await this.sablier.balanceOf(streamId, sender, opts);
@@ -68,23 +59,9 @@ function shouldBehaveLikeBalanceOf(alice, bob, carol) {
         const balance = await this.sablier.balanceOf(streamId, carol, opts);
         balance.should.be.bignumber.equal(new BigNumber(0));
       });
-
-      afterEach(async function() {
-        await traveler.advanceBlockAndSetTime(now.toNumber());
-      });
     });
 
-    describe("when the stream did end", function() {
-      beforeEach(async function() {
-        await traveler.advanceBlockAndSetTime(
-          now
-            .plus(STANDARD_TIME_OFFSET)
-            .plus(STANDARD_TIME_DELTA)
-            .plus(5)
-            .toNumber(),
-        );
-      });
-
+    contextForStreamDidEnd(function() {
       it("returns 0 for the sender of the stream", async function() {
         const balance = await this.sablier.balanceOf(streamId, sender, opts);
         balance.should.be.bignumber.equal(new BigNumber(0));
@@ -98,10 +75,6 @@ function shouldBehaveLikeBalanceOf(alice, bob, carol) {
       it("returns 0 for anyone else", async function() {
         const balance = await this.sablier.balanceOf(streamId, carol, opts);
         balance.should.be.bignumber.equal(new BigNumber(0));
-      });
-
-      afterEach(async function() {
-        await traveler.advanceBlockAndSetTime(now.toNumber());
       });
     });
   });

@@ -1,10 +1,10 @@
-const { devConstants } = require("@sablier/dev-utils");
+const { devConstants, mochaContexts } = require("@sablier/dev-utils");
 const BigNumber = require("bignumber.js");
 const dayjs = require("dayjs");
-const traveler = require("ganache-time-traveler");
 const truffleAssert = require("truffle-assertions");
 
 const { STANDARD_SALARY, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA } = devConstants;
+const { contextForStreamDidEnd, contextForStreamDidStartButNotEnd } = mochaContexts;
 
 function shouldBehaveLikeDeltaOf(alice, bob) {
   const sender = alice;
@@ -31,46 +31,19 @@ function shouldBehaveLikeDeltaOf(alice, bob) {
       });
     });
 
-    describe("when the stream did start but not end", function() {
-      beforeEach(async function() {
-        await traveler.advanceBlockAndSetTime(
-          now
-            .plus(STANDARD_TIME_OFFSET)
-            .plus(5)
-            .toNumber(),
-        );
-      });
-
+    contextForStreamDidStartButNotEnd(function() {
       it("returns the time the number of seconds that passed since the start time", async function() {
         const delta = await this.sablier.deltaOf(streamId, opts);
         delta.should.bignumber.satisfy(function(num) {
           return num.isEqualTo(new BigNumber(5)) || num.isEqualTo(new BigNumber(5).plus(1));
         });
       });
-
-      afterEach(async function() {
-        await traveler.advanceBlockAndSetTime(now.toNumber());
-      });
     });
 
-    describe("when the stream did end", function() {
-      beforeEach(async function() {
-        await traveler.advanceBlockAndSetTime(
-          now
-            .plus(STANDARD_TIME_OFFSET)
-            .plus(STANDARD_TIME_DELTA)
-            .plus(5)
-            .toNumber(),
-        );
-      });
-
+    contextForStreamDidEnd(function() {
       it("returns the difference between the stop time and the start time", async function() {
         const delta = await this.sablier.deltaOf(streamId, opts);
         delta.should.be.bignumber.equal(stopTime.minus(startTime));
-      });
-
-      afterEach(async function() {
-        await traveler.advanceBlockAndSetTime(now.toNumber());
       });
     });
   });

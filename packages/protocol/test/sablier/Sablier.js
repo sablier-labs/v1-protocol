@@ -19,14 +19,14 @@ contract("Sablier", function sablier([alice, bob, carol, eve]) {
   beforeEach(async function() {
     const opts = { from: alice };
     this.token = await ERC20Mock.new(opts);
-    await this.token.mint(alice, STANDARD_SALARY.multipliedBy(2).toString(10), opts);
+    await this.token.mint(alice, STANDARD_SALARY.multipliedBy(3).toString(10), opts);
 
     this.evilToken = await EvilERC20.new(opts);
     await this.evilToken.mint(alice, STANDARD_SALARY.multipliedBy(2).toString(10), opts);
 
     const cTokenDecimals = 8;
     this.cToken = await CERC20Mock.new(this.token.address, INITIAL_EXCHANGE_RATE.toString(10), cTokenDecimals, opts);
-    await this.token.approve(this.cToken.address, STANDARD_SALARY.multipliedBy(2).toString(10), opts);
+    await this.token.approve(this.cToken.address, STANDARD_SALARY.toString(10), opts);
     await this.cToken.mint(STANDARD_SALARY.toString(10), opts);
 
     this.nonStandardERC20Token = await NonStandardERC20.new(opts);

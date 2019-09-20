@@ -9,6 +9,7 @@ const shouldBehaveLikeBalanceOf = require("./view/BalanceOf");
 const shouldBehaveLikeDeltaOf = require("./view/DeltaOf");
 const shouldBehaveLikeGetStream = require("./view/GetStream");
 const shouldBehaveLikeGetCompoundingStreamVars = require("./view/GetCompoundingStreamVars");
+const shouldBehaveLikeInterestOf = require("./view/InterestOf");
 
 const shouldBehaveLikeERC1620CreateStream = require("./effects/stream/CreateStream");
 const shouldBehaveLikeCreateCompoundingStream = require("./effects/compoundingStream/CreateCompoundingStream");
@@ -50,12 +51,16 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
   });
 
   describe("view functions", function() {
+    describe("deltaOf", function() {
+      shouldBehaveLikeDeltaOf(alice, bob);
+    });
+
     describe("balanceOf", function() {
       shouldBehaveLikeBalanceOf(alice, bob, carol);
     });
 
-    describe("deltaOf", function() {
-      shouldBehaveLikeDeltaOf(alice, bob);
+    describe("interestOf", function() {
+      shouldBehaveLikeInterestOf(alice, bob);
     });
 
     describe("getStream", function() {
@@ -76,7 +81,7 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
       shouldBehaveLikeCreateCompoundingStream(alice, bob);
     });
 
-    describe("withdraw", function() {
+    describe("withdrawFromStream", function() {
       shouldBehaveLikeERC1620WithdrawFromStream(alice, bob, eve);
     });
 
@@ -84,7 +89,7 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
       shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob, eve);
     });
 
-    describe("cancel", function() {
+    describe("cancelStream", function() {
       shouldBehaveLikeERC1620CancelStream(alice, bob, eve);
     });
 

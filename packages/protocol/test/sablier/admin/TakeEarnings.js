@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-const { devConstants } = require("@sablier/dev-utils");
+const { devConstants, mochaContexts } = require("@sablier/dev-utils");
 const BigNumber = require("bignumber.js");
 const dayjs = require("dayjs");
 const traveler = require("ganache-time-traveler");
@@ -14,6 +14,7 @@ const {
   STANDARD_TIME_DELTA,
   STANDARD_TIME_OFFSET,
 } = devConstants;
+const { contextForStreamDidStartButNotEnd } = mochaContexts;
 
 function shouldBehaveLikeTakeEarnings(alice, bob, eve) {
   const admin = alice;
@@ -58,26 +59,18 @@ function shouldBehaveLikeTakeEarnings(alice, bob, eve) {
             for (let i = 0; i < 5; i += 1) {
               await traveler.advanceBlock();
             }
-            await traveler.advanceBlockAndSetTime(
-              now
-                .plus(STANDARD_TIME_OFFSET)
-                .plus(5)
-                .toNumber(),
-            );
           });
 
-          it("takes the earnings", async function() {
-            const withdrawalAmount = FIVE_UNITS_CTOKEN;
-            await this.sablier.withdrawFromStream(streamId, withdrawalAmount, opts);
-            const balance = await this.cToken.balanceOf(admin);
-            const earningsAmount = await this.sablier.earnings(this.cToken.address);
-            await this.sablier.takeEarnings(this.cToken.address, earningsAmount, opts);
-            const newBalance = await this.cToken.balanceOf(admin);
-            balance.should.be.bignumber.equal(newBalance.minus(earningsAmount));
-          });
-
-          afterEach(async function() {
-            await traveler.advanceBlockAndSetTime(now.toNumber());
+          contextForStreamDidStartButNotEnd(function() {
+            it("takes the earnings", async function() {
+              const withdrawalAmount = FIVE_UNITS_CTOKEN;
+              await this.sablier.withdrawFromStream(streamId, withdrawalAmount, opts);
+              const balance = await this.cToken.balanceOf(admin, opts);
+              const earningsAmount = await this.sablier.earnings(this.cToken.address);
+              await this.sablier.takeEarnings(this.cToken.address, earningsAmount, opts);
+              const newBalance = await this.cToken.balanceOf(admin, opts);
+              balance.should.be.bignumber.equal(newBalance.minus(earningsAmount));
+            });
           });
         });
 

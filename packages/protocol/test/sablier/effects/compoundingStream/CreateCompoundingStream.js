@@ -4,7 +4,6 @@ const BigNumber = require("bignumber.js");
 const truffleAssert = require("truffle-assertions");
 
 const {
-  EXCHANGE_RATE_BLOCK_DELTA,
   STANDARD_RATE_PER_SECOND_CTOKEN,
   STANDARD_RECIPIENT_SHARE_PERCENTAGE,
   STANDARD_SALARY_CTOKEN,
@@ -28,12 +27,12 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
       await this.cToken.approve(this.sablier.address, deposit, opts);
     });
 
-    describe("when shares sum up to 100", function() {
+    describe("when interest shares are valid", function() {
       const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
       const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
       it("creates the compounding stream", async function() {
-        const exchangeRateInitial = await this.cToken.exchangeRateCurrent();
+        const exchangeRateInitial = new BigNumber(await this.cToken.contract.methods.exchangeRateCurrent().call());
         const result = await this.sablier.createCompoundingStream(
           recipient,
           deposit,
@@ -44,8 +43,8 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           recipientSharePercentage,
           opts,
         );
-
         const streamId = Number(result.logs[0].args.streamId);
+
         // We have to force-call the `getStream` method via the web3.eth.Contract api, otherwise
         // solidity-coverage will turn it into a state-changing method
         const stream = await this.sablier.contract.methods.getStream(streamId).call();
@@ -60,12 +59,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
 
         // The exchange rate increased because the block number increased
         const compoundingStreamVars = await this.sablier.contract.methods.getCompoundingStreamVars(streamId).call();
-        // We have to account for variation because solidity-coverage makes the `getStream` function
-        // increase the block number, whereas in normal conditions this doesn't happen
-        compoundingStreamVars.exchangeRateInitial.should.tolerateTheBlockTimeVariation(
-          exchangeRateInitial.plus(EXCHANGE_RATE_BLOCK_DELTA),
-          new BigNumber(1e18),
-        );
+        compoundingStreamVars.exchangeRateInitial.should.be.bignumber.equal(exchangeRateInitial);
         // senderSharePercentage and recipientSharePercentage are mantissas
         compoundingStreamVars.senderSharePercentage.should.be.bignumber.equal(senderSharePercentage.multipliedBy(1e16));
         compoundingStreamVars.recipientSharePercentage.should.be.bignumber.equal(
@@ -74,7 +68,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
       });
 
       it("transfers the token", async function() {
-        const balance = await this.cToken.balanceOf(sender);
+        const balance = await this.cToken.balanceOf(sender, opts);
         await this.sablier.createCompoundingStream(
           recipient,
           deposit,
@@ -85,7 +79,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           recipientSharePercentage,
           opts,
         );
-        const newBalance = await this.cToken.balanceOf(sender);
+        const newBalance = await this.cToken.balanceOf(sender, opts);
         newBalance.should.be.bignumber.equal(balance.minus(STANDARD_SALARY_CTOKEN));
       });
 
@@ -104,7 +98,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
       });
     });
 
-    describe("when shares do not sum up to 100", function() {
+    describe("when interest shares are not valid", function() {
       const senderSharePercentage = new BigNumber(40);
       const recipientSharePercentage = new BigNumber(40);
 
