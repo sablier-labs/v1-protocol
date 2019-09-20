@@ -26,7 +26,8 @@ interface IERC1620 {
         uint256 indexed streamId,
         uint256 exchangeRate,
         uint256 senderSharePercentage,
-        uint256 recipientSharePercentage
+        uint256 recipientSharePercentage,
+        uint256 underlyingRatePerSecond
     );
 
     /**
