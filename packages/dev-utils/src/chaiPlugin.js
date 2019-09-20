@@ -20,9 +20,10 @@ module.exports = (chai, _utils) => {
   };
 
   /**
-   * Tolerate a larger set of values instead of just one. In real life, it can take up to 14 seconds
-   * for a block to be broadcast on the Ethereum network, so we have to account for this. Note that we
-   * make two assumptions:
+   * Performs a boundary check instead of an equality check. In real life circumstances, it can take up to 14 seconds
+   * for a block to be broadcast on the Ethereum network, so we have to account for this.
+   *
+   * Note that we make two assumptions:
    *
    * 1. The payment rate is 1 token/ second, which is true for all tests in this repo.
    * 2. By default, the token has 18 decimals
@@ -38,18 +39,18 @@ module.exports = (chai, _utils) => {
 
     const blockTimeAverage = new BigNumber(14).multipliedBy(scale);
     if (tolerateByAddition) {
-      const expectedCeiling = actual.plus(blockTimeAverage);
+      const expectedCeiling = expected.plus(blockTimeAverage);
 
       return this.assert(
-        expected.isGreaterThanOrEqualTo(actual) && expected.isLessThanOrEqualTo(expectedCeiling),
-        `expected ${expected.toString()} to be >= than ${actual.toString()} and <= ${expectedCeiling.toString()}`,
+        actual.isGreaterThanOrEqualTo(expected) && actual.isLessThanOrEqualTo(expectedCeiling),
+        `expected ${actual.toString()} to be >= than ${expected.toString()} and <= ${expectedCeiling.toString()}`,
       );
     } else {
-      const expectedFloor = actual.minus(blockTimeAverage);
+      const expectedFloor = expected.minus(blockTimeAverage);
 
       return this.assert(
-        expected.isLessThanOrEqualTo(actual) && expected.isGreaterThanOrEqualTo(expectedFloor),
-        `expected ${expected.toString()} to be <= than ${actual.toString()} and >= ${expectedFloor.toString()}`,
+        actual.isLessThanOrEqualTo(expected) && actual.isGreaterThanOrEqualTo(expectedFloor),
+        `expected ${actual.toString()} to be <= than ${expected.toString()} and >= ${expectedFloor.toString()}`,
       );
     }
   });
