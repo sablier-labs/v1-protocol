@@ -21,7 +21,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
   const startTime = now.plus(STANDARD_TIME_OFFSET);
   const stopTime = startTime.plus(STANDARD_TIME_DELTA);
 
-  describe("when the ctoken is whitelisted", function() {
+  describe("when the cToken is whitelisted", function() {
     beforeEach(async function() {
       await this.sablier.whitelistCToken(this.cToken.address, opts);
       await this.cToken.approve(this.sablier.address, deposit, opts);
@@ -120,7 +120,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
     });
   });
 
-  describe("when the ctoken is not whitelisted", function() {
+  describe("when the cToken is not whitelisted", function() {
     const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
     const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
@@ -136,7 +136,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           recipientSharePercentage,
           opts,
         ),
-        "ctoken is not whitelisted",
+        "cToken is not whitelisted",
       );
     });
   });

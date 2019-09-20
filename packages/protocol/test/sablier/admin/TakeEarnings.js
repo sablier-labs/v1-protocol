@@ -27,7 +27,7 @@ function shouldBehaveLikeTakeEarnings(alice, bob, eve) {
         await this.sablier.updateFee(STANDARD_SABLIER_FEE);
       });
 
-      describe("when the ctoken is whitelisted", function() {
+      describe("when the cToken is whitelisted", function() {
         beforeEach(async function() {
           await this.sablier.whitelistCToken(this.cToken.address, opts);
         });
@@ -86,13 +86,13 @@ function shouldBehaveLikeTakeEarnings(alice, bob, eve) {
         });
       });
 
-      describe("when the ctoken is not whitelisted", function() {
+      describe("when the cToken is not whitelisted", function() {
         const amount = new BigNumber(8123101);
 
         it("reverts", async function() {
           await truffleAssert.reverts(
             this.sablier.takeEarnings(this.cToken.address, amount, opts),
-            "ctoken is not whitelisted",
+            "cToken is not whitelisted",
           );
         });
       });

@@ -6,12 +6,12 @@ function shouldBehaveLikeDiscardCToken(alice, eve) {
   describe("when the caller is the admin", function() {
     const opts = { from: admin };
 
-    describe("when the ctoken is whitelisted", function() {
+    describe("when the cToken is whitelisted", function() {
       beforeEach(async function() {
         await this.sablier.whitelistCToken(this.cToken.address, opts);
       });
 
-      it("discards the ctoken", async function() {
+      it("discards the cToken", async function() {
         await this.sablier.discardCToken(this.cToken.address, opts);
         const result = await this.sablier.cTokens(this.cToken.address);
         result.should.be.equal(false);
@@ -23,9 +23,9 @@ function shouldBehaveLikeDiscardCToken(alice, eve) {
       });
     });
 
-    describe("when the ctoken is not whitelisted", function() {
+    describe("when the cToken is not whitelisted", function() {
       it("reverts", async function() {
-        await truffleAssert.reverts(this.sablier.discardCToken(this.cToken.address, opts), "ctoken is not whitelisted");
+        await truffleAssert.reverts(this.sablier.discardCToken(this.cToken.address, opts), "cToken is not whitelisted");
       });
     });
   });
