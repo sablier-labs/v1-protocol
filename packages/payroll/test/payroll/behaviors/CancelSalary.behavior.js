@@ -55,13 +55,13 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
         await this.payroll.cancelSalary(salaryId, opts);
         const newSenderBalance = await this.token.balanceOf(company);
         const newRecipientBalance = await this.token.balanceOf(employee);
-        const addTheBlockTimeAverage = false;
-        senderBalance.should.tolerateTheBlockTimeVariation(
-          newSenderBalance.minus(salary).minus(FIVE_UNITS),
+        const tolerateByAddition = false;
+        newSenderBalance.should.tolerateTheBlockTimeVariation(
+          senderBalance.minus(FIVE_UNITS).plus(salary),
           STANDARD_SCALE,
-          addTheBlockTimeAverage,
+          tolerateByAddition,
         );
-        recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(FIVE_UNITS), STANDARD_SCALE);
+        newRecipientBalance.should.tolerateTheBlockTimeVariation(recipientBalance.plus(FIVE_UNITS), STANDARD_SCALE);
       });
 
       it("deletes the salary object", async function() {
@@ -93,13 +93,13 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
         await this.payroll.cancelSalary(salaryId, opts);
         const newSenderBalance = await this.token.balanceOf(company);
         const newRecipientBalance = await this.token.balanceOf(employee);
-        const addTheBlockTimeAverage = false;
-        senderBalance.should.tolerateTheBlockTimeVariation(
-          newSenderBalance.minus(salary).plus(FIVE_UNITS),
+        const tolerateByAddition = false;
+        newSenderBalance.should.tolerateTheBlockTimeVariation(
+          senderBalance.plus(salary).minus(FIVE_UNITS),
           STANDARD_SCALE,
-          addTheBlockTimeAverage,
+          tolerateByAddition,
         );
-        recipientBalance.should.tolerateTheBlockTimeVariation(newRecipientBalance.minus(FIVE_UNITS), STANDARD_SCALE);
+        newRecipientBalance.should.tolerateTheBlockTimeVariation(recipientBalance.plus(FIVE_UNITS), STANDARD_SCALE);
       });
 
       it("deletes the salary object", async function() {

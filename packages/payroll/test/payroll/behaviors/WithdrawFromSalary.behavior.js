@@ -56,7 +56,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
           const balance = await this.token.balanceOf(employee);
           await this.payroll.withdrawFromSalary(salaryId, FIVE_UNITS, opts);
           const newBalance = await this.token.balanceOf(employee);
-          balance.should.be.bignumber.equal(newBalance.minus(FIVE_UNITS));
+          newBalance.should.be.bignumber.equal(balance.plus(FIVE_UNITS));
         });
 
         it("emits a withdrawfromsalary event", async function() {
@@ -68,7 +68,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
           const balance = await this.sablier.balanceOf(streamId, employee);
           await this.payroll.withdrawFromSalary(salaryId, FIVE_UNITS, opts);
           const newBalance = await this.sablier.balanceOf(streamId, employee);
-          balance.should.tolerateTheBlockTimeVariation(newBalance.plus(FIVE_UNITS), STANDARD_SCALE);
+          newBalance.should.tolerateTheBlockTimeVariation(balance.minus(FIVE_UNITS), STANDARD_SCALE);
         });
       });
 
@@ -102,7 +102,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
           const balance = await this.token.balanceOf(employee);
           await this.payroll.withdrawFromSalary(salaryId, FIVE_UNITS, opts);
           const newBalance = await this.token.balanceOf(employee);
-          balance.should.be.bignumber.equal(newBalance.minus(FIVE_UNITS));
+          newBalance.should.be.bignumber.equal(balance.plus(FIVE_UNITS));
         });
 
         it("emits a withdrawfromsalary event", async function() {
@@ -114,7 +114,7 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
           const balance = await this.sablier.balanceOf(streamId, employee);
           await this.payroll.withdrawFromSalary(salaryId, FIVE_UNITS, opts);
           const newBalance = await this.sablier.balanceOf(streamId, employee);
-          balance.should.tolerateTheBlockTimeVariation(newBalance.plus(FIVE_UNITS), STANDARD_SCALE);
+          newBalance.should.tolerateTheBlockTimeVariation(balance.minus(FIVE_UNITS), STANDARD_SCALE);
         });
       });
 
