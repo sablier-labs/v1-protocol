@@ -12,6 +12,7 @@ const {
   STANDARD_SABLIER_FEE,
   STANDARD_SALARY_CTOKEN,
   STANDARD_SCALE_CTOKEN,
+  STANDARD_SCALE_INTEREST,
   STANDARD_SENDER_SHARE_PERCENTAGE,
   STANDARD_SUPPLY_AMOUNT,
   STANDARD_TIME_OFFSET,
@@ -76,10 +77,13 @@ function runTests() {
         await this.sablier.cancelStream(this.streamId, this.opts);
         const newEarnings = await this.sablier.earnings(this.cToken.address);
         const newBalance = await this.cToken.balanceOf(this.sablier.address, this.opts);
+        newEarnings.should.tolerateTheBlockTimeVariation(earnings.plus(sablierInterest), STANDARD_SCALE_INTEREST);
         // The sender and the recipient's interests are included in `stream.remainingBalance`,
         // so we don't subtract them again
-        newEarnings.should.be.bignumber.equal(earnings.plus(sablierInterest));
-        newBalance.should.be.bignumber.equal(balance.minus(stream.remainingBalance).plus(sablierInterest));
+        newBalance.should.tolerateTheBlockTimeVariation(
+          balance.minus(stream.remainingBalance).plus(sablierInterest),
+          STANDARD_SCALE_INTEREST,
+        );
       });
 
       it("emits a cancelstream event", async function() {
@@ -135,8 +139,11 @@ function runTests() {
         const newBalance = await this.cToken.balanceOf(this.sablier.address, this.opts);
         // The sender and the recipient's interests are included in `stream.remainingBalance`,
         // so we don't subtract them again
-        newEarnings.should.be.bignumber.equal(earnings.plus(sablierInterest));
-        newBalance.should.be.bignumber.equal(balance.minus(stream.remainingBalance).plus(sablierInterest));
+        newEarnings.should.tolerateTheBlockTimeVariation(earnings.plus(sablierInterest), STANDARD_SCALE_INTEREST);
+        newBalance.should.tolerateTheBlockTimeVariation(
+          balance.minus(stream.remainingBalance).plus(sablierInterest),
+          STANDARD_SCALE_INTEREST,
+        );
       });
 
       it("emits a cancelstream event", async function() {

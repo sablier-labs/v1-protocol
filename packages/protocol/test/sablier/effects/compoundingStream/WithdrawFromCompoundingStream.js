@@ -9,6 +9,7 @@ const {
   STANDARD_SABLIER_FEE,
   STANDARD_SALARY_CTOKEN,
   STANDARD_SCALE_CTOKEN,
+  STANDARD_SCALE_INTEREST,
   STANDARD_SENDER_SHARE_PERCENTAGE,
   STANDARD_SUPPLY_AMOUNT,
   STANDARD_TIME_OFFSET,
@@ -71,11 +72,13 @@ function runTests() {
       await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
       const newEarnings = await this.sablier.earnings(this.cToken.address);
       const newBalance = await this.cToken.balanceOf(this.sablier.address, this.opts);
-
       // The sender and the recipient's interests are included in `amount`,
       // so we don't subtract them again
-      newEarnings.should.be.bignumber.equal(earnings.plus(sablierInterest));
-      newBalance.should.be.bignumber.equal(balance.minus(amount).plus(sablierInterest));
+      newEarnings.should.tolerateTheBlockTimeVariation(earnings.plus(sablierInterest), STANDARD_SCALE_INTEREST);
+      newBalance.should.tolerateTheBlockTimeVariation(
+        balance.minus(amount).plus(sablierInterest),
+        STANDARD_SCALE_INTEREST,
+      );
     });
 
     it("emits a withdrawfromstream event", async function() {
@@ -140,11 +143,13 @@ function runTests() {
       await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
       const newEarnings = await this.sablier.earnings(this.cToken.address);
       const newBalance = await this.cToken.balanceOf(this.sablier.address, this.opts);
-
       // The sender and the recipient's interests are included in `amount`,
       // so we don't subtract them again
-      newEarnings.should.be.bignumber.equal(earnings.plus(sablierInterest));
-      newBalance.should.be.bignumber.equal(balance.minus(amount).plus(sablierInterest));
+      newEarnings.should.tolerateTheBlockTimeVariation(earnings.plus(sablierInterest), STANDARD_SCALE_INTEREST);
+      newBalance.should.tolerateTheBlockTimeVariation(
+        balance.minus(amount).plus(sablierInterest),
+        STANDARD_SCALE_INTEREST,
+      );
     });
 
     it("emits a withdrawfromstream event", async function() {
