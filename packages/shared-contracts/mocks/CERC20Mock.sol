@@ -57,30 +57,6 @@ contract CERC20Mock is TokenErrorReporter, ERC20 {
     /*** User Interface ***/
 
     /**
-     * @notice Sender supplies assets into the market and receives cTokens in exchange
-     * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param mintAmount The amount of the underlying asset to supply
-     * @return true=success, otherwise a failure
-     */
-    function mint(uint256 mintAmount) external returns (bool) {
-        uint256 mintedTokens = (mintAmount.mul(1e18)).div(exchangeRateCurrent());
-        _mint(msg.sender, mintedTokens);
-        return EIP20Interface(underlying).transferFrom(msg.sender, address(this), mintAmount);
-    }
-
-    /**
-     * @notice Sender redeems cTokens in exchange for a specified amount of underlying asset
-     * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemAmount The amount of underlying to redeem
-     * @return true=success, otherwise a failure
-     */
-    function redeemUnderlying(uint256 redeemAmount) external returns (bool) {
-        uint256 redeemTokens = redeemAmount.mul(1e18).div(exchangeRateCurrent());
-        _burn(msg.sender, redeemTokens);
-        return EIP20Interface(underlying).transfer(msg.sender, redeemAmount);
-    }
-
-    /**
      * @notice Get the underlying balance of the `owner`
      * @dev This also accrues interest in a transaction
      * @param owner The address of the account to query
@@ -97,6 +73,40 @@ contract CERC20Mock is TokenErrorReporter, ERC20 {
      * @return Calculated exchange rate scaled by 1e24
      */
     function exchangeRateCurrent() public view returns (uint256) {
-        return initialExchangeRate + block.number.sub(initialBlockNumber).mul(1e24);
+        uint256 totalUnderlying = EIP20Interface(underlying).balanceOf(address(this));
+        uint256 tokenValueExp = initialExchangeRate;
+        if (totalSupply() > 0 && totalUnderlying > 0) {
+            totalUnderlying = totalUnderlying.mul(1e18);
+            tokenValueExp = totalUnderlying.div(totalSupply());
+        }
+        return tokenValueExp;
+    }
+
+    /**
+     * @notice Sender supplies assets into the market and receives cTokens in exchange
+     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @param mintAmount The amount of the underlying asset to supply
+     * @return true=success, otherwise a failure
+     */
+    function mint(uint256 mintAmount) external returns (bool) {
+        uint256 mintedTokens = (mintAmount.mul(1e18)).div(exchangeRateCurrent());
+        _mint(msg.sender, mintedTokens);
+        return EIP20Interface(underlying).transferFrom(msg.sender, address(this), mintAmount);
+    }
+
+    function supplyUnderlying(uint256 supplyAmount) external returns (bool) {
+        return EIP20Interface(underlying).transferFrom(msg.sender, address(this), supplyAmount);
+    }
+
+    /**
+     * @notice Sender redeems cTokens in exchange for a specified amount of underlying asset
+     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @param redeemAmount The amount of underlying to redeem
+     * @return true=success, otherwise a failure
+     */
+    function redeemUnderlying(uint256 redeemAmount) external returns (bool) {
+        uint256 redeemTokens = redeemAmount.mul(1e18).div(exchangeRateCurrent());
+        _burn(msg.sender, redeemTokens);
+        return EIP20Interface(underlying).transfer(msg.sender, redeemAmount);
     }
 }
