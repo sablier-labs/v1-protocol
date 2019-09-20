@@ -1,6 +1,7 @@
 const BigNumber = require("bignumber.js");
 
 const STANDARD_SALARY = new BigNumber(3600).multipliedBy(1e18);
+const STANDARD_SCALE_CTOKEN = new BigNumber(1e8);
 
 module.exports = {
   FIVE_UNITS: new BigNumber(5).multipliedBy(1e18),
@@ -16,7 +17,8 @@ module.exports = {
   STANDARD_SALARY,
   STANDARD_SALARY_CTOKEN: new BigNumber(3600).multipliedBy(1e8),
   STANDARD_SCALE: new BigNumber(1e18),
-  STANDARD_SCALE_CTOKEN: new BigNumber(1e8),
+  STANDARD_SCALE_CTOKEN,
+  STANDARD_SCALE_INTEREST: STANDARD_SCALE_CTOKEN.multipliedBy(0.1),
   STANDARD_RATE_PER_SECOND: new BigNumber(1).multipliedBy(1e18),
   STANDARD_RATE_PER_SECOND_CTOKEN: new BigNumber(1).multipliedBy(1e8),
   STANDARD_RECIPIENT_SHARE_PERCENTAGE: new BigNumber(50),
