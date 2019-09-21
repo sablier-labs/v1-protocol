@@ -95,7 +95,9 @@ function runTests() {
       const balance = await this.sablier.balanceOf(this.streamId, this.recipient, this.opts);
       await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
       const newBalance = await this.sablier.balanceOf(this.streamId, this.recipient, this.opts);
-      // TODO: add note why we have to tolerate the block time variation *by addition*
+      // Intuitively, one may say we don't have to tolerate the block time variation here.
+      // However, the Sablier balance for the recipient can only go up from the bottom
+      // low of `balance` - `amount`, due to uncontrollable runtime costs.
       newBalance.should.tolerateTheBlockTimeVariation(balance.minus(amount), STANDARD_SCALE_CTOKEN);
     });
   });
