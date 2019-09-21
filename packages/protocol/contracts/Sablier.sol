@@ -34,12 +34,12 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     /**
      * @notice Set of cTokens which can be whitelisted by the administrator.
      */
-    mapping(address => bool) public cTokens;
+    mapping(address => bool) private cTokens;
 
     /**
      * @notice The amount of interest has been accrued per token address.
      */
-    mapping(address => uint256) public earnings;
+    mapping(address => uint256) private earnings;
 
     /**
      * @notice The percentage fee charged by the contract on the accrued interest.
@@ -54,7 +54,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     /**
      * @notice The stream objects themselves.
      */
-    mapping(uint256 => Types.Stream) public streams;
+    mapping(uint256 => Types.Stream) private streams;
 
     /**
      * @notice Emits when the administrator discards a cToken.
@@ -119,24 +119,24 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      * @notice Whitelists a cToken for compounding streams.
      * @dev Throws is `cTokenAddress` is already whitelisted. Throws if
      *  the given address is not a `cToken`.
-     * @param cTokenAddress The address of the cToken to whitelist.
+     * @param tokenAddress The address of the cToken to whitelist.
      */
-    function whitelistCToken(address cTokenAddress) external onlyOwner {
-        require(!cTokens[cTokenAddress], "cToken is whitelisted");
-        require(ICERC20(cTokenAddress).isCToken(), "token is not cToken");
-        cTokens[cTokenAddress] = true;
-        emit WhitelistCToken(cTokenAddress);
+    function whitelistCToken(address tokenAddress) external onlyOwner {
+        require(!isCToken(tokenAddress), "cToken is whitelisted");
+        require(ICERC20(tokenAddress).isCToken(), "token is not cToken");
+        cTokens[tokenAddress] = true;
+        emit WhitelistCToken(tokenAddress);
     }
 
     /**
      * @notice Discards a previously whitelisted cToken.
      * @dev Throws if `cTokenAddress` has not been previously whitelisted.
-     * @param cTokenAddress The address of the cToken to discard.
+     * @param tokenAddress The address of the cToken to discard.
      */
-    function discardCToken(address cTokenAddress) external onlyOwner {
-        require(cTokens[cTokenAddress], "cToken is not whitelisted");
-        cTokens[cTokenAddress] = false;
-        emit DiscardCToken(cTokenAddress);
+    function discardCToken(address tokenAddress) external onlyOwner {
+        require(isCToken(tokenAddress), "cToken is not whitelisted");
+        cTokens[tokenAddress] = false;
+        emit DiscardCToken(tokenAddress);
     }
 
     struct UpdateFeeLocalVars {
@@ -175,11 +175,11 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     /**
      * @notice Withdraws the earnings for the given token address.
      * @dev Throws if `amount` exceeds the available blance.
-     * @param tokenAddress The address of the token contract to withdraw from.
+     * @param tokenAddress The address of the token to withdraw earnings for.
      * @param amount The amount of tokens to withdraw.
      */
     function takeEarnings(address tokenAddress, uint256 amount) external nonReentrant onlyOwner {
-        require(cTokens[tokenAddress], "cToken is not whitelisted");
+        require(isCToken(tokenAddress), "cToken is not whitelisted");
         require(amount > 0, "amount is zero");
         require(earnings[tokenAddress] >= amount, "amount exceeds the available balance");
 
@@ -201,7 +201,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      * @notice Returns the stream object with all its parameters.
      * @dev Throws if `streamId` does not point to a valid stream.
      * @param streamId The id of the stream to query.
-     * @return The stream object with all its parameters.
+     * @return The stream object.
      */
     function getStream(uint256 streamId)
         external
@@ -235,7 +235,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      * @notice Returns the compounding stream vars object with all its parameters.
      * @dev Throws if `streamId` does not point to a valid compounding stream.
      * @param streamId The id of the compounding stream to query.
-     * @return The compounding stream vars object with all its parameters.
+     * @return The compounding stream vars object.
      */
     function getCompoundingStreamVars(uint256 streamId)
         external
@@ -285,9 +285,9 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      * @dev Throws if `streamId` does not point to a valid stream.
      * @param streamId The id of the stream for whom to query the balance.
      * @param who The address for whom to query the balance.
-     * @return The total funds allocated to `who`.
+     * @return The total funds allocated to `who` as uint256.
      */
-    function balanceOf(uint256 streamId, address who) public view streamExists(streamId) returns (uint256) {
+    function balanceOf(uint256 streamId, address who) public view streamExists(streamId) returns (uint256 balance) {
         Types.Stream memory stream = streams[streamId];
         BalanceOfLocalVars memory vars;
 
@@ -340,7 +340,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     /**
      * @notice Computes the interest accrued by keeping `amount` of tokens in the contract.
      * @dev Throws if there is a math error.
-     * @return The interest accrued by the sender, the recipeint and sablier, respectively.
+     * @return The interest accrued by the sender, the recipient and sablier, respectively, as uint256s.
      */
     function interestOf(uint256 streamId, uint256 amount)
         public
@@ -419,6 +419,25 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         return (truncate(vars.senderInterest), truncate(vars.recipientInterest), truncate(vars.sablierInterest));
     }
 
+    /**
+     * @notice Checks if the given token address is one of the whitelisted cTokens.
+     * @param tokenAddress The address of the token to verify.
+     * @return bool true=it is cToken, false otherwise
+     */
+    function isCToken(address tokenAddress) public view returns (bool) {
+        return cTokens[tokenAddress];
+    }
+
+    /**
+     * @notice Returns the amount of interest that has been accrued for the given token address.
+     * @param tokenAddress The address of the token to verify.
+     * @return The amount of interest as an uint256
+     */
+    function getEarnings(address tokenAddress) external view returns (uint256 earningsForTokenAddress) {
+        require(isCToken(tokenAddress), "token address is not ctoken");
+        return earnings[tokenAddress];
+    }
+
     /*** Public Effects & Interactions Functions ***/
 
     struct CreateStreamLocalVars {
@@ -443,7 +462,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      * @param tokenAddress The ERC20 token to use as streaming currency.
      * @param startTime The unix timestamp of when the stream starts.
      * @param stopTime The unix timestamp of when the stream stops.
-     * @return the id of the newly created stream.
+     * @return The uint256 id of the newly created stream.
      */
     function createStream(address recipient, uint256 deposit, address tokenAddress, uint256 startTime, uint256 stopTime)
         public
@@ -515,7 +534,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      * @param stopTime The unix timestamp of when the stream stops.
      * @param senderSharePercentage The sender's share of the interest, as a percentage.
      * @param recipientSharePercentage The sender's share of the interest, as a percentage.
-     * @return the id of the newly created compounding stream.
+     * @return The uint256 id of the newly created compounding stream.
      */
     function createCompoundingStream(
         address recipient,
@@ -526,7 +545,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         uint256 senderSharePercentage,
         uint256 recipientSharePercentage
     ) external returns (uint256) {
-        require(cTokens[tokenAddress], "cToken is not whitelisted");
+        require(isCToken(tokenAddress), "cToken is not whitelisted");
         CreateCompoundingStreamLocalVars memory vars;
 
         /* Ensure that the interest shares sum up to 100%. */
@@ -585,7 +604,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      *  Throws if `amount` exceeds the available balance.
      * @param streamId The id of the stream to withdraw tokens from.
      * @param amount The amount of tokens to withdraw.
-     * @return bool true=success, otherwise false
+     * @return bool true=success, false otherwise
      */
     function withdrawFromStream(uint256 streamId, uint256 amount)
         external
@@ -613,7 +632,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      *  Throws if the caller is not the sender or the recipient.
      *  Throws if `amount` exceeds the available balance.
      * @param streamId The id of the stream to cancel.
-     * @return bool true=success, otherwise false
+     * @return bool true=success, false otherwise
      */
     function cancelStream(uint256 streamId)
         external
