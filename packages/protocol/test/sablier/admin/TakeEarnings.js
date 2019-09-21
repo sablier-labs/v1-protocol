@@ -65,7 +65,7 @@ function shouldBehaveLikeTakeEarnings(alice, bob, eve) {
             it("takes the earnings", async function() {
               await this.sablier.withdrawFromStream(streamId, amount, opts);
               const balance = await this.cToken.balanceOf(admin, opts);
-              const earningsAmount = await this.sablier.earnings(this.cToken.address);
+              const earningsAmount = await this.sablier.getEarnings(this.cToken.address);
               await this.sablier.takeEarnings(this.cToken.address, earningsAmount, opts);
               const newBalance = await this.cToken.balanceOf(admin, opts);
               balance.should.be.bignumber.equal(newBalance.minus(earningsAmount));

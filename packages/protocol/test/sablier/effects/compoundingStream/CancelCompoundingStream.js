@@ -68,14 +68,14 @@ function runTests() {
       });
 
       it("pays the interest to the sablier contract", async function() {
-        const earnings = await this.sablier.earnings(this.cToken.address);
+        const earnings = await this.sablier.getEarnings(this.cToken.address);
         const balance = await this.cToken.balanceOf(this.sablier.address, this.opts);
         const stream = await this.sablier.contract.methods.getStream(this.streamId).call();
         const { sablierInterest } = await this.sablier.contract.methods
           .interestOf(this.streamId, recipientBalance)
           .call();
         await this.sablier.cancelStream(this.streamId, this.opts);
-        const newEarnings = await this.sablier.earnings(this.cToken.address);
+        const newEarnings = await this.sablier.getEarnings(this.cToken.address);
         const newBalance = await this.cToken.balanceOf(this.sablier.address, this.opts);
         newEarnings.should.tolerateTheBlockTimeVariation(earnings.plus(sablierInterest), STANDARD_SCALE_INTEREST);
         // The sender and the recipient's interests are included in `stream.remainingBalance`,
@@ -128,14 +128,14 @@ function runTests() {
       });
 
       it("pays the interest to the sablier contract", async function() {
-        const earnings = await this.sablier.earnings(this.cToken.address);
+        const earnings = await this.sablier.getEarnings(this.cToken.address);
         const balance = await this.cToken.balanceOf(this.sablier.address, this.opts);
         const stream = await this.sablier.contract.methods.getStream(this.streamId).call();
         const { sablierInterest } = await this.sablier.contract.methods
           .interestOf(this.streamId, recipientBalance)
           .call();
         await this.sablier.cancelStream(this.streamId, this.opts);
-        const newEarnings = await this.sablier.earnings(this.cToken.address);
+        const newEarnings = await this.sablier.getEarnings(this.cToken.address);
         const newBalance = await this.cToken.balanceOf(this.sablier.address, this.opts);
         // The sender and the recipient's interests are included in `stream.remainingBalance`,
         // so we don't subtract them again

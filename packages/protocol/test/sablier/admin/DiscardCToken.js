@@ -13,7 +13,7 @@ function shouldBehaveLikeDiscardCToken(alice, eve) {
 
       it("discards the cToken", async function() {
         await this.sablier.discardCToken(this.cToken.address, opts);
-        const result = await this.sablier.cTokens(this.cToken.address);
+        const result = await this.sablier.isCToken(this.cToken.address);
         result.should.be.equal(false);
       });
 

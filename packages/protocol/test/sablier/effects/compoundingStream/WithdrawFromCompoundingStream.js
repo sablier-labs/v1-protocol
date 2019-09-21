@@ -66,11 +66,11 @@ function runTests() {
     });
 
     it("pays the interest to the sablier contract", async function() {
-      const earnings = await this.sablier.earnings(this.cToken.address);
+      const earnings = await this.sablier.getEarnings(this.cToken.address);
       const balance = await this.cToken.balanceOf(this.sablier.address, this.opts);
       const { sablierInterest } = await this.sablier.contract.methods.interestOf(this.streamId, amount).call();
       await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
-      const newEarnings = await this.sablier.earnings(this.cToken.address);
+      const newEarnings = await this.sablier.getEarnings(this.cToken.address);
       const newBalance = await this.cToken.balanceOf(this.sablier.address, this.opts);
       // The sender and the recipient's interests are included in `amount`,
       // so we don't subtract them again
@@ -137,11 +137,11 @@ function runTests() {
     });
 
     it("pays the interest to the sablier contract", async function() {
-      const earnings = await this.sablier.earnings(this.cToken.address);
+      const earnings = await this.sablier.getEarnings(this.cToken.address);
       const balance = await this.cToken.balanceOf(this.sablier.address, this.opts);
       const { sablierInterest } = await this.sablier.contract.methods.interestOf(this.streamId, amount).call();
       await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
-      const newEarnings = await this.sablier.earnings(this.cToken.address);
+      const newEarnings = await this.sablier.getEarnings(this.cToken.address);
       const newBalance = await this.cToken.balanceOf(this.sablier.address, this.opts);
       // The sender and the recipient's interests are included in `amount`,
       // so we don't subtract them again
