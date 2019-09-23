@@ -10,6 +10,9 @@
   "bugs": {
     "url": "https://github.com/sablierhq/sablier/issues"
   },
+  "dependencies": {
+    "@openzeppelin/contracts-ethereum-package": "2.2.3"
+  },
   "devDependencies": {
     "fixpack": "^2.3.1",
     "solc": "0.5.10",

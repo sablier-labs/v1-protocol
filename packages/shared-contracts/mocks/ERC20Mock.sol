@@ -5,7 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol
 /**
  * @title ERC20 Mock
  * @dev Mock class using ERC20
- * @author OpenZeppelin Community - <maintainers@openzeppelin.org>
+ * @author Sablier
  */
 contract ERC20Mock is ERC20 {
     /**
