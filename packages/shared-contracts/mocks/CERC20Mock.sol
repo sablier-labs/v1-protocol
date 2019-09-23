@@ -70,7 +70,7 @@ contract CERC20Mock is TokenErrorReporter, ERC20 {
 
     /**
      * @notice Accrue interest then return the up-to-date exchange rate
-     * @return Calculated exchange rate scaled by 1e24
+     * @return Calculated exchange rate scaled by 1e18
      */
     function exchangeRateCurrent() public view returns (uint256) {
         uint256 totalUnderlying = EIP20Interface(underlying).balanceOf(address(this));
@@ -94,13 +94,19 @@ contract CERC20Mock is TokenErrorReporter, ERC20 {
         return EIP20Interface(underlying).transferFrom(msg.sender, address(this), mintAmount);
     }
 
+    /**
+     * @notice Sender supplies underlying to the money market
+     * @dev This is just a mock
+     * @param supplyAmount The amount of underlying to supply
+     * @return true=success, otherwise a failure
+     */
     function supplyUnderlying(uint256 supplyAmount) external returns (bool) {
         return EIP20Interface(underlying).transferFrom(msg.sender, address(this), supplyAmount);
     }
 
     /**
      * @notice Sender redeems cTokens in exchange for a specified amount of underlying asset
-     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @dev This is just a mock
      * @param redeemAmount The amount of underlying to redeem
      * @return true=success, otherwise a failure
      */
