@@ -9,20 +9,20 @@ import "@sablier/shared-contracts/compound/Exponential.sol";
 library Types {
     struct Stream {
         uint256 deposit;
-        bool isEntity;
         uint256 ratePerSecond;
-        address recipient;
         uint256 remainingBalance;
-        address sender;
         uint256 startTime;
         uint256 stopTime;
+        address recipient;
+        address sender;
         address tokenAddress;
+        bool isEntity;
     }
 
     struct CompoundingStreamVars {
         Exponential.Exp exchangeRateInitial;
-        bool isEntity;
         Exponential.Exp senderShare;
         Exponential.Exp recipientShare;
+        bool isEntity;
     }
 }
