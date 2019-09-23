@@ -24,6 +24,5 @@ library Types {
         bool isEntity;
         Exponential.Exp senderShare;
         Exponential.Exp recipientShare;
-        Exponential.Exp underlyingRatePerSecond;
     }
 }

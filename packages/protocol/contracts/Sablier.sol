@@ -1,12 +1,13 @@
 pragma solidity 0.5.10;
 
-import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 
 import "@sablier/shared-contracts/compound/Exponential.sol";
 import "@sablier/shared-contracts/compound/TokenErrorReporter.sol";
 import "@sablier/shared-contracts/interfaces/ICERC20.sol";
+import "@sablier/shared-contracts/lifecycle/OwnableWithoutRenounce.sol";
+import "@sablier/shared-contracts/lifecycle/PausableWithoutRenounce.sol";
 
 import "./interfaces/IERC1620.sol";
 import "./Types.sol";
@@ -15,7 +16,14 @@ import "./Types.sol";
  * @title Sablier's Money Streaming
  * @author Sablier
  */
-contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorReporter {
+contract Sablier is
+    IERC1620,
+    OwnableWithoutRenounce,
+    PausableWithoutRenounce,
+    Exponential,
+    TokenErrorReporter,
+    ReentrancyGuard
+{
     /**
      * @notice In Exp terms, 1e16 is 0.01, or 1%
      */
@@ -59,7 +67,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     /**
      * @notice Emits when the administrator discards a cToken.
      */
-    event DiscardCToken(address indexed cTokenAddress);
+    event DiscardCToken(address indexed tokenAddress);
 
     /**
      * @notice Emits when the administrator discards a cToken.
@@ -79,7 +87,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     /**
      * @notice Emits when the administrator whitelists a cToken.
      */
-    event WhitelistCToken(address indexed cTokenAddress);
+    event WhitelistCToken(address indexed tokenAddress);
 
     /**
      * @dev Throws if the caller is not the sender of the recipient of the stream.
@@ -109,7 +117,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
     }
 
     constructor() public {
-        Ownable.initialize(msg.sender);
+        OwnableWithoutRenounce.initialize(msg.sender);
         nextStreamId = 1;
     }
 
@@ -242,19 +250,13 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         view
         streamExists(streamId)
         compoundingStreamVarsExist(streamId)
-        returns (
-            uint256 exchangeRateInitial,
-            uint256 senderSharePercentage,
-            uint256 recipientSharePercentage,
-            uint256 underlyingRatePerSecond
-        )
+        returns (uint256 exchangeRateInitial, uint256 senderSharePercentage, uint256 recipientSharePercentage)
     {
         Types.CompoundingStreamVars memory compoundingStreamVars = compoundingStreamsVars[streamId];
         return (
             compoundingStreamVars.exchangeRateInitial.mantissa,
             compoundingStreamVars.senderShare.mantissa,
-            compoundingStreamVars.recipientShare.mantissa,
-            compoundingStreamVars.underlyingRatePerSecond.mantissa
+            compoundingStreamVars.recipientShare.mantissa
         );
     }
 
@@ -434,7 +436,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      * @return The amount of interest as an uint256
      */
     function getEarnings(address tokenAddress) external view returns (uint256 earningsForTokenAddress) {
-        require(isCToken(tokenAddress), "token address is not ctoken");
+        require(isCToken(tokenAddress), "token is not cToken");
         return earnings[tokenAddress];
     }
 
@@ -466,6 +468,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      */
     function createStream(address recipient, uint256 deposit, address tokenAddress, uint256 startTime, uint256 stopTime)
         public
+        whenNotPaused
         returns (uint256)
     {
         require(recipient != address(0x00), "stream to the zero address");
@@ -514,7 +517,6 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         MathError mathErr;
         uint256 shareSum;
         uint256 underlyingBalance;
-        Exp underlyingRatePerSecond;
         uint256 senderShareMantissa;
         uint256 recipientShareMantissa;
     }
@@ -524,7 +526,6 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      * @dev Inherits all the security checks from `createStream`.
      *  Throws if the cToken is not whitelisted.
      *  Throws if `senderSharePercentage` and `recipientSharePercentage` do not sum up to 100.
-     *  Throws if the `underlyingRatePerSecond` calculation has a math error.
      *  Throws if the `senderSharePercentage` mantissa calculation has a math error.
      *  Throws if the `recipientSharePercentage` mantissa calculation has a math error.
      * @param recipient The account towards which the money will be streamed.
@@ -544,7 +545,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         uint256 stopTime,
         uint256 senderSharePercentage,
         uint256 recipientSharePercentage
-    ) external returns (uint256) {
+    ) external whenNotPaused returns (uint256) {
         require(isCToken(tokenAddress), "cToken is not whitelisted");
         CreateCompoundingStreamLocalVars memory vars;
 
@@ -554,11 +555,6 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         require(vars.shareSum == 100, "shares do not sum up to 100");
 
         uint256 streamId = createStream(recipient, deposit, tokenAddress, startTime, stopTime);
-
-        /* Calculate how much will be streamed per second, in the underlying equivalent. */
-        Exp memory exchangeRateCurrent = Exp({ mantissa: ICERC20(tokenAddress).exchangeRateCurrent() });
-        (vars.mathErr, vars.underlyingRatePerSecond) = mulScalar(exchangeRateCurrent, streams[streamId].ratePerSecond);
-        require(vars.mathErr == MathError.NO_ERROR, "underyling rate calculation error");
 
         /*
          * `senderSharePercentage` and `recipientSharePercentage` will be stored as mantissas, so we scale them up
@@ -579,21 +575,15 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         assert(vars.mathErr == MathError.NO_ERROR);
 
         /* Create and store the compounding stream vars. */
+        uint256 exchangeRateCurrent = ICERC20(tokenAddress).exchangeRateCurrent();
         compoundingStreamsVars[streamId] = Types.CompoundingStreamVars({
-            exchangeRateInitial: exchangeRateCurrent,
+            exchangeRateInitial: Exp({ mantissa: exchangeRateCurrent }),
             isEntity: true,
             recipientShare: Exp({ mantissa: vars.recipientShareMantissa }),
-            senderShare: Exp({ mantissa: vars.senderShareMantissa }),
-            underlyingRatePerSecond: vars.underlyingRatePerSecond
+            senderShare: Exp({ mantissa: vars.senderShareMantissa })
         });
 
-        emit CreateCompoundingStream(
-            streamId,
-            exchangeRateCurrent.mantissa,
-            senderSharePercentage,
-            recipientSharePercentage,
-            vars.underlyingRatePerSecond.mantissa
-        );
+        emit CreateCompoundingStream(streamId, exchangeRateCurrent, senderSharePercentage, recipientSharePercentage);
         return streamId;
     }
 
@@ -608,6 +598,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
      */
     function withdrawFromStream(uint256 streamId, uint256 amount)
         external
+        whenNotPaused
         nonReentrant
         streamExists(streamId)
         onlySenderOrRecipient(streamId)
@@ -666,7 +657,11 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
         Types.Stream memory stream = streams[streamId];
         WithdrawFromStreamInternalLocalVars memory vars;
         (vars.mathErr, streams[streamId].remainingBalance) = subUInt(stream.remainingBalance, amount);
-        require(vars.mathErr == MathError.NO_ERROR, "stream balance subtraction calculation error");
+        /**
+         * `subUInt` can only return MathError.INTEGER_UNDERFLOW but we know that `remainingBalance` is at least
+         * as big as `amount`. See the `require` check in `withdrawFromInternal`.
+         */
+        assert(vars.mathErr == MathError.NO_ERROR);
 
         if (streams[streamId].remainingBalance == 0) delete streams[streamId];
 
@@ -697,7 +692,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
 
         /*
          * Calculate the net withdrawal amount by subtracting `senderInterest` and `sablierInterest`.
-         * Because the decimal points are lost when we truncate Exponentials, the recipient will earn
+         * Because the decimal points are lost when we truncate Exponentials, the recipient will implicitly earn
          * `recipientInterest` plus a tiny-weeny amount of interest, max 2e-8 in cToken denomination.
          */
         (vars.mathErr, vars.amountWithoutSenderInterest) = subUInt(amount, senderInterest);
@@ -792,7 +787,7 @@ contract Sablier is IERC1620, Ownable, ReentrancyGuard, Exponential, TokenErrorR
 
         /*
          * Calculate the net withdrawal amount by subtracting `senderInterest` and `sablierInterest`.
-         * Because the decimal points are lost when we truncate Exponentials, the recipient will earn
+         * Because the decimal points are lost when we truncate Exponentials, the recipient will implicitly earn
          * `recipientInterest` plus a tiny-weeny amount of interest, max 2e-8 in cToken denomination.
          */
         (vars.mathErr, vars.recipientBalanceWithoutSenderInterest) = subUInt(recipientBalance, senderInterest);
