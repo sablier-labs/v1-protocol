@@ -27,7 +27,7 @@ function shouldBehaveLikeERC1620Stream(alice, bob) {
           });
 
           describe("when the sender has enough tokens", function() {
-            describe("when the deposit is a multiple of the time delta", function() {
+            describe("when the deposit is valid", function() {
               const deposit = STANDARD_SALARY.toString(10);
 
               describe("when the start time is after block.timestamp", function() {
@@ -120,52 +120,49 @@ function shouldBehaveLikeERC1620Stream(alice, bob) {
               });
             });
 
-            describe("when the deposit is not a multiple of the time delta", function() {
-              const deposit = STANDARD_SALARY.plus(5).toString(10);
-              let startTime;
-              let stopTime;
+            describe("when the deposit is not valid", function() {
+              const startTime = now.plus(STANDARD_TIME_OFFSET);
+              const stopTime = startTime.plus(STANDARD_TIME_DELTA);
 
-              beforeEach(async function() {
-                startTime = now.plus(STANDARD_TIME_OFFSET);
-                stopTime = startTime.plus(STANDARD_TIME_DELTA);
+              describe("when the deposit is zero", function() {
+                const deposit = new BigNumber(0).toString(10);
+
+                it("reverts", async function() {
+                  await truffleAssert.reverts(
+                    this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts),
+                    "deposit is zero",
+                  );
+                });
               });
 
-              it("reverts", async function() {
-                await truffleAssert.reverts(
-                  this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts),
-                  "deposit not multiple of time delta",
-                );
-              });
-            });
+              describe("when the deposit is smaller than the time delta", function() {
+                const deposit = STANDARD_TIME_DELTA.minus(1).toString(10);
 
-            describe("when the deposit is zero", function() {
-              const deposit = new BigNumber(0);
-              let startTime;
-              let stopTime;
-
-              beforeEach(async function() {
-                startTime = now.plus(STANDARD_TIME_OFFSET);
-                stopTime = startTime.plus(STANDARD_TIME_DELTA);
+                it("reverts", async function() {
+                  await truffleAssert.reverts(
+                    this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts),
+                    "deposit smaller than time delta",
+                  );
+                });
               });
 
-              it("reverts", async function() {
-                await truffleAssert.reverts(
-                  this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts),
-                  "deposit is zero",
-                );
+              describe("when the deposit is not a multiple of the time delta", function() {
+                const deposit = STANDARD_SALARY.plus(5).toString(10);
+
+                it("reverts", async function() {
+                  await truffleAssert.reverts(
+                    this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts),
+                    "deposit not multiple of time delta",
+                  );
+                });
               });
             });
           });
 
           describe("when the sender does not have enough tokens", function() {
             const deposit = STANDARD_SALARY.multipliedBy(2).toString(10);
-            let startTime;
-            let stopTime;
-
-            beforeEach(async function() {
-              startTime = now.plus(STANDARD_TIME_OFFSET);
-              stopTime = startTime.plus(STANDARD_TIME_DELTA);
-            });
+            const startTime = now.plus(STANDARD_TIME_OFFSET);
+            const stopTime = startTime.plus(STANDARD_TIME_DELTA);
 
             it("reverts", async function() {
               await truffleAssert.reverts(

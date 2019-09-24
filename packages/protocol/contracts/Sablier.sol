@@ -484,7 +484,7 @@ contract Sablier is
         assert(vars.mathErr == MathError.NO_ERROR);
 
         /* Without this, the rate per second would be zero. */
-        require(deposit >= vars.duration, "deposit lower than time delta");
+        require(deposit >= vars.duration, "deposit smaller than time delta");
 
         /* This condition avoids dealing with remainders */
         require(deposit % vars.duration == 0, "deposit not multiple of time delta");
