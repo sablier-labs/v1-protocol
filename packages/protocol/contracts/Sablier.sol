@@ -118,6 +118,7 @@ contract Sablier is
 
     constructor() public {
         OwnableWithoutRenounce.initialize(msg.sender);
+        PausableWithoutRenounce.initialize(msg.sender);
         nextStreamId = 1;
     }
 

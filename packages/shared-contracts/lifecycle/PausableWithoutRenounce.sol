@@ -2,6 +2,7 @@ pragma solidity 0.5.10;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/roles/PauserRole.sol";
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
 /**
  * @notice Fork of OpenZeppelin's Pausalbe, a contract module which allows children to implement
@@ -9,7 +10,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/access/roles/PauserRo
  *  the `renouncePauser` function to avoid fat-finger errors.
  * See https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/lifecycle/Pausable.sol
  */
-contract PausableWithoutRenounce is Context, PauserRole {
+contract PausableWithoutRenounce is Initializable, Context, PauserRole {
     /**
      * @dev Emitted when the pause is triggered by a pauser (`account`).
      */
@@ -26,7 +27,8 @@ contract PausableWithoutRenounce is Context, PauserRole {
      * @dev Initializes the contract in unpaused state. Assigns the Pauser role
      * to the deployer.
      */
-    constructor() internal {
+    function initialize(address sender) public initializer {
+        PauserRole.initialize(sender);
         _paused = false;
     }
 
