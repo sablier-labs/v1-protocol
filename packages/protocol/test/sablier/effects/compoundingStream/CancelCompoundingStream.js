@@ -1,7 +1,6 @@
 const { devConstants, mochaContexts } = require("@sablier/dev-utils");
 const BigNumber = require("bignumber.js");
 const dayjs = require("dayjs");
-// const traveler = require("ganache-time-traveler");
 const truffleAssert = require("truffle-assertions");
 
 const { contextForStreamDidEnd, contextForStreamDidStartButNotEnd } = mochaContexts;
