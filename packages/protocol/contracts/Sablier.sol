@@ -307,21 +307,15 @@ contract Sablier is
             (vars.mathErr, vars.withdrawalAmount) = subUInt(stream.deposit, stream.remainingBalance);
             assert(vars.mathErr == MathError.NO_ERROR);
             (vars.mathErr, vars.recipientBalance) = subUInt(vars.recipientBalance, vars.withdrawalAmount);
-            /*
-             * This is a precautionary step, in normal conditions `withdrawalAmount` cannot and should not be
-             * bigger than `recipientBalance`.
-             */
-            require(vars.mathErr == MathError.NO_ERROR, "recipient balance subtraction calculation error");
+            /* `withdrawalAmount` cannot and should not be bigger than `recipientBalance`. */
+            assert(vars.mathErr == MathError.NO_ERROR);
         }
 
         if (who == stream.recipient) return vars.recipientBalance;
         if (who == stream.sender) {
             (vars.mathErr, vars.senderBalance) = subUInt(stream.remainingBalance, vars.recipientBalance);
-            /*
-             * Another precautionary step, in normal conditions `recipientBalance` cannot and should not be
-             * bigger than `remainingBalance`.
-             */
-            require(vars.mathErr == MathError.NO_ERROR, "sender balance calculation error");
+            /* `recipientBalance` cannot and should not be bigger than `remainingBalance`. */
+            assert(vars.mathErr == MathError.NO_ERROR);
             return vars.senderBalance;
         }
         return 0;
@@ -342,7 +336,8 @@ contract Sablier is
 
     /**
      * @notice Computes the interest accrued by keeping `amount` of tokens in the contract.
-     * @dev Throws if there is a math error.
+     * @dev Throws if there is a math error. We do not `assert` the calculations which involve the current
+     *  exchange rate, because we can't know what value we'll get back from the cToken.
      * @return The interest accrued by the sender, the recipient and sablier, respectively, as uint256s.
      */
     function interestOf(uint256 streamId, uint256 amount)
@@ -389,7 +384,7 @@ contract Sablier is
             );
             /*
              * `subUInt` can only return MathError.INTEGER_UNDERFLOW but we know that `sablierUnderlyingInterest`
-             * is smaller than `underlyingInterest`, because we control the value of `fee`.
+             * is less or equal than `underlyingInterest`, because we control the value of `fee`.
              */
             assert(vars.mathErr == MathError.NO_ERROR);
         }
@@ -406,7 +401,11 @@ contract Sablier is
             vars.netUnderlyingInterest,
             vars.senderUnderlyingInterest
         );
-        require(vars.mathErr == MathError.NO_ERROR, "recipient interest calculation error");
+        /*
+         * `subUInt` can only return MathError.INTEGER_UNDERFLOW but we know that `senderUnderlyingInterest`
+         * is less or equal than `netUnderlyingInterest`, because `senderShare` is bounded between 1e16 and 1e18.
+         */
+        assert(vars.mathErr == MathError.NO_ERROR);
 
         /* Convert the interest to the equivalent cToken denomination. */
         (vars.mathErr, vars.senderInterest) = divExp(vars.senderUnderlyingInterest, exchangeRateCurrent);
@@ -483,6 +482,9 @@ contract Sablier is
         (vars.mathErr, vars.duration) = subUInt(stopTime, startTime);
         /* `subUInt` can only return MathError.INTEGER_UNDERFLOW but we know `stopTime` is higher than `startTime`. */
         assert(vars.mathErr == MathError.NO_ERROR);
+
+        /* Without this, the rate per second would be zero. */
+        require(deposit >= vars.duration, "deposit lower than time delta");
 
         /* This condition avoids dealing with remainders */
         require(deposit % vars.duration == 0, "deposit not multiple of time delta");
