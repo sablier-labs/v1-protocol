@@ -1,6 +1,5 @@
 /* global artifacts, web3 */
 const ERC20Mock = artifacts.require("./ERC20Mock.sol");
-const EvilERC20 = artifacts.require("./EvilERC20.sol");
 const NonStandardERC20 = artifacts.require("./NonStandardERC20.sol");
 
 module.exports = (deployer, _, accounts) => {
@@ -8,10 +7,6 @@ module.exports = (deployer, _, accounts) => {
 
   deployer.deploy(ERC20Mock).then(async (token) => {
     await token.mint(accounts[0], initialBalance);
-  });
-
-  deployer.deploy(EvilERC20).then(async (evilToken) => {
-    await evilToken.mint(accounts[0], initialBalance);
   });
 
   deployer.deploy(NonStandardERC20).then(async (nonStandardToken) => {
