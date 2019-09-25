@@ -4,7 +4,6 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.so
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 
 import "@sablier/shared-contracts/compound/Exponential.sol";
-import "@sablier/shared-contracts/compound/TokenErrorReporter.sol";
 import "@sablier/shared-contracts/interfaces/ICERC20.sol";
 import "@sablier/shared-contracts/lifecycle/OwnableWithoutRenounce.sol";
 import "@sablier/shared-contracts/lifecycle/PausableWithoutRenounce.sol";
@@ -21,7 +20,6 @@ contract Sablier is
     OwnableWithoutRenounce,
     PausableWithoutRenounce,
     Exponential,
-    TokenErrorReporter,
     ReentrancyGuard
 {
     /**
