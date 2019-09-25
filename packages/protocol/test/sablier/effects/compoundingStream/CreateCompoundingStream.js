@@ -166,7 +166,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           recipientSharePercentage,
           opts,
         ),
-        truffleAssert.ErrorType.REVERT,
+        "Pausable: paused",
       );
     });
   });

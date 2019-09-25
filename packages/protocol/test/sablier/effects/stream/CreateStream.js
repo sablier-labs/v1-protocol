@@ -311,7 +311,7 @@ function shouldBehaveLikeERC1620Stream(alice, bob) {
     it("reverts", async function() {
       await truffleAssert.reverts(
         this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts),
-        truffleAssert.ErrorType.REVERT,
+        "Pausable: paused",
       );
     });
   });

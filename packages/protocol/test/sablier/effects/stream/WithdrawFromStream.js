@@ -142,7 +142,7 @@ function runTests() {
     it("reverts", async function() {
       await truffleAssert.reverts(
         this.sablier.withdrawFromStream(this.streamId, amount, this.opts),
-        truffleAssert.ErrorType.REVERT,
+        "Pausable: paused",
       );
     });
   });
