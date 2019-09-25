@@ -16,15 +16,17 @@ import "./Types.sol";
  * @author Sablier
  */
 contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, Exponential, ReentrancyGuard {
-    /**
-     * @notice In Exp terms, 1e16 is 0.01, or 1%
-     */
-    uint256 constant onePercent = 1e16;
+    /*** Storage Properties ***/
 
     /**
      * @notice In Exp terms, 1e18 is 1, or 100%
      */
     uint256 constant hundredPercent = 1e18;
+
+    /**
+     * @notice In Exp terms, 1e16 is 0.01, or 1%
+     */
+    uint256 constant onePercent = 1e16;
 
     /**
      * @notice Stores information about the initial state of the underlying of the cToken.
@@ -47,14 +49,26 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     Exp public fee;
 
     /**
-     * @notice Used to create new stream ids.
+     * @notice Counter for new stream ids.
      */
     uint256 public nextStreamId;
 
     /**
-     * @notice The stream objects themselves.
+     * @notice The stream objects identifiable by their unsigned integer ids.
      */
     mapping(uint256 => Types.Stream) private streams;
+
+    /*** Events ***/
+
+    /**
+     * @notice Emits when a compounding stream is successfully created.
+     */
+    event CreateCompoundingStream(
+        uint256 indexed streamId,
+        uint256 exchangeRate,
+        uint256 senderSharePercentage,
+        uint256 recipientSharePercentage
+    );
 
     /**
      * @notice Emits when the administrator discards a cToken.
@@ -81,19 +95,21 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
      */
     event WhitelistCToken(address indexed tokenAddress);
 
+    /*** Modifiers ***/
+
     /**
      * @dev Throws if the caller is not the sender of the recipient of the stream.
      */
     modifier onlySenderOrRecipient(uint256 streamId) {
         require(
             msg.sender == streams[streamId].sender || msg.sender == streams[streamId].recipient,
-            "caller is not the sender or the recipient of the stream"
+            "caller is not the sender or the recipient of the stream of the stream"
         );
         _;
     }
 
     /**
-     * @dev Throws if `streamId` does not point to a valid stream.
+     * @dev Throws if the id does not point to a valid stream.
      */
     modifier streamExists(uint256 streamId) {
         require(streams[streamId].isEntity, "stream does not exist");
@@ -101,12 +117,14 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @dev Throws if `streamId` does not point to a valid compounding stream.
+     * @dev Throws if the id does not point to a valid compounding stream.
      */
     modifier compoundingStreamVarsExist(uint256 streamId) {
         require(compoundingStreamsVars[streamId].isEntity, "compounding stream vars do not exist");
         _;
     }
+
+    /*** Contract Logic Starts Here */
 
     constructor() public {
         OwnableWithoutRenounce.initialize(msg.sender);
@@ -118,8 +136,9 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
     /**
      * @notice Whitelists a cToken for compounding streams.
-     * @dev Throws is `cTokenAddress` is already whitelisted. Throws if
-     *  the given address is not a `cToken`.
+     * @dev Throws if the caller is not the owner of the contract.
+     *  Throws is the token is whitelisted.
+     *  Throws if the given address is not a `cToken`.
      * @param tokenAddress The address of the cToken to whitelist.
      */
     function whitelistCToken(address tokenAddress) external onlyOwner {
@@ -131,7 +150,8 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
     /**
      * @notice Discards a previously whitelisted cToken.
-     * @dev Throws if `cTokenAddress` has not been previously whitelisted.
+     * @dev Throws if the caller is not the owner of the contract.
+     *  Throws if token is not whitelisted.
      * @param tokenAddress The address of the cToken to discard.
      */
     function discardCToken(address tokenAddress) external onlyOwner {
@@ -147,17 +167,15 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
     /**
      * @notice Updates the Sablier fee.
-     * @dev Throws if `feePercentage` is not lower or equal to 100.
+     * @dev Throws if the caller is not the owner of the contract.
+     *  Throws if `feePercentage` is not lower or equal to 100.
      * @param feePercentage The new fee as a percentage.
      */
     function updateFee(uint256 feePercentage) external onlyOwner {
         require(feePercentage <= 100, "fee percentage higher than 100%");
         UpdateFeeLocalVars memory vars;
 
-        /*
-         * `feePercentage` will be stored as a mantissa, so we scale it up by one percent
-         *  in Exp terms, which is 1e16.
-         */
+        /* `feePercentage` will be stored as a mantissa, so we scale it up by one percent in Exp terms. */
         (vars.mathErr, vars.feeMantissa) = mulUInt(feePercentage, onePercent);
         /*
          * `mulUInt` can only return MathError.INTEGER_OVERFLOW but we control `onePercent`
@@ -179,7 +197,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
      * @param tokenAddress The address of the token to withdraw earnings for.
      * @param amount The amount of tokens to withdraw.
      */
-    function takeEarnings(address tokenAddress, uint256 amount) external nonReentrant onlyOwner {
+    function takeEarnings(address tokenAddress, uint256 amount) external onlyOwner nonReentrant {
         require(isCToken(tokenAddress), "cToken is not whitelisted");
         require(amount > 0, "amount is zero");
         require(earnings[tokenAddress] >= amount, "amount exceeds the available balance");
@@ -200,7 +218,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
     /**
      * @notice Returns the stream object with all its parameters.
-     * @dev Throws if `streamId` does not point to a valid stream.
+     * @dev Throws if the id does not point to a valid stream.
      * @param streamId The id of the stream to query.
      * @return The stream object.
      */
@@ -234,7 +252,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
     /**
      * @notice Returns the compounding stream vars object with all its parameters.
-     * @dev Throws if `streamId` does not point to a valid compounding stream.
+     * @dev Throws if the id does not point to a valid compounding stream.
      * @param streamId The id of the compounding stream to query.
      * @return The compounding stream vars object.
      */
@@ -257,7 +275,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
      * @notice Returns either the delta in seconds between `block.timestmap and `startTime` or
      *  between `stopTime` and `startTime, whichever is smaller. If `block.timestamp` is before
      *  `startTime`, it returns 0.
-     * @dev Throws if `streamId` does not point to a valid stream.
+     * @dev Throws if the id does not point to a valid stream.
      * @param streamId The id of the stream for whom to query the delta.
      * @return The time delta in seconds.
      */
@@ -277,7 +295,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
     /**
      * @notice Returns the available funds for the given stream id and address.
-     * @dev Throws if `streamId` does not point to a valid stream.
+     * @dev Throws if the id does not point to a valid stream.
      * @param streamId The id of the stream for whom to query the balance.
      * @param who The address for whom to query the balance.
      * @return The total funds allocated to `who` as uint256.
@@ -327,24 +345,27 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Computes the interest accrued by keeping `amount` of tokens in the contract.
-     * @dev Throws if there is a math error. We do not `assert` the calculations which involve the current
-     *  exchange rate, because we can't know what value we'll get back from the cToken.
+     * @notice Computes the interest accrued by keeping the amount of tokens in the contract. Returns (0, 0, 0) if
+     *  the stream is not a compounding stream.
+     * @dev Throws if there is a math error. We do not assert the calculations which involve the current
+     *  exchange rate, because we can't know what value we'll get back from the cToken contract.
      * @return The interest accrued by the sender, the recipient and sablier, respectively, as uint256s.
      */
     function interestOf(uint256 streamId, uint256 amount)
         public
         streamExists(streamId)
-        compoundingStreamVarsExist(streamId)
         returns (uint256 senderInterest, uint256 recipientInterest, uint256 sablierInterest)
     {
+        if (!compoundingStreamsVars[streamId].isEntity) {
+            return (0, 0, 0);
+        }
         Types.Stream memory stream = streams[streamId];
         Types.CompoundingStreamVars memory compoundingStreamVars = compoundingStreamsVars[streamId];
         InterestOfLocalVars memory vars;
 
         /*
-         * The `exchangeRateDelta` is a key variable here, it leads us to how much interest has been earned
-         * since the compounding stream has been created.
+         * The exchange rate delta is a key variable, since it leads us to how much interest has been earned
+         * since the compounding stream was created.
          */
         Exp memory exchangeRateCurrent = Exp({ mantissa: ICERC20(stream.tokenAddress).exchangeRateCurrent() });
         if (exchangeRateCurrent.mantissa <= compoundingStreamVars.exchangeRateInitial.mantissa) {
@@ -360,7 +381,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
         /* Calculate our share from that interest. */
         if (fee.mantissa == hundredPercent) {
             (vars.mathErr, vars.sablierInterest) = divExp(vars.underlyingInterest, exchangeRateCurrent);
-            require(vars.mathErr == MathError.NO_ERROR, "sablier interest conversion failure");
+            require(vars.mathErr == MathError.NO_ERROR, "sablier interest conversion error");
             return (0, 0, truncate(vars.sablierInterest));
         } else if (fee.mantissa == 0) {
             vars.sablierUnderlyingInterest = Exp({ mantissa: 0 });
@@ -401,22 +422,31 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
         /* Convert the interest to the equivalent cToken denomination. */
         (vars.mathErr, vars.senderInterest) = divExp(vars.senderUnderlyingInterest, exchangeRateCurrent);
-        require(vars.mathErr == MathError.NO_ERROR, "sender interest conversion failure");
+        require(vars.mathErr == MathError.NO_ERROR, "sender interest conversion error");
 
         (vars.mathErr, vars.recipientInterest) = divExp(vars.recipientUnderlyingInterest, exchangeRateCurrent);
-        require(vars.mathErr == MathError.NO_ERROR, "recipient interest conversion failure");
+        require(vars.mathErr == MathError.NO_ERROR, "recipient interest conversion error");
 
         (vars.mathErr, vars.sablierInterest) = divExp(vars.sablierUnderlyingInterest, exchangeRateCurrent);
-        require(vars.mathErr == MathError.NO_ERROR, "sablier interest conversion failure");
+        require(vars.mathErr == MathError.NO_ERROR, "sablier interest conversion error");
 
         /* Truncating the results means losing everything on the last 1e18 positions of the mantissa */
         return (truncate(vars.senderInterest), truncate(vars.recipientInterest), truncate(vars.sablierInterest));
     }
 
     /**
+     * @notice Checks if the given id points to a compounding stream.
+     * @param streamId The id of the stream to check.
+     * @return bool true=it is compounding stream, otherwise false.
+     */
+    function isCompoundingStream(uint256 streamId) public view returns (bool) {
+        return compoundingStreamsVars[streamId].isEntity;
+    }
+
+    /**
      * @notice Checks if the given token address is one of the whitelisted cTokens.
-     * @param tokenAddress The address of the token to verify.
-     * @return bool true=it is cToken, false otherwise
+     * @param tokenAddress The address of the token to check.
+     * @return bool true=it is cToken, otherwise false.
      */
     function isCToken(address tokenAddress) public view returns (bool) {
         return cTokens[tokenAddress];
@@ -424,10 +454,10 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
     /**
      * @notice Returns the amount of interest that has been accrued for the given token address.
-     * @param tokenAddress The address of the token to verify.
-     * @return The amount of interest as an uint256
+     * @param tokenAddress The address of the token to get the earnings for.
+     * @return The amount of interest as uint256.
      */
-    function getEarnings(address tokenAddress) external view returns (uint256 earningsForTokenAddress) {
+    function getEarnings(address tokenAddress) external view returns (uint256) {
         require(isCToken(tokenAddress), "token is not cToken");
         return earnings[tokenAddress];
     }
@@ -441,17 +471,20 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Creates a new stream
-     * @dev Throws if `recipient` is the zero address, the contract itself or `msg.sender`.
-     *  Throws if the `deposit` is 0.
-     *  Throws if `startTime` is lower or equal to `block.timestamp`.
-     *  Throws if `stopTime` is lower than `startTime`.
+     * @notice Creates a new stream.
+     * @dev Throws if paused.
+     *  Throws if the recipient is the zero address, the contract itself or `msg.sender`.
+     *  Throws if the deposit is 0.
+     *  Throws if the start time is before `block.timestamp`.
+     *  Throws if the stop time is before the start time.
      *  Throws if the duration calculation has a math error.
-     *  Throws if deposit is not a multiple of the time delta.
+     *  Throws if the deposit is smaller than the duration.
+     *  Throws if the deposit is not a multiple of the duration.
      *  Throws if the rate calculation has a math error.
      *  Throws if the next stream id calculation has a math error.
-     *  Throws if the contract is not allowed to transfer more than `deposit` tokens.
-     * @param recipient The account towards which the money will be streamed.
+     *  Throws if the contract is not allowed to transfer enough tokens.
+     *  Throws if there is a token transfer failure.
+     * @param recipient The address towards which the money will be streamed.
      * @param deposit The amount of money to be streamed.
      * @param tokenAddress The ERC20 token to use as streaming currency.
      * @param startTime The unix timestamp of when the stream starts.
@@ -520,10 +553,10 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
      * @notice Creates a new compounding stream.
      * @dev Inherits all the security checks from `createStream`.
      *  Throws if the cToken is not whitelisted.
-     *  Throws if `senderSharePercentage` and `recipientSharePercentage` do not sum up to 100.
-     *  Throws if the `senderSharePercentage` mantissa calculation has a math error.
-     *  Throws if the `recipientSharePercentage` mantissa calculation has a math error.
-     * @param recipient The account towards which the money will be streamed.
+     *  Throws if the sender share percentage and the recipient share percentage do not sum up to 100.
+     *  Throws if the the sender share mantissa calculation has a math error.
+     *  Throws if the the recipient share mantissa calculation has a math error.
+     * @param recipient The address towards which the money will be streamed.
      * @param deposit The amount of money to be streamed.
      * @param tokenAddress The ERC20 token to use as streaming currency.
      * @param startTime The unix timestamp of when the stream starts.
@@ -553,7 +586,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
         /*
          * `senderSharePercentage` and `recipientSharePercentage` will be stored as mantissas, so we scale them up
-         * by one percent in Exp terms, which is 1e16.
+         * by one percent in Exp terms.
          */
         (vars.mathErr, vars.senderShareMantissa) = mulUInt(senderSharePercentage, onePercent);
         /*
@@ -583,13 +616,14 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Withdraws from an active stream.
-     * @dev Throws if `streamId` does not point to an active stream.
-     *  Throws if the caller is not the sender or the recipient.
-     *  Throws if `amount` exceeds the available balance.
+     * @notice Withdraws from the stream.
+     * @dev Throws if the id does not point to a valid stream.
+     *  Throws if the caller is not the sender or the recipient of the stream.
+     *  Throws if the amount exceeds the available balance.
+     *  Throws if there is a token transfer failure.
      * @param streamId The id of the stream to withdraw tokens from.
      * @param amount The amount of tokens to withdraw.
-     * @return bool true=success, false otherwise
+     * @return bool true=success, otherwise false.
      */
     function withdrawFromStream(uint256 streamId, uint256 amount)
         external
@@ -613,12 +647,12 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Cancels an active stream.
-     * @dev Throws if `streamId` does not point to a valid stream.
-     *  Throws if the caller is not the sender or the recipient.
-     *  Throws if `amount` exceeds the available balance.
+     * @notice Cancels the stream.
+     * @dev Throws if the id does not point to a valid stream.
+     *  Throws if the caller is not the sender or the recipient of the stream.
+     *  Throws if there is a token transfer failure.
      * @param streamId The id of the stream to cancel.
-     * @return bool true=success, false otherwise
+     * @return bool true=success, otherwise false.
      */
     function cancelStream(uint256 streamId)
         external
@@ -643,10 +677,10 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
     /**
      * @notice Makes the withdrawal to the recipient of the stream.
-     * @dev If stream balance has been depleted to 0, the stream object is deleted
+     * @dev If the stream balance has been depleted to 0, the stream object is deleted
      *  to save gas and optimise contract storage.
      *  Throws if the stream balance calculation has a math error.
-     *  Throws if the token transfer fails.
+     *  Throws if there is a token transfer failure.
      */
     function withdrawFromStreamInternal(uint256 streamId, uint256 amount) internal {
         Types.Stream memory stream = streams[streamId];
@@ -673,10 +707,10 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     /**
      * @notice Makes the withdrawal to the recipient of the compounding stream and pays the accrued interest
      *  to all parties.
-     * @dev If stream balance has been depleted to 0, the stream object to save gas and optimise
+     * @dev If the stream balance has been depleted to 0, the stream object to save gas and optimise
      *  contract storage.
      *  Throws if there is a math error.
-     *  Throws if the token transfer fails.
+     *  Throws if there is a token transfer failure.
      */
     function withdrawFromCompoundingStreamInternal(uint256 streamId, uint256 amount) internal {
         Types.Stream memory stream = streams[streamId];
@@ -723,7 +757,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
      * @notice Cancels the stream and transfers all tokens on pro rata basis.
      * @dev The stream and compounding stream vars objects get deleted to save gas
      *  and optimise contract storage.
-     *  Throws if the token transfer fails.
+     *  Throws if there is a token transfer failure.
      */
     function cancelStreamInternal(uint256 streamId) internal {
         Types.Stream memory stream = streams[streamId];
@@ -753,7 +787,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
      * @dev Importantly, the money that has not been streamed yet is not considered chargeable.
      *  All the interest generated by that underlying will be returned to the sender.
      *  Throws if there is a math error.
-     *  Throws if the token transfer fails.
+     *  Throws if there is a token transfer failure.
      */
     function cancelCompoundingStreamInternal(uint256 streamId) internal {
         Types.Stream memory stream = streams[streamId];

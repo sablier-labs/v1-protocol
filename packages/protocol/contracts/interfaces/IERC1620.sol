@@ -20,24 +20,14 @@ interface IERC1620 {
     );
 
     /**
-     * @notice Emits when a compounding stream is successfully created.
-     */
-    event CreateCompoundingStream(
-        uint256 indexed streamId,
-        uint256 exchangeRate,
-        uint256 senderSharePercentage,
-        uint256 recipientSharePercentage
-    );
-
-    /**
-     * @notice Emits when the receiver of a stream withdraws a portion or all their available
-     *  funds from an active stream, without stopping it.
+     * @notice Emits when the recipient of a stream withdraws a portion or all their pro rata share
+     *  of an active stream.
      */
     event WithdrawFromStream(uint256 indexed streamId, address indexed recipient, uint256 amount);
 
     /**
-     * @dev Emits when a stream is successfully redeemed and all involved parties get
-     *  their share of the available funds.
+     * @notice Emits when a stream is successfully cancelled and both parties get their pro rata
+     *  share of the available funds.
      */
     event CancelStream(
         uint256 indexed streamId,
@@ -66,16 +56,6 @@ interface IERC1620 {
     function createStream(address recipient, uint256 deposit, address tokenAddress, uint256 startTime, uint256 stopTime)
         external
         returns (uint256 streamId);
-
-    function createCompoundingStream(
-        address recipient,
-        uint256 deposit,
-        address tokenAddress,
-        uint256 startTime,
-        uint256 stopTime,
-        uint256 senderShare,
-        uint256 recipientShare
-    ) external returns (uint256 streamId);
 
     function withdrawFromStream(uint256 streamId, uint256 funds) external returns (bool);
 
