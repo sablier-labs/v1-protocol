@@ -2,48 +2,83 @@ pragma solidity 0.5.11;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/bouncers/GSNBouncerSignature.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipient.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
-import "@sablier/protocol/contracts/interfaces/IERC1620.sol";
+import "@sablier/protocol/contracts/Sablier.sol";
 import "@sablier/protocol/contracts/Types.sol";
 
 import "@sablier/shared-contracts/compound/Exponential.sol";
+import "@sablier/shared-contracts/lifecycle/OwnableWithoutRenounce.sol";
 import "@sablier/shared-contracts/interfaces/ICERC20.sol";
 
-/// @title Payroll dapp contract
-/// @author Paul Razvan Berg - <paul@sablier.app>
+/**
+ * @title Payroll Upgradeable Proxy
+ * @author Sablier
+ */
+contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecipient, GSNBouncerSignature {
+    /*** Storage Properties ***/
 
-contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
-    using SafeMath for uint256;
-
+    /**
+     * @notice Container for salary information
+     * @member company The address of the company which funded this salary
+     * @member isEntity bool true=object exists, otherwise false
+     * @member streamId The id of the stream in the Sablier contract
+     */
     struct Salary {
         address company;
-        bool isCompounding;
         bool isEntity;
         uint256 streamId;
     }
-    struct Token {
-        uint256 listPointer;
-        address cTokenAddress;
-    }
 
-    uint256 public earnings;
+    /**
+     * @notice Counter for new salary ids.
+     */
     uint256 public nextSalaryId;
+
+    /**
+     * @notice Whitelist of accounts able to call the withdrawal function for a given stream so
+     *  employees don't have to pay gas.
+     */
     mapping(address => mapping(uint256 => bool)) public relayers;
-    IERC1620 public sablier;
+
+    /**
+     * @notice The contract responsible for creating, withdrawing from and cancelling streams.
+     */
+    Sablier public sablier;
+
+    /**
+     * @notice The salary objects identifiable by their unsigned integer ids.
+     */
     mapping(uint256 => Salary) salaries;
-    address[] public tokenList;
-    mapping(address => Token) public tokenStructs;
 
-    event CreateSalary(uint256 indexed salaryId, uint256 indexed streamId, bool isCompounding);
-    event CancelSalary(uint256 indexed salaryId);
-    event DiscardToken(address indexed tokenAddress);
-    event WhitelistToken(address indexed tokenAddress, address cTokenAddress);
-    event WithdrawFromSalary(uint256 indexed salaryId, uint256 amount);
+    /*** Events ***/
 
+    /**
+     * @notice Emits when a salary is successfully created.
+     */
+    event CreateSalary(uint256 indexed salaryId, uint256 indexed streamId);
+
+    /**
+     * @notice Emits when a compounding salary is successfully created.
+     */
+    event CreateCompoundingSalary(uint256 indexed salaryId, uint256 indexed streamId);
+
+    /**
+     * @notice Emits when the recipient of a stream withdraws a portion or all their pro rata share
+     *  of an active stream.
+     */
+    event WithdrawFromSalary(uint256 indexed salaryId, uint256 indexed streamId);
+
+    /**
+     * @notice Emits when a salary is successfully cancelled and both parties get their pro rata
+     *  share of the available funds.
+     */
+    event CancelSalary(uint256 indexed salaryId, uint256 indexed streamId);
+
+    /**
+     * @dev Throws if the caller is not the company or the employee.
+     */
     modifier onlyCompanyOrEmployee(uint256 salaryId) {
         Salary memory salary = salaries[salaryId];
         (, address employee, , , , , , ) = sablier.getStream(salary.streamId);
@@ -54,6 +89,9 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
         _;
     }
 
+    /**
+     * @dev Throws if the caller is not the employee or an approved relayer.
+     */
     modifier onlyEmployeeOrRelayer(uint256 salaryId) {
         Salary memory salary = salaries[salaryId];
         (, address employee, , , , , , ) = sablier.getStream(salary.streamId);
@@ -64,48 +102,74 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
         _;
     }
 
+    /**
+     * @dev Throws if the id does not point to a valid salary.
+     */
     modifier salaryExists(uint256 salaryId) {
         require(salaries[salaryId].isEntity, "salary does not exist");
         _;
     }
 
-    function initialize(address _owner, IERC1620 _sablier) public initializer {
-        Ownable.initialize(_owner);
-        sablier = _sablier;
+    /*** Contract Logic Starts Here ***/
+
+    /**
+     * @notice Only called once after the contract is deployed.
+     * @dev The `initializer` modifier ensures that the function can only be called once.
+     * @param sablierAddress The address of the Sablier contract.
+     */
+    function initialize(address sablierAddress) public initializer {
+        OwnableWithoutRenounce.initialize(msg.sender);
+        sablier = Sablier(sablierAddress);
         nextSalaryId = 1;
     }
 
-    /* Admin */
+    /*** Admin ***/
 
+    /**
+     * @notice Whitelists a relayer to process withdrawals so the employee doesn't have to pay gas.
+     * @dev Throws if the caller is not the owner of the contract.
+     *  Throws if the id does not point to a valid salary.
+     *  Throws if the relayer is whitelisted.
+     * @param relayer The address of the relayer account.
+     * @param salaryId The id of the salary to whitelist the relayer for.
+     */
     function whitelistRelayer(address relayer, uint256 salaryId) external onlyOwner salaryExists(salaryId) {
         require(relayers[relayer][salaryId] == false, "relayer is whitelisted");
         relayers[relayer][salaryId] = true;
     }
 
+    /**
+     * @notice Discard a previously whitelisted relayer to prevent them from processing withdrawals.
+     * @dev Throws if the caller is not the owner of the contract.
+     *  Throws if the id does not point to a valid salary.
+     *  Throws if the relayer is not whitelisted.
+     * @param relayer The address of the relayer account.
+     * @param salaryId The id of the salary to discard the relayer for.
+     */
     function discardRelayer(address relayer, uint256 salaryId) external onlyOwner salaryExists(salaryId) {
         require(relayers[relayer][salaryId] == true, "relayer is not whitelisted");
         relayers[relayer][salaryId] = false;
     }
 
-    function whitelistToken(address tokenAddress, address cTokenAddress) external onlyOwner {
-        require(!isWhitelistedToken(tokenAddress), "token is whitelisted");
-        tokenStructs[cTokenAddress].cTokenAddress = cTokenAddress;
-        tokenStructs[cTokenAddress].listPointer = tokenList.push(cTokenAddress).sub(1);
-        emit WhitelistToken(tokenAddress, cTokenAddress);
-    }
+    /*** View Functions ***/
 
-    function discardToken(address tokenAddress) external onlyOwner {
-        require(isWhitelistedToken(tokenAddress), "token is not whitelisted");
-        uint256 rowToDelete = tokenStructs[tokenAddress].listPointer;
-        address keyToMove = tokenList[tokenList.length.sub(1)];
-        tokenList[rowToDelete] = keyToMove;
-        tokenStructs[keyToMove].listPointer = rowToDelete;
-        tokenList.length = tokenList.length.sub(1);
-        emit DiscardToken(tokenAddress);
-    }
-
-    /* View */
-
+    /**
+     * @dev Called by {IRelayHub} to validate if this recipient accepts being charged for a relayed call. Note that the
+     * recipient will be charged regardless of the execution result of the relayed call (i.e. if it reverts or not).
+     *
+     * The relay request was originated by `from` and will be served by `relay`. `encodedFunction` is the relayed call
+     * calldata, so its first four bytes are the function selector. The relayed call will be forwarded `gasLimit` gas,
+     * and the transaction executed with a gas price of at least `gasPrice`. `relay`'s fee is `transactionFee`, and the
+     * recipient will be charged at most `maxPossibleCharge` (in wei). `nonce` is the sender's (`from`) nonce for
+     * replay attack protection in {IRelayHub}, and `approvalData` is a optional parameter that can be used to hold
+     * a signature over all or some of the previous values.
+     *
+     * Returns a tuple, where the first value is used to indicate approval (0) or rejection (custom non-zero error code,
+     * values 1 to 10 are reserved) and the second one is data to be passed to the other {IRelayRecipient} functions.
+     *
+     * {acceptRelayedCall} is called with 50k gas: if it runs out during execution, the request will be considered
+     * rejected. A regular revert will also trigger a rejection.
+     */
     function acceptRelayedCall(
         address relay,
         address from,
@@ -113,10 +177,15 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
         uint256 transactionFee,
         uint256 gasPrice,
         uint256 gasLimit,
-        uint256 _nextSalaryId,
+        uint256 nonce,
         bytes calldata approvalData,
         uint256
     ) external view returns (uint256, bytes memory) {
+        /**
+         * `nonce` prevents replays on RelayHub
+         * `getHubAddr` prevents replays in multiple RelayHubs
+         * `address(this)` prevents replays in multiple recipients
+         */
         bytes memory blob = abi.encodePacked(
             relay,
             from,
@@ -124,9 +193,9 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
             transactionFee,
             gasPrice,
             gasLimit,
-            _nextSalaryId, // Prevents replays on RelayHub
-            getHubAddr(), // Prevents replays in multiple RelayHubs
-            address(this) // Prevents replays in multiple recipients
+            nonce,
+            getHubAddr(),
+            address(this)
         );
         if (keccak256(blob).toEthSignedMessageHash().recover(approvalData) == owner()) {
             return _approveRelayedCall();
@@ -135,6 +204,12 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
         }
     }
 
+    /**
+     * @notice Returns the salary object with all its parameters.
+     * @dev Throws if the id does not point to a valid salary.
+     * @param salaryId The id of the salary to query.
+     * @return The salary object.
+     */
     function getSalary(uint256 salaryId)
         public
         view
@@ -147,130 +222,174 @@ contract Payroll is Initializable, Ownable, GSNRecipient, GSNBouncerSignature {
             uint256 startTime,
             uint256 stopTime,
             uint256 balance,
-            uint256 rate,
-            bool isCompounding
+            uint256 rate
         )
     {
         company = salaries[salaryId].company;
         (, employee, salary, tokenAddress, startTime, stopTime, balance, rate) = sablier.getStream(
             salaries[salaryId].streamId
         );
-        isCompounding = salaries[salaryId].isCompounding;
     }
 
-    function isWhitelistedToken(address tokenAddress) public view returns (bool isIndeed) {
-        if (tokenList.length == 0) return false;
-        return (tokenList[tokenStructs[tokenAddress].listPointer] == tokenAddress);
+    /*** Public Effects & Interactions Functions ***/
+
+    struct CreateSalaryLocalVars {
+        MathError mathErr;
     }
 
-    /* Public */
+    /**
+     * @notice Creates a new salary and a stream for it.
+     * @dev Throws if there is a math error.
+     *  Throws if there is a token transfer failure.
+     * @param employee The address of the employee who receives the salary.
+     * @param salary The amount of tokens to be streamed.
+     * @param tokenAddress The ERC20 token to use as streaming currency.
+     * @param startTime The unix timestamp of when the stream starts.
+     * @param stopTime The unix timestamp of when the stream stops.
+     * @return The uint256 id of the newly created salary.
+     */
+    function createSalary(address employee, uint256 salary, address tokenAddress, uint256 startTime, uint256 stopTime)
+        external
+        returns (uint256 salaryId)
+    {
+        /* Transfer the tokens to this contract. */
+        require(IERC20(tokenAddress).transferFrom(_msgSender(), address(this), salary), "token transfer failure");
 
-    function createSalary(
+        /* Approve the Sablier contract to spend from our tokens. */
+        require(IERC20(tokenAddress).approve(address(sablier), salary), "token approval failure");
+
+        /* Create the stream. */
+        uint256 streamId = sablier.createStream(employee, salary, tokenAddress, startTime, stopTime);
+        salaryId = nextSalaryId;
+        salaries[nextSalaryId] = Salary({ company: _msgSender(), isEntity: true, streamId: streamId });
+
+        /* Increment the next salary id. */
+        CreateSalaryLocalVars memory vars;
+        (vars.mathErr, nextSalaryId) = addUInt(nextSalaryId, uint256(1));
+        require(vars.mathErr == MathError.NO_ERROR, "next stream id calculation error");
+
+        emit CreateSalary(salaryId, streamId);
+    }
+
+    /**
+     * @notice Creates a new compounding salary and a compounding stream for it.
+     * @dev Throws if there is a math error.
+     *  Throws if there is a token transfer failure.
+     * @param employee The address of the employee who receives the salary.
+     * @param salary The amount of tokens to be streamed.
+     * @param tokenAddress The ERC20 token to use as streaming currency.
+     * @param startTime The unix timestamp of when the stream starts.
+     * @param stopTime The unix timestamp of when the stream stops.
+     * @param senderSharePercentage The sender's share of the interest, as a percentage.
+     * @param recipientSharePercentage The sender's share of the interest, as a percentage.
+     * @return The uint256 id of the newly created compounding salary.
+     */
+    function createCompoundingSalary(
         address employee,
         uint256 salary,
         address tokenAddress,
         uint256 startTime,
         uint256 stopTime,
-        bool isCompounding
+        uint256 senderSharePercentage,
+        uint256 recipientSharePercentage
     ) external returns (uint256 salaryId) {
+        /* Transfer the tokens to this contract. */
         require(IERC20(tokenAddress).transferFrom(_msgSender(), address(this), salary), "token transfer failure");
-        if (!isCompounding) {
-            salaryId = createSalaryInternal(employee, salary, tokenAddress, startTime, stopTime);
-        } else {
-            salaryId = createCompoundingSalaryInternal(employee, salary, tokenAddress, startTime, stopTime);
-        }
+
+        /* Approve the Sablier contract to spend from our tokens. */
+        require(IERC20(tokenAddress).approve(address(sablier), salary), "token approval failure");
+
+        /* Create the stream. */
+        uint256 streamId = sablier.createCompoundingStream(
+            employee,
+            salary,
+            tokenAddress,
+            startTime,
+            stopTime,
+            senderSharePercentage,
+            recipientSharePercentage
+        );
+        salaryId = nextSalaryId;
+        salaries[nextSalaryId] = Salary({ company: _msgSender(), isEntity: true, streamId: streamId });
+
+        /* Increment the next salary id. */
+        CreateSalaryLocalVars memory vars;
+        (vars.mathErr, nextSalaryId) = addUInt(nextSalaryId, uint256(1));
+        require(vars.mathErr == MathError.NO_ERROR, "next stream id calculation error");
+
+        emit CreateCompoundingSalary(salaryId, streamId);
     }
 
-    function cancelSalary(uint256 salaryId) external salaryExists(salaryId) onlyCompanyOrEmployee(salaryId) {
+    struct CancelSalaryLocalVars {
+        MathError mathErr;
+        uint256 netCompanyBalance;
+    }
+
+    /**
+     * @notice Cancels the salary.
+     * @dev Throws if the id does not point to a valid salary.
+     *  Throws if the caller is not the company or the employee.
+     *  Throws if there is a token transfer failure.
+     * @param salaryId The id of the salary to cancel.
+     * @return bool true=success, false otherwise.
+     */
+    function cancelSalary(uint256 salaryId)
+        external
+        salaryExists(salaryId)
+        onlyCompanyOrEmployee(salaryId)
+        returns (bool success)
+    {
         Salary memory salary = salaries[salaryId];
-        (, , , address tokenAddress, , , , ) = sablier.getStream(salary.streamId);
+
+        /* We avoid storing extraneous data twice, so we read the token address from Sablier. */
+        (, address employee, , address tokenAddress, , , , ) = sablier.getStream(salary.streamId);
         uint256 companyBalance = sablier.balanceOf(salary.streamId, address(this));
 
-        deleteSalary(salaryId);
-        emit CancelSalary(salaryId);
-        sablier.cancelStream(salary.streamId);
+        /**
+         * The company gets all the money that has not been streamed yet, plus all the interest earned by what's left.
+         * Not all streams are compounding and `companyBalance` coincides with `netCompanyBalance` then.
+         */
+        CancelSalaryLocalVars memory vars;
+        if (!sablier.isCompoundingStream(salary.streamId)) {
+            vars.netCompanyBalance = companyBalance;
+        } else {
+            uint256 employeeBalance = sablier.balanceOf(salary.streamId, employee);
+            (uint256 companyInterest, , ) = sablier.interestOf(salary.streamId, employeeBalance);
+            (vars.mathErr, vars.netCompanyBalance) = addUInt(companyBalance, companyInterest);
+            require(vars.mathErr == MathError.NO_ERROR, "net company balance calculation error");
+        }
 
-        if (companyBalance > 0)
-            require(IERC20(tokenAddress).transfer(salary.company, companyBalance), "company token transfer failure");
+        /* Delete the salary object to save gas. */
+        delete salaries[salaryId];
+        success = sablier.cancelStream(salary.streamId);
+
+        /* Transfer the tokens to the company. */
+        if (vars.netCompanyBalance > 0)
+            require(
+                IERC20(tokenAddress).transfer(salary.company, vars.netCompanyBalance),
+                "company token transfer failure"
+            );
+
+        emit CancelSalary(salaryId, salary.streamId);
     }
 
-    function deleteSalary(uint256 salaryId) public salaryExists(salaryId) onlyCompanyOrEmployee(salaryId) {
-        salaries[salaryId].company = address(0x00);
-        salaries[salaryId].isCompounding = false;
-        salaries[salaryId].isEntity = false;
-        salaries[salaryId].streamId = 0;
-    }
-
+    /**
+     * @notice Withdraws from the salary.
+     * @dev Throws if the id does not point to a valid salary.
+     *  Throws if the caller is not the employee or a relayer.
+     *  Throws if there is a token transfer failure.
+     * @param salaryId The id of the salary to withdraw from.
+     * @param amount The amount of tokens to withdraw.
+     * @return bool true=success, false otherwise.
+     */
     function withdrawFromSalary(uint256 salaryId, uint256 amount)
         external
         salaryExists(salaryId)
         onlyEmployeeOrRelayer(salaryId)
+        returns (bool success)
     {
         Salary memory salary = salaries[salaryId];
-        sablier.withdrawFromStream(salary.streamId, amount);
-        emit WithdrawFromSalary(salaryId, amount);
-    }
-
-    /* Internal */
-
-    function createSalaryInternal(
-        address employee,
-        uint256 salary,
-        address tokenAddress,
-        uint256 startTime,
-        uint256 stopTime
-    ) internal returns (uint256 salaryId) {
-        require(IERC20(tokenAddress).approve(address(sablier), salary), "token approval failure");
-        uint256 streamId = sablier.createStream(employee, salary, tokenAddress, startTime, stopTime);
-        salaryId = nextSalaryId;
-        salaries[nextSalaryId] = Salary({
-            company: _msgSender(),
-            isCompounding: false,
-            isEntity: true,
-            streamId: streamId
-        });
-
-        emit CreateSalary(nextSalaryId, streamId, false);
-        nextSalaryId = nextSalaryId.add(1);
-    }
-
-    function createCompoundingSalaryInternal(
-        address employee,
-        uint256 salary,
-        address tokenAddress,
-        uint256 startTime,
-        uint256 stopTime
-    ) internal returns (uint256 salaryId) {
-        require(isWhitelistedToken(tokenAddress), "token not whitelisted");
-        address cTokenAddress = tokenStructs[tokenAddress].cTokenAddress;
-        ICERC20 cToken = ICERC20(cTokenAddress);
-        uint256 preMintCTokenBalance = cToken.balanceOf(address(this));
-        require(IERC20(tokenAddress).approve(cTokenAddress, salary), "token approval failure");
-        require(cToken.mint(salary) == 0, "token minting failure");
-        uint256 postMintCTokenBalance = cToken.balanceOf(address(this));
-        uint256 mintAmount = postMintCTokenBalance.sub(preMintCTokenBalance);
-
-        require(cToken.approve(address(sablier), mintAmount), "token approval failure");
-        uint256 senderShare = 100;
-        uint256 recipientShare = 0;
-        uint256 streamId = sablier.createCompoundingStream(
-            employee,
-            mintAmount,
-            tokenAddress,
-            startTime,
-            stopTime,
-            senderShare,
-            recipientShare
-        );
-        salaryId = nextSalaryId;
-        salaries[nextSalaryId] = Salary({
-            company: _msgSender(),
-            isCompounding: true,
-            isEntity: true,
-            streamId: streamId
-        });
-
-        emit CreateSalary(nextSalaryId, streamId, true);
-        nextSalaryId = nextSalaryId.add(1);
+        success = sablier.withdrawFromStream(salary.streamId, amount);
+        emit WithdrawFromSalary(salaryId, salary.streamId);
     }
 }
