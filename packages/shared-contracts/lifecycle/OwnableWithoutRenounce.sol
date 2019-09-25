@@ -6,10 +6,12 @@ import "@openzeppelin/upgrades/contracts/Initializable.sol";
 /**
  * @title OwnableWithoutRenounce
  * @author Sablier
- * @dev Fork of OpenZeppelin's Ownable contract, which provides basic authorization control.
- *  Here, we remove the `renounceOwnership` function to avoid fat-finger errors.
+ * @dev Fork of OpenZeppelin's Ownable contract, which provides basic authorization control, but
+ *  with the `renounceOwnership` function removed to avoid fat-finger errors.
+ *  We inherit from `Context` to keep this contract compatible with the Gas Station Network.
  * See https://github.com/OpenZeppelin/openzeppelin-contracts-ethereum-package/blob/master/contracts/ownership/Ownable.sol
  * See https://forum.openzeppelin.com/t/contract-request-ownable-without-renounceownership/1400
+ * See https://docs.openzeppelin.com/contracts/2.x/gsn#_msg_sender_and_msg_data
  */
 contract OwnableWithoutRenounce is Initializable, Context {
     address private _owner;

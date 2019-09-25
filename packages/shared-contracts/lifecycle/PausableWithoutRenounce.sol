@@ -6,9 +6,11 @@ import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
 /**
  * @notice Fork of OpenZeppelin's Pausable, a contract module which allows children to implement
- *  an emergency stop mechanism that can be triggered by an authorized account. Here, we removed
- *  the `renouncePauser` function to avoid fat-finger errors.
+ *  an emergency stop mechanism that can be triggered by an authorized account, but with the
+ *  `renouncePauser` function removed to avoid fat-finger errors.
+ *  We inherit from `Context` to keep this contract compatible with the Gas Station Network.
  * See https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/lifecycle/Pausable.sol
+ * See https://docs.openzeppelin.com/contracts/2.x/gsn#_msg_sender_and_msg_data
  */
 contract PausableWithoutRenounce is Initializable, Context, PauserRole {
     /**
