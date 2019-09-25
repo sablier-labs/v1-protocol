@@ -1,4 +1,4 @@
-pragma solidity 0.5.10;
+pragma solidity 0.5.11;
 
 /**
  * @title ERC-1620 Money Streaming Standard

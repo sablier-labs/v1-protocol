@@ -1,4 +1,4 @@
-pragma solidity 0.5.10;
+pragma solidity 0.5.11;
 
 /**
  * @title ERC 20 Token Standard Interface
