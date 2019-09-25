@@ -5,14 +5,13 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol
 
 import "../compound/EIP20NonStandardInterface.sol";
 import "../compound/EIP20Interface.sol";
-import "../compound/TokenErrorReporter.sol";
 
 /**
  * @title CERC20 Mock
  * @author Sablier
  * @dev See https://compound.finance/developers
  */
-contract CERC20Mock is TokenErrorReporter, ERC20 {
+contract CERC20Mock is ERC20 {
     using SafeMath for uint256;
 
     /**
