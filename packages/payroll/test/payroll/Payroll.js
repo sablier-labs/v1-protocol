@@ -13,17 +13,19 @@ Sablier.numberFormat = "BigNumber";
 
 const { STANDARD_SALARY } = devConstants;
 
-contract("Payroll", function([_, alice, bob, carol, eve]) {
+contract("Payroll", function([alice, bob, carol, eve]) {
   beforeEach(async function() {
-    this.token = await ERC20Mock.new();
-    await this.token.mint(alice, STANDARD_SALARY.toString(10));
+    const opts = { from: alice };
+    this.token = await ERC20Mock.new(opts);
+    await this.token.mint(alice, STANDARD_SALARY.toString(10), opts);
 
-    this.nonStandardERC20Token = await NonStandardERC20.new();
-    this.nonStandardERC20Token.nonStandardMint(alice, STANDARD_SALARY.toString(10));
+    this.nonStandardERC20Token = await NonStandardERC20.new(opts);
+    this.nonStandardERC20Token.nonStandardMint(alice, STANDARD_SALARY.toString(10), opts);
 
-    this.sablier = await Sablier.new();
-    this.payroll = await Payroll.new();
-    await this.payroll.initialize(alice, this.sablier.address);
+    this.sablier = await Sablier.new(opts);
+    this.payroll = await Payroll.new(opts);
+
+    await this.payroll.methods["initialize(address)"](this.sablier.address, opts);
   });
 
   shouldBehaveLikePayroll(alice, bob, carol, eve);
