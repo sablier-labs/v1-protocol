@@ -11,13 +11,6 @@ function shouldBehaveLikeInterestOf(alice, bob) {
   const opts = { from: sender };
   const now = new BigNumber(dayjs().unix());
 
-  describe("when the stream does not exist", function() {
-    it("reverts", async function() {
-      const streamId = new BigNumber(419863);
-      await truffleAssert.reverts(this.sablier.interestOf(streamId, deposit, opts), "stream does not exist");
-    });
-  });
-
   describe("when the compounding stream vars do not exist", function() {
     let streamId;
     const recipient = bob;
@@ -30,8 +23,18 @@ function shouldBehaveLikeInterestOf(alice, bob) {
       streamId = Number(result.logs[0].args.streamId);
     });
 
+    it("returns 0", async function() {
+      const result = await this.sablier.contract.methods.interestOf(streamId, deposit).call();
+      result.senderInterest.should.be.bignumber.equal(new BigNumber(0));
+      result.recipientInterest.should.be.bignumber.equal(new BigNumber(0));
+      result.sablierInterest.should.be.bignumber.equal(new BigNumber(0));
+    });
+  });
+
+  describe("when the stream does not exist", function() {
     it("reverts", async function() {
-      await truffleAssert.reverts(this.sablier.interestOf(streamId, deposit), "compounding stream vars do not exist");
+      const streamId = new BigNumber(419863);
+      await truffleAssert.reverts(this.sablier.interestOf(streamId, deposit, opts), "stream does not exist");
     });
   });
 }

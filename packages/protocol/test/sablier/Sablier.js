@@ -27,7 +27,7 @@ contract("Sablier", function sablier([alice, bob, carol, eve]) {
     this.nonStandardERC20Token = await NonStandardERC20.new(opts);
     this.nonStandardERC20Token.nonStandardMint(alice, STANDARD_SALARY.toString(10), opts);
 
-    this.sablier = await Sablier.new();
+    this.sablier = await Sablier.new(opts);
   });
 
   shouldBehaveLikeSablier(alice, bob, carol, eve);
