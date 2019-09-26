@@ -14,9 +14,9 @@
     "@openzeppelin/contracts-ethereum-package": "2.2.3"
   },
   "devDependencies": {
-    "@sablier/shared-contracts": "0.0.1",
     "@sablier/dev-utils": "0.0.1",
     "@sablier/eslint-config": "0.0.1",
+    "@sablier/shared-contracts": "0.0.1",
     "@truffle/hdwallet-provider": "^1.0.18",
     "bignumber.js": "8.1.1",
     "chai": "^4.2.0",

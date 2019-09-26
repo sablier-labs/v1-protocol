@@ -17,8 +17,8 @@
   },
   "devDependencies": {
     "@sablier/dev-utils": "0.0.1",
-    "@sablier/shared-contracts": "0.0.1",
     "@sablier/eslint-config": "0.0.1",
+    "@sablier/shared-contracts": "0.0.1",
     "@truffle/hdwallet-provider": "^1.0.18",
     "dotenv": "^7.0.0",
     "eslint": "^6.1.0",
