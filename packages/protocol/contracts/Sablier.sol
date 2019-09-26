@@ -119,8 +119,8 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     /**
      * @dev Throws if the id does not point to a valid compounding stream.
      */
-    modifier compoundingStreamVarsExist(uint256 streamId) {
-        require(compoundingStreamsVars[streamId].isEntity, "compounding stream vars do not exist");
+    modifier compoundingStreamExists(uint256 streamId) {
+        require(compoundingStreamsVars[streamId].isEntity, "compounding stream does not exist");
         _;
     }
 
@@ -217,7 +217,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     /*** View Functions ***/
 
     /**
-     * @notice Returns the stream object with all its parameters.
+     * @notice Returns the compounding stream with all its properties.
      * @dev Throws if the id does not point to a valid stream.
      * @param streamId The id of the stream to query.
      * @return The stream object.
@@ -237,38 +237,14 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
             uint256 ratePerSecond
         )
     {
-        Types.Stream memory stream = streams[streamId];
-        return (
-            stream.sender,
-            stream.recipient,
-            stream.deposit,
-            stream.tokenAddress,
-            stream.startTime,
-            stream.stopTime,
-            stream.remainingBalance,
-            stream.ratePerSecond
-        );
-    }
-
-    /**
-     * @notice Returns the compounding stream vars object with all its parameters.
-     * @dev Throws if the id does not point to a valid compounding stream.
-     * @param streamId The id of the compounding stream to query.
-     * @return The compounding stream vars object.
-     */
-    function getCompoundingStreamVars(uint256 streamId)
-        external
-        view
-        streamExists(streamId)
-        compoundingStreamVarsExist(streamId)
-        returns (uint256 exchangeRateInitial, uint256 senderSharePercentage, uint256 recipientSharePercentage)
-    {
-        Types.CompoundingStreamVars memory compoundingStreamVars = compoundingStreamsVars[streamId];
-        return (
-            compoundingStreamVars.exchangeRateInitial.mantissa,
-            compoundingStreamVars.senderShare.mantissa,
-            compoundingStreamVars.recipientShare.mantissa
-        );
+        sender = streams[streamId].sender;
+        recipient = streams[streamId].recipient;
+        deposit = streams[streamId].deposit;
+        tokenAddress = streams[streamId].tokenAddress;
+        startTime = streams[streamId].startTime;
+        stopTime = streams[streamId].stopTime;
+        remainingBalance = streams[streamId].remainingBalance;
+        ratePerSecond = streams[streamId].ratePerSecond;
     }
 
     /**
@@ -329,6 +305,62 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
             return vars.senderBalance;
         }
         return 0;
+    }
+
+    /**
+     * @notice Checks if the given token address is one of the whitelisted cTokens.
+     * @param tokenAddress The address of the token to check.
+     * @return bool true=it is cToken, otherwise false.
+     */
+    function isCToken(address tokenAddress) public view returns (bool) {
+        return cTokens[tokenAddress];
+    }
+
+    /**
+     * @notice Checks if the given id points to a compounding stream.
+     * @param streamId The id of the compounding stream to check.
+     * @return bool true=it is compounding stream, otherwise false.
+     */
+    function isCompoundingStream(uint256 streamId) public view returns (bool) {
+        return compoundingStreamsVars[streamId].isEntity;
+    }
+
+    /**
+     * @notice Returns the compounding stream object with all its properties.
+     * @dev Throws if the id does not point to a valid compounding stream.
+     * @param streamId The id of the compounding stream to query.
+     * @return The compounding stream object.
+     */
+    function getCompoundingStream(uint256 streamId)
+        external
+        view
+        streamExists(streamId)
+        compoundingStreamExists(streamId)
+        returns (
+            address sender,
+            address recipient,
+            uint256 deposit,
+            address tokenAddress,
+            uint256 startTime,
+            uint256 stopTime,
+            uint256 remainingBalance,
+            uint256 ratePerSecond,
+            uint256 exchangeRateInitial,
+            uint256 senderSharePercentage,
+            uint256 recipientSharePercentage
+        )
+    {
+        sender = streams[streamId].sender;
+        recipient = streams[streamId].recipient;
+        deposit = streams[streamId].deposit;
+        tokenAddress = streams[streamId].tokenAddress;
+        startTime = streams[streamId].startTime;
+        stopTime = streams[streamId].stopTime;
+        remainingBalance = streams[streamId].remainingBalance;
+        ratePerSecond = streams[streamId].ratePerSecond;
+        exchangeRateInitial = compoundingStreamsVars[streamId].exchangeRateInitial.mantissa;
+        senderSharePercentage = compoundingStreamsVars[streamId].senderShare.mantissa;
+        recipientSharePercentage = compoundingStreamsVars[streamId].recipientShare.mantissa;
     }
 
     struct InterestOfLocalVars {
@@ -432,24 +464,6 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
         /* Truncating the results means losing everything on the last 1e18 positions of the mantissa */
         return (truncate(vars.senderInterest), truncate(vars.recipientInterest), truncate(vars.sablierInterest));
-    }
-
-    /**
-     * @notice Checks if the given id points to a compounding stream.
-     * @param streamId The id of the stream to check.
-     * @return bool true=it is compounding stream, otherwise false.
-     */
-    function isCompoundingStream(uint256 streamId) public view returns (bool) {
-        return compoundingStreamsVars[streamId].isEntity;
-    }
-
-    /**
-     * @notice Checks if the given token address is one of the whitelisted cTokens.
-     * @param tokenAddress The address of the token to check.
-     * @return bool true=it is cToken, otherwise false.
-     */
-    function isCToken(address tokenAddress) public view returns (bool) {
-        return cTokens[tokenAddress];
     }
 
     /**
