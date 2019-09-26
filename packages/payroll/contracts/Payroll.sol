@@ -205,7 +205,7 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     }
 
     /**
-     * @notice Returns the salary object with all its parameters.
+     * @notice Returns the salary object with all its properties.
      * @dev Throws if the id does not point to a valid salary.
      * @param salaryId The id of the salary to query.
      * @return The salary object.
@@ -221,12 +221,12 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
             address tokenAddress,
             uint256 startTime,
             uint256 stopTime,
-            uint256 balance,
+            uint256 remainingBalance,
             uint256 rate
         )
     {
         company = salaries[salaryId].company;
-        (, employee, salary, tokenAddress, startTime, stopTime, balance, rate) = sablier.getStream(
+        (, employee, salary, tokenAddress, startTime, stopTime, remainingBalance, rate) = sablier.getStream(
             salaries[salaryId].streamId
         );
     }
@@ -273,7 +273,10 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
 
     /**
      * @notice Creates a new compounding salary and a compounding stream for it.
-     * @dev Throws if there is a math error.
+     * @dev There's a bit of redundancy between `createSalary` and this function, but one has to
+     *  call `sablier.createStream` and the other `sablier.createCompoundingStream`, so it's not
+     *  worth it to run DRY code.
+     *  Throws if there is a math error.
      *  Throws if there is a token transfer failure.
      * @param employee The address of the employee who receives the salary.
      * @param salary The amount of tokens to be streamed.
@@ -317,7 +320,8 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
         (vars.mathErr, nextSalaryId) = addUInt(nextSalaryId, uint256(1));
         require(vars.mathErr == MathError.NO_ERROR, "next stream id calculation error");
 
-        emit CreateCompoundingSalary(salaryId, streamId);
+        /* We don't emit a different event for compounding salaries because we emit CreateCompoundingStream. */
+        emit CreateSalary(salaryId, streamId);
     }
 
     struct CancelSalaryLocalVars {
