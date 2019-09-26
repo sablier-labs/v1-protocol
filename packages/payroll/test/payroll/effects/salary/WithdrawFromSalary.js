@@ -53,11 +53,11 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
         });
 
         describe("when the withdrawal amount is not within the available balance", function() {
-          const amount = FIVE_UNITS.multipliedBy(2).toString(10);
+          const withdrawalAmount = FIVE_UNITS.multipliedBy(2).toString(10);
 
           it("reverts", async function() {
             await truffleAssert.reverts(
-              this.payroll.withdrawFromSalary(salaryId, amount, opts),
+              this.payroll.withdrawFromSalary(salaryId, withdrawalAmount, opts),
               "amount exceeds the available balance",
             );
           });
@@ -95,11 +95,11 @@ function shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve) {
         });
 
         describe("when the withdrawal amount is not within the available balance", function() {
-          const amount = FIVE_UNITS.multipliedBy(2).toString(10);
+          const withdrawalAmount = FIVE_UNITS.multipliedBy(2).toString(10);
 
           it("reverts", async function() {
             await truffleAssert.reverts(
-              this.payroll.withdrawFromSalary(salaryId, amount, opts),
+              this.payroll.withdrawFromSalary(salaryId, withdrawalAmount, opts),
               "amount exceeds the available balance",
             );
           });

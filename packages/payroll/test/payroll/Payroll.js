@@ -33,7 +33,7 @@ contract("Payroll", function([alice, bob, carol, eve]) {
     this.payroll = await Payroll.new(opts);
 
     // See https://github.com/trufflesuite/truffle/issues/737#issuecomment-454892913
-    await this.payroll.methods["initialize(address)"](this.sablier.address, opts);
+    await this.payroll.methods["initialize(address,address,address)"](alice, alice, this.sablier.address, opts);
   });
 
   shouldBehaveLikePayroll(alice, bob, carol, eve);

@@ -41,7 +41,7 @@ function shouldBehaveLikeCreateSalary(alice, bob) {
         salaryObject.rate.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND);
       });
 
-      it("transfers the tokens", async function() {
+      it("transfers the tokens to the contract", async function() {
         const balance = await this.token.balanceOf(company);
         await this.payroll.createSalary(employee, salary, this.token.address, startTime, stopTime, opts);
         const newBalance = await this.token.balanceOf(company);
@@ -55,7 +55,7 @@ function shouldBehaveLikeCreateSalary(alice, bob) {
         newNextSalaryId.should.be.bignumber.equal(nextSalaryId.plus(1));
       });
 
-      it("emits an createsalary event", async function() {
+      it("emits a createsalary event", async function() {
         const result = await this.payroll.createSalary(employee, salary, this.token.address, startTime, stopTime, opts);
         truffleAssert.eventEmitted(result, "CreateSalary");
       });

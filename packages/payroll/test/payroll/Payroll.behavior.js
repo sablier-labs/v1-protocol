@@ -9,6 +9,7 @@ const shouldBehaveLikeCreateSalary = require("./effects/salary/CreateSalary");
 const shouldBehaveLikeCreateCompoundingSalary = require("./effects/compoundingSalary/CreateCompoundingSalary");
 const shouldBehaveLikeWithdrawFromSalary = require("./effects/salary/WithdrawFromSalary");
 const shouldBehaveLikeCancelSalary = require("./effects/salary/CancelSalary");
+const shouldBehaveLikeCancelCompoundingSalary = require("./effects/compoundingSalary/CancelCompoundingSalary");
 
 function shouldBehaveLikePayroll(alice, bob, carol, eve) {
   let snapshotId;
@@ -33,10 +34,6 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
   });
 
   describe("view functions", function() {
-    // describe("acceptRelayedCall", function() {
-    //   shouldBehaveLikeAcceptRelayedCall(alice, bob, carol, eve);
-    // });
-
     describe("getSalary", function() {
       shouldBehaveLikeGetSalary(alice);
     });
@@ -51,12 +48,20 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
       shouldBehaveLikeCreateCompoundingSalary(alice, bob);
     });
 
+    /**
+     * We don't run tests for compounding stream withdrawals because they behave exactly the same as normal stream
+     * withdrawals, from the point of view of the payroll proxy.
+     */
     describe("withdrawFromSalary", function() {
       shouldBehaveLikeWithdrawFromSalary(alice, bob, carol, eve);
     });
 
     describe("cancelSalary", function() {
       shouldBehaveLikeCancelSalary(alice, bob, eve);
+    });
+
+    describe("cancelCompoundingSalary", function() {
+      shouldBehaveLikeCancelCompoundingSalary(alice, bob, eve);
     });
   });
 }

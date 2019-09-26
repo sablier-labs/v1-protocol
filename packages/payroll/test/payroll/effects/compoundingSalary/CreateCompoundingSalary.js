@@ -13,6 +13,11 @@ const {
   STANDARD_TIME_OFFSET,
 } = devConstants;
 
+/**
+ * We do not tests all the logical branches as in `CreateSalary.js`, because these are unit tests.
+ * The `createCompoundingSalary` method uses `createStream`, so if that fails with non-compliant erc20
+ * or insufficient allowances, this must fail too.
+ */
 function shouldBehaveLikeCreateCompoundingSalary(alice, bob) {
   const company = alice;
   const employee = bob;
@@ -26,19 +31,14 @@ function shouldBehaveLikeCreateCompoundingSalary(alice, bob) {
     await this.cToken.approve(this.payroll.address, salary, opts);
   });
 
-  /**
-   * Note that we do not tests the same branches as in `CreateSalary.js`, because these are unit tests.
-   * The `createCompoundingSalary` method uses `createStream`, so if that fails with non-compliant erc20
-   * or insufficient allowances, this must fail too.
-   */
   describe("when the cToken is whitelisted", function() {
     beforeEach(async function() {
       await this.sablier.whitelistCToken(this.cToken.address, opts);
     });
 
     describe("when interest shares are valid", function() {
-      const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
-      const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
+      const companySharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+      const employeeSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
       it("creates the compounding salary", async function() {
         const result = await this.payroll.createCompoundingSalary(
@@ -47,8 +47,8 @@ function shouldBehaveLikeCreateCompoundingSalary(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderSharePercentage,
-          recipientSharePercentage,
+          companySharePercentage,
+          employeeSharePercentage,
           opts,
         );
         const exchangeRateInitial = new BigNumber(await this.cToken.contract.methods.exchangeRateCurrent().call());
@@ -69,14 +69,14 @@ function shouldBehaveLikeCreateCompoundingSalary(alice, bob) {
         const compoundingStreamObject = await this.sablier.contract.methods.getCompoundingStream(streamId).call();
         compoundingStreamObject.exchangeRateInitial.should.be.bignumber.equal(exchangeRateInitial);
         compoundingStreamObject.senderSharePercentage.should.be.bignumber.equal(
-          senderSharePercentage.multipliedBy(ONE_PERCENT_MANTISSA),
+          companySharePercentage.multipliedBy(ONE_PERCENT_MANTISSA),
         );
         compoundingStreamObject.recipientSharePercentage.should.be.bignumber.equal(
-          recipientSharePercentage.multipliedBy(ONE_PERCENT_MANTISSA),
+          employeeSharePercentage.multipliedBy(ONE_PERCENT_MANTISSA),
         );
       });
 
-      it("transfers the tokens", async function() {
+      it("transfers the tokens to the contract", async function() {
         const balance = await this.cToken.balanceOf(company);
         await this.payroll.createCompoundingSalary(
           employee,
@@ -84,8 +84,8 @@ function shouldBehaveLikeCreateCompoundingSalary(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderSharePercentage,
-          recipientSharePercentage,
+          companySharePercentage,
+          employeeSharePercentage,
           opts,
         );
         const newBalance = await this.cToken.balanceOf(company);
@@ -100,23 +100,23 @@ function shouldBehaveLikeCreateCompoundingSalary(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderSharePercentage,
-          recipientSharePercentage,
+          companySharePercentage,
+          employeeSharePercentage,
           opts,
         );
         const newNextSalaryId = await this.payroll.nextSalaryId();
         newNextSalaryId.should.be.bignumber.equal(nextSalaryId.plus(1));
       });
 
-      it("emits an createsalary event", async function() {
+      it("emits a createsalary event", async function() {
         const result = await this.payroll.createCompoundingSalary(
           employee,
           salary,
           this.cToken.address,
           startTime,
           stopTime,
-          senderSharePercentage,
-          recipientSharePercentage,
+          companySharePercentage,
+          employeeSharePercentage,
           opts,
         );
         truffleAssert.eventEmitted(result, "CreateSalary");
@@ -124,8 +124,8 @@ function shouldBehaveLikeCreateCompoundingSalary(alice, bob) {
     });
 
     describe("when interest shares are not valid", function() {
-      const senderSharePercentage = new BigNumber(40);
-      const recipientSharePercentage = new BigNumber(140);
+      const companySharePercentage = new BigNumber(40);
+      const employeeSharePercentage = new BigNumber(140);
 
       it("reverts", async function() {
         await truffleAssert.reverts(
@@ -135,8 +135,8 @@ function shouldBehaveLikeCreateCompoundingSalary(alice, bob) {
             this.cToken.address,
             startTime,
             stopTime,
-            senderSharePercentage,
-            recipientSharePercentage,
+            companySharePercentage,
+            employeeSharePercentage,
             opts,
           ),
           "shares do not sum up to 100",
@@ -146,8 +146,8 @@ function shouldBehaveLikeCreateCompoundingSalary(alice, bob) {
   });
 
   describe("when the cToken is not whitelisted", function() {
-    const senderSharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
-    const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
+    const companySharePercentage = STANDARD_SENDER_SHARE_PERCENTAGE;
+    const employeeSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
     it("reverts", async function() {
       await truffleAssert.reverts(
@@ -157,8 +157,8 @@ function shouldBehaveLikeCreateCompoundingSalary(alice, bob) {
           this.cToken.address,
           startTime,
           stopTime,
-          senderSharePercentage,
-          recipientSharePercentage,
+          companySharePercentage,
+          employeeSharePercentage,
           opts,
         ),
         "cToken is not whitelisted",
