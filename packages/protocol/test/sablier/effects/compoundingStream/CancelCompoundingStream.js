@@ -24,7 +24,7 @@ function runTests() {
       it("cancels the stream", async function() {
         await this.sablier.cancelStream(this.streamId, this.opts);
         await truffleAssert.reverts(this.sablier.getStream(this.streamId), "stream does not exist");
-        await truffleAssert.reverts(this.sablier.getCompoundingStreamVars(this.streamId), "stream does not exist");
+        await truffleAssert.reverts(this.sablier.getCompoundingStream(this.streamId), "stream does not exist");
       });
     });
 
@@ -34,7 +34,7 @@ function runTests() {
       it("cancels the stream", async function() {
         await this.sablier.cancelStream(this.streamId, this.opts);
         await truffleAssert.reverts(this.sablier.getStream(this.streamId), "stream does not exist");
-        await truffleAssert.reverts(this.sablier.getCompoundingStreamVars(this.streamId), "stream does not exist");
+        await truffleAssert.reverts(this.sablier.getCompoundingStream(this.streamId), "stream does not exist");
       });
 
       it("transfers the tokens and pays the interest to the sender of the stream", async function() {
@@ -69,7 +69,7 @@ function runTests() {
       it("pays the interest to the sablier contract", async function() {
         const earnings = await this.sablier.getEarnings(this.cToken.address);
         const balance = await this.cToken.balanceOf(this.sablier.address, this.opts);
-        const stream = await this.sablier.contract.methods.getStream(this.streamId).call();
+        const { remainingBalance } = await this.sablier.contract.methods.getStream(this.streamId).call();
         const { sablierInterest } = await this.sablier.contract.methods
           .interestOf(this.streamId, recipientBalance)
           .call();
@@ -80,7 +80,7 @@ function runTests() {
         // The sender and the recipient's interests are included in `stream.remainingBalance`,
         // so we don't subtract them again
         newBalance.should.tolerateTheBlockTimeVariation(
-          balance.minus(stream.remainingBalance).plus(sablierInterest),
+          balance.minus(remainingBalance).plus(sablierInterest),
           STANDARD_SCALE_INTEREST,
         );
       });
@@ -102,7 +102,7 @@ function runTests() {
       it("cancels the stream", async function() {
         await this.sablier.cancelStream(this.streamId, this.opts);
         await truffleAssert.reverts(this.sablier.getStream(this.streamId), "stream does not exist");
-        await truffleAssert.reverts(this.sablier.getCompoundingStreamVars(this.streamId), "stream does not exist");
+        await truffleAssert.reverts(this.sablier.getCompoundingStream(this.streamId), "stream does not exist");
       });
 
       it("transfers the tokens and pays the interest to the sender of the stream", async function() {
@@ -167,7 +167,7 @@ function runTests() {
       it("cancels the stream", async function() {
         await this.sablier.cancelStream(this.streamId, this.opts);
         await truffleAssert.reverts(this.sablier.getStream(this.streamId), "stream does not exist");
-        await truffleAssert.reverts(this.sablier.getCompoundingStreamVars(this.streamId), "stream does not exist");
+        await truffleAssert.reverts(this.sablier.getCompoundingStream(this.streamId), "stream does not exist");
       });
     });
   });

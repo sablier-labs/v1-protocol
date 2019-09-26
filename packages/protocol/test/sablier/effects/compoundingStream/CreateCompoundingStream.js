@@ -4,6 +4,7 @@ const BigNumber = require("bignumber.js");
 const truffleAssert = require("truffle-assertions");
 
 const {
+  ONE_PERCENT_MANTISSA,
   STANDARD_RATE_PER_SECOND_CTOKEN,
   STANDARD_RECIPIENT_SHARE_PERCENTAGE,
   STANDARD_SALARY_CTOKEN,
@@ -21,6 +22,11 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
   const startTime = now.plus(STANDARD_TIME_OFFSET);
   const stopTime = startTime.plus(STANDARD_TIME_DELTA);
 
+  /**
+   * Note that we do not tests the same branches as in `CreateStream.js`, because these are unit tests.
+   * The `createCompoundingStream` method uses `createStream`, so if that fails with non-compliant erc20
+   * or insufficient allowances, this must fail too.
+   */
   describe("when not paused", function() {
     describe("when the cToken is whitelisted", function() {
       beforeEach(async function() {
@@ -33,7 +39,6 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
         const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
         it("creates the compounding stream", async function() {
-          const exchangeRateInitial = new BigNumber(await this.cToken.contract.methods.exchangeRateCurrent().call());
           const result = await this.sablier.createCompoundingStream(
             recipient,
             deposit,
@@ -44,33 +49,28 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
             recipientSharePercentage,
             opts,
           );
+          const exchangeRateInitial = new BigNumber(await this.cToken.contract.methods.exchangeRateCurrent().call());
+
           const streamId = Number(result.logs[0].args.streamId);
-
-          // We have to force-call the `getStream` method via the web3.eth.Contract api, otherwise
-          // solidity-coverage will turn it into a state-changing method
-          const stream = await this.sablier.contract.methods.getStream(streamId).call();
-          stream.sender.should.be.equal(sender);
-          stream.recipient.should.be.equal(recipient);
-          stream.deposit.should.be.bignumber.equal(deposit);
-          stream.tokenAddress.should.be.equal(this.cToken.address);
-          stream.startTime.should.be.bignumber.equal(startTime);
-          stream.stopTime.should.be.bignumber.equal(stopTime);
-          stream.remainingBalance.should.be.bignumber.equal(deposit);
-          stream.ratePerSecond.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND_CTOKEN);
-
-          // The exchange rate increased because the block number increased
-          const compoundingStreamVars = await this.sablier.contract.methods.getCompoundingStreamVars(streamId).call();
-          compoundingStreamVars.exchangeRateInitial.should.be.bignumber.equal(exchangeRateInitial);
-          // senderSharePercentage and recipientSharePercentage are mantissas
-          compoundingStreamVars.senderSharePercentage.should.be.bignumber.equal(
-            senderSharePercentage.multipliedBy(1e16),
+          const compoundingStreamObject = await this.sablier.contract.methods.getCompoundingStream(streamId).call();
+          compoundingStreamObject.sender.should.be.equal(sender);
+          compoundingStreamObject.recipient.should.be.equal(recipient);
+          compoundingStreamObject.deposit.should.be.bignumber.equal(deposit);
+          compoundingStreamObject.tokenAddress.should.be.equal(this.cToken.address);
+          compoundingStreamObject.startTime.should.be.bignumber.equal(startTime);
+          compoundingStreamObject.stopTime.should.be.bignumber.equal(stopTime);
+          compoundingStreamObject.remainingBalance.should.be.bignumber.equal(deposit);
+          compoundingStreamObject.ratePerSecond.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND_CTOKEN);
+          compoundingStreamObject.exchangeRateInitial.should.be.bignumber.equal(exchangeRateInitial);
+          compoundingStreamObject.senderSharePercentage.should.be.bignumber.equal(
+            senderSharePercentage.multipliedBy(ONE_PERCENT_MANTISSA),
           );
-          compoundingStreamVars.recipientSharePercentage.should.be.bignumber.equal(
-            recipientSharePercentage.multipliedBy(1e16),
+          compoundingStreamObject.recipientSharePercentage.should.be.bignumber.equal(
+            recipientSharePercentage.multipliedBy(ONE_PERCENT_MANTISSA),
           );
         });
 
-        it("transfers the token", async function() {
+        it("transfers the tokens", async function() {
           const balance = await this.cToken.balanceOf(sender, opts);
           await this.sablier.createCompoundingStream(
             recipient,
@@ -103,7 +103,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
 
       describe("when interest shares are not valid", function() {
         const senderSharePercentage = new BigNumber(40);
-        const recipientSharePercentage = new BigNumber(40);
+        const recipientSharePercentage = new BigNumber(140);
 
         it("reverts", async function() {
           await truffleAssert.reverts(

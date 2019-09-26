@@ -8,9 +8,10 @@ const shouldBehaveLikeTakeEarnings = require("./admin/TakeEarnings");
 const shouldBehaveLikeDeltaOf = require("./view/DeltaOf");
 const shouldBehaveLikeBalanceOf = require("./view/BalanceOf");
 const shouldBehaveLikeGetStream = require("./view/GetStream");
-const shouldBehaveLikeGetCompoundingStreamVars = require("./view/GetCompoundingStreamVars");
+const shouldBehaveLikeGetCompoundingStream = require("./view/GetCompoundingStream");
 const shouldBehaveLikeInterestOf = require("./view/InterestOf");
 const shouldBehaveLikeGetEarnings = require("./view/GetEarnings");
+const shouldBehaveLikeIsCompoundingStream = require("./view/IsCompoundingStream");
 
 const shouldBehaveLikeERC1620CreateStream = require("./effects/stream/CreateStream");
 const shouldBehaveLikeCreateCompoundingStream = require("./effects/compoundingStream/CreateCompoundingStream");
@@ -56,16 +57,20 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
       shouldBehaveLikeGetStream(alice);
     });
 
-    describe("getCompoundingStreamVars", function() {
-      shouldBehaveLikeGetCompoundingStreamVars(alice, bob);
-    });
-
     describe("deltaOf", function() {
       shouldBehaveLikeDeltaOf(alice, bob);
     });
 
     describe("balanceOf", function() {
       shouldBehaveLikeBalanceOf(alice, bob, carol);
+    });
+
+    describe("isCompoundingStream", function() {
+      shouldBehaveLikeIsCompoundingStream(alice, bob);
+    });
+
+    describe("getCompoundingStream", function() {
+      shouldBehaveLikeGetCompoundingStream(alice, bob);
     });
 
     describe("interestOf", function() {

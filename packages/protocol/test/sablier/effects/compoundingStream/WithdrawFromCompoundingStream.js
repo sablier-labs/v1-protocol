@@ -168,7 +168,7 @@ function runTests() {
       it("deletes the stream objects", async function() {
         await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
         await truffleAssert.reverts(this.sablier.getStream(this.streamId), "stream does not exist");
-        await truffleAssert.reverts(this.sablier.getCompoundingStreamVars(this.streamId), "stream does not exist");
+        await truffleAssert.reverts(this.sablier.getCompoundingStream(this.streamId), "stream does not exist");
       });
     });
   });

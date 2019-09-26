@@ -11,7 +11,7 @@ function shouldBehaveLikeInterestOf(alice, bob) {
   const opts = { from: sender };
   const now = new BigNumber(dayjs().unix());
 
-  describe("when the compounding stream vars do not exist", function() {
+  describe("when the compounding stream does not exist", function() {
     let streamId;
     const recipient = bob;
     const startTime = now.plus(STANDARD_TIME_OFFSET);

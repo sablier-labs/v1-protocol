@@ -44,17 +44,15 @@ function shouldBehaveLikeERC1620Stream(alice, bob) {
                       stopTime,
                       opts,
                     );
-                    // We have to force-call the `getStream` method via the web3.eth.Contract api, otherwise
-                    // solidity-coverage will turn it into a state-changing method
-                    const stream = await this.sablier.getStream(Number(result.logs[0].args.streamId));
-                    stream.sender.should.be.equal(sender);
-                    stream.recipient.should.be.equal(recipient);
-                    stream.deposit.should.be.bignumber.equal(deposit);
-                    stream.tokenAddress.should.be.equal(this.token.address);
-                    stream.startTime.should.be.bignumber.equal(startTime);
-                    stream.stopTime.should.be.bignumber.equal(stopTime);
-                    stream.remainingBalance.should.be.bignumber.equal(deposit);
-                    stream.ratePerSecond.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND);
+                    const streamObject = await this.sablier.getStream(Number(result.logs[0].args.streamId));
+                    streamObject.sender.should.be.equal(sender);
+                    streamObject.recipient.should.be.equal(recipient);
+                    streamObject.deposit.should.be.bignumber.equal(deposit);
+                    streamObject.tokenAddress.should.be.equal(this.token.address);
+                    streamObject.startTime.should.be.bignumber.equal(startTime);
+                    streamObject.stopTime.should.be.bignumber.equal(stopTime);
+                    streamObject.remainingBalance.should.be.bignumber.equal(deposit);
+                    streamObject.ratePerSecond.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND);
                   });
 
                   it("transfers the tokens", async function() {

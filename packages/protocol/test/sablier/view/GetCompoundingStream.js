@@ -5,19 +5,12 @@ const truffleAssert = require("truffle-assertions");
 
 const { STANDARD_SALARY, STANDARD_TIME_OFFSET, STANDARD_TIME_DELTA } = devConstants;
 
-function shouldBehaveLikeGetCompoundingStreamVars(alice, bob) {
+function shouldBehaveLikeGetCompoundingStream(alice, bob) {
   const sender = alice;
   const opts = { from: sender };
   const now = new BigNumber(dayjs().unix());
 
-  describe("when the stream does not exist", function() {
-    it("reverts", async function() {
-      const streamId = new BigNumber(419863);
-      await truffleAssert.reverts(this.sablier.getCompoundingStreamVars(streamId, opts), "stream does not exist");
-    });
-  });
-
-  describe("when the compounding stream vars do not exist", function() {
+  describe("when the stream exists but is not compounding", function() {
     let streamId;
     const recipient = bob;
     const deposit = STANDARD_SALARY.toString(10);
@@ -32,11 +25,18 @@ function shouldBehaveLikeGetCompoundingStreamVars(alice, bob) {
 
     it("reverts", async function() {
       await truffleAssert.reverts(
-        this.sablier.getCompoundingStreamVars(streamId, opts),
-        "compounding stream vars do not exist",
+        this.sablier.getCompoundingStream(streamId, opts),
+        "compounding stream does not exist",
       );
+    });
+  });
+
+  describe("when the stream does not exist", function() {
+    it("reverts", async function() {
+      const streamId = new BigNumber(419863);
+      await truffleAssert.reverts(this.sablier.getCompoundingStream(streamId, opts), "stream does not exist");
     });
   });
 }
 
-module.exports = shouldBehaveLikeGetCompoundingStreamVars;
+module.exports = shouldBehaveLikeGetCompoundingStream;
