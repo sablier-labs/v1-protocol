@@ -9,11 +9,11 @@ import "@sablier/protocol/contracts/Sablier.sol";
 import "@sablier/protocol/contracts/Types.sol";
 
 import "@sablier/shared-contracts/compound/Exponential.sol";
-import "@sablier/shared-contracts/lifecycle/OwnableWithoutRenounce.sol";
 import "@sablier/shared-contracts/interfaces/ICERC20.sol";
+import "@sablier/shared-contracts/lifecycle/OwnableWithoutRenounce.sol";
 
 /**
- * @title Payroll Upgradeable Proxy
+ * @title Payroll Proxy
  * @author Sablier
  */
 contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecipient, GSNBouncerSignature {
@@ -113,12 +113,17 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     /*** Contract Logic Starts Here ***/
 
     /**
-     * @notice Only called once after the contract is deployed.
+     * @notice Only called once after the contract is deployed. We ask for the owner and the signer address
+     *  to be specified as parameters to avoid handling `msg.sender` directly.
      * @dev The `initializer` modifier ensures that the function can only be called once.
+     * @param ownerAddress The address of the contract owner.
+     * @param signerAddress The address of the account able to authorise relayed transactions.
      * @param sablierAddress The address of the Sablier contract.
      */
-    function initialize(address sablierAddress) public initializer {
-        OwnableWithoutRenounce.initialize(msg.sender);
+    function initialize(address ownerAddress, address signerAddress, address sablierAddress) public initializer {
+        OwnableWithoutRenounce.initialize(ownerAddress);
+        GSNRecipient.initialize();
+        GSNBouncerSignature.initialize(signerAddress);
         sablier = Sablier(sablierAddress);
         nextSalaryId = 1;
     }
