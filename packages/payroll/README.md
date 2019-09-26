@@ -1,6 +1,6 @@
 ## Contracts
 
-This package contains the Ethereum smart contracts for the Sablier protocol. We use [Truffle](https://github.com/trufflesuite/truffle)
+This package contains the Ethereum smart contracts for the Sablier payroll proxy. We use [Truffle](https://github.com/trufflesuite/truffle)
 as a development environment for compiling, testing, and deploying our contracts. They were written in [Solidity](https://github.com/ethereum/solidity).
 
 ## Pre Requisites

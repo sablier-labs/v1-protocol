@@ -1,6 +1,6 @@
 {
   "name": "@sablier/payroll",
-  "description": "Ethereum contracts for the payroll dapp",
+  "description": "Smart contracts for the payroll proxy",
   "version": "0.0.1",
   "author": {
     "name": "Sablier",

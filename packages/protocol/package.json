@@ -1,6 +1,6 @@
 {
   "name": "@sablier/protocol",
-  "description": "Ethereum contracts for the money streaming protocol",
+  "description": "Smart contracts for the money streaming protocol",
   "version": "0.1.0",
   "author": {
     "name": "Sablier",

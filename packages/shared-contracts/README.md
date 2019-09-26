@@ -1,6 +1,6 @@
 ## Shared Contracts
 
-Dev utils to be shared across Sablier projects and packages.
+Smart contracts to be shared across Sablier projects and packages.
 
 ## Usage
 

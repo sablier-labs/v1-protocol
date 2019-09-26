@@ -36,43 +36,32 @@ Sablier is maintained as a monorepo with multiple sub packages. Please find a co
 
 ### Deployed Packages
 
-| Package                                     | Version                                                                                                         | Description                                                 |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| [`@sablier/dev-utils`](/packages/dev-utils) | [![npm](https://img.shields.io/npm/v/@sablier/dev-utils.svg)](https://www.npmjs.com/package/@sablier/dev-utils) | Dev utils to be shared across Sablier projects and packages |
-| [`@sablier/payroll`](/packages/payroll)     | [![npm](https://img.shields.io/npm/v/@sablier/payroll.svg)](https://www.npmjs.com/package/@sablier/payroll)     | Payroll dapp contracts                                      |
-| [`@sablier/protocol`](/packages/protocol)   | [![npm](https://img.shields.io/npm/v/@sablier/protocol.svg)](https://www.npmjs.com/package/@sablier/protocol)   | Solidity smart contracts & tests                            |
+| Package                                                                                                                                                                              | Version                                                                                                         | Description                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| [`@sablier/dev-utils`](/packages/dev-utils)                                                                                                                                          | [![npm](https://img.shields.io/npm/v/@sablier/dev-utils.svg)](https://www.npmjs.com/package/@sablier/dev-utils) | Dev utils to be shared across Sablier projects and packages |
+| [`@sablier/payroll`](/packages/payroll)                                                                                                                                              | [![npm](https://img.shields.io/npm/v/@sablier/payroll.svg)](https://www.npmjs.com/package/@sablier/payroll)     | Smart contracts for the payroll proxy                       |
+| [`@sablier/protocol`](/packages/protocol)                                                                                                                                            | [![npm](https://img.shields.io/npm/v/@sablier/protocol.svg)](https://www.npmjs.com/package/@sablier/protocol)   | Smart contracts for the money streaming protocol            |
+| [`@sablier/shared-contracts`](/packages/shared-contracts![npm](https://img.shields.io/npm/v/@sablier/shared-contracts.svg)](https://www.npmjs.com/package/@sablier/shared-contracts) | Smart contracts to be shared across Sablier projects and packages                                               |
 
 ### Private Packages
 
 | Package                                             | Description   |
 | --------------------------------------------------- | ------------- |
 | [`@sablier/eslint-config`](/packages/eslint-config) | Eslint config |
-| [`@sablier/frontend`](/packages/frontend)           | Frontend app  |
 | [`@sablier/landing`](/packages/landing)             | Landing page  |
 
 ## Usage :hammer_and_pick:
 
-If you simply want to check out the beta dapp, you should head to [beta.sablier.app](https://beta.sablier.app)!
+If you want to use the dapp, head to [beta.sablier.app](https://beta.sablier.app).
 
-If you want to run it locally:
-
-```bash
-$ cd packages/frontend
-$ yarn install && yarn build
-```
-
-If you want to test Sablier on Rinkeby, make sure to create a `.env` file and mirror the contents of
-`.env.example`. In that file, you can also include any other variables and they will be set in `process.env`.
-
-Finally:
+If you want to check out and compile your smart contracts for yourself, head to each individual package as presented
+above. For example, here are the instructions for `@sablier/protocol`:
 
 ```bash
-$ yarn run start
+cd packages/protocol
+truffle compile --all
+truffle migrate --reset --network development
 ```
-
-You will also need some testnet DAI, which you can get by calling the `mint` method of this [contract](https://rinkeby.etherscan.io/address/0x8ad3aa5d5ff084307d28c8f514d7a193b2bfe725/).
-
-For all other commands, check out the contribution guide below.
 
 ## Contributing :raising_hand_woman:
 
@@ -84,13 +73,13 @@ as a development environment for compiling, testing, and deploying our contracts
 
 ### Requirements
 
-- yarn >=1.15.2
-- truffle >= 5.0.19
-- solidity >=0.5.0 <0.6.0
+- yarn >=1.17.3
+- truffle >= 5.0.35
+- solidity 0.5.11
 
 ### Pre Requisites
 
-Make sure you are using Yarn >=1.15.2. To install using homebrew:
+Make sure you are using Yarn >=1.17.3 To install using homebrew:
 
 ```bash
 $ brew install yarn
