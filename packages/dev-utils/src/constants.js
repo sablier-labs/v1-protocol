@@ -9,6 +9,7 @@ module.exports = {
   GAS_LIMIT: 6721975,
   INITIAL_EXCHANGE_RATE: new BigNumber(2e26),
   INITIAL_SUPPLY: STANDARD_SALARY.multipliedBy(1000),
+  ONE_PERCENT_MANTISSA: new BigNumber(1e16),
   ONE_UNIT: new BigNumber(1).multipliedBy(1e18),
   ONE_UNIT_CTOKEN: new BigNumber(1).multipliedBy(1e8),
   RPC_URL: "http://127.0.0.1:8545",
