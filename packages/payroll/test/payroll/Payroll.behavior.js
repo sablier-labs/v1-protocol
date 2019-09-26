@@ -6,6 +6,7 @@ const shouldBehaveLikeWhitelistRelayer = require("./admin/WhitelistRelayer");
 const shouldBehaveLikeGetSalary = require("./view/GetSalary");
 
 const shouldBehaveLikeCreateSalary = require("./effects/salary/CreateSalary");
+const shouldBehaveLikeCreateCompoundingSalary = require("./effects/compoundingSalary/CreateCompoundingSalary");
 const shouldBehaveLikeWithdrawFromSalary = require("./effects/salary/WithdrawFromSalary");
 const shouldBehaveLikeCancelSalary = require("./effects/salary/CancelSalary");
 
@@ -44,6 +45,10 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
   describe("effects & interactions functions", function() {
     describe("createSalary", function() {
       shouldBehaveLikeCreateSalary(alice, bob);
+    });
+
+    describe("createCompoundingSalary", function() {
+      shouldBehaveLikeCreateCompoundingSalary(alice, bob);
     });
 
     describe("withdrawFromSalary", function() {

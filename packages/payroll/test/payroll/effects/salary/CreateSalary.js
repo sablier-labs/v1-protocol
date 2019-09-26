@@ -29,14 +29,15 @@ function shouldBehaveLikeCreateSalary(alice, bob) {
 
       it("creates the salary", async function() {
         const result = await this.payroll.createSalary(employee, salary, this.token.address, startTime, stopTime, opts);
-        const salaryObject = await this.payroll.contract.methods.getSalary(Number(result.logs[0].args.salaryId)).call();
+        const salaryId = Number(result.logs[0].args.salaryId);
+        const salaryObject = await this.payroll.contract.methods.getSalary(salaryId).call();
         salaryObject.company.should.be.equal(company);
         salaryObject.employee.should.be.equal(employee);
         salaryObject.salary.should.be.bignumber.equal(salary);
         salaryObject.tokenAddress.should.be.equal(this.token.address);
         salaryObject.startTime.should.be.bignumber.equal(startTime);
         salaryObject.stopTime.should.be.bignumber.equal(stopTime);
-        salaryObject.balance.should.be.bignumber.equal(salary);
+        salaryObject.remainingBalance.should.be.bignumber.equal(salary);
         salaryObject.rate.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND);
       });
 
