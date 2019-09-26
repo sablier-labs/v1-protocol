@@ -103,7 +103,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     modifier onlySenderOrRecipient(uint256 streamId) {
         require(
             msg.sender == streams[streamId].sender || msg.sender == streams[streamId].recipient,
-            "caller is not the sender or the recipient of the stream of the stream"
+            "caller is not the sender or the recipient of the stream"
         );
         _;
     }
@@ -487,7 +487,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     /**
      * @notice Creates a new stream.
      * @dev Throws if paused.
-     *  Throws if the recipient is the zero address, the contract itself or `msg.sender`.
+     *  Throws if the recipient is the zero address, the contract itself or the caller.
      *  Throws if the deposit is 0.
      *  Throws if the start time is before `block.timestamp`.
      *  Throws if the stop time is before the start time.

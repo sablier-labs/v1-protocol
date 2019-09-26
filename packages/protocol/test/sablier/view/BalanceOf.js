@@ -42,17 +42,21 @@ function shouldBehaveLikeBalanceOf(alice, bob, carol) {
     });
 
     contextForStreamDidStartButNotEnd(function() {
-      const amount = FIVE_UNITS;
+      const streamedAmount = FIVE_UNITS.toString(10);
 
       it("returns the pro rata balance for the sender of the stream", async function() {
         const balance = await this.sablier.balanceOf(streamId, sender, opts);
         const tolerateByAddition = false;
-        balance.should.tolerateTheBlockTimeVariation(STANDARD_SALARY.minus(amount), STANDARD_SCALE, tolerateByAddition);
+        balance.should.tolerateTheBlockTimeVariation(
+          STANDARD_SALARY.minus(streamedAmount),
+          STANDARD_SCALE,
+          tolerateByAddition,
+        );
       });
 
       it("returns the pro rata balance for the recipient of the stream", async function() {
         const balance = await this.sablier.balanceOf(streamId, recipient, opts);
-        balance.should.tolerateTheBlockTimeVariation(amount, STANDARD_SCALE);
+        balance.should.tolerateTheBlockTimeVariation(streamedAmount, STANDARD_SCALE);
       });
 
       it("returns 0 for anyone else", async function() {

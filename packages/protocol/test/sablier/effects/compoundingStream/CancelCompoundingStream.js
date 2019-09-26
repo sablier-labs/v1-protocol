@@ -67,14 +67,14 @@ function runTests() {
       });
 
       it("pays the interest to the sablier contract", async function() {
-        const earnings = await this.sablier.getEarnings(this.cToken.address);
+        const earnings = await this.sablier.getEarnings(this.cToken.address, this.opts);
         const balance = await this.cToken.balanceOf(this.sablier.address, this.opts);
         const { remainingBalance } = await this.sablier.contract.methods.getStream(this.streamId).call();
         const { sablierInterest } = await this.sablier.contract.methods
           .interestOf(this.streamId, recipientBalance)
           .call();
         await this.sablier.cancelStream(this.streamId, this.opts);
-        const newEarnings = await this.sablier.getEarnings(this.cToken.address);
+        const newEarnings = await this.sablier.getEarnings(this.cToken.address, this.opts);
         const newBalance = await this.cToken.balanceOf(this.sablier.address, this.opts);
         newEarnings.should.tolerateTheBlockTimeVariation(earnings.plus(sablierInterest), STANDARD_SCALE_INTEREST);
         // The sender and the recipient's interests are included in `stream.remainingBalance`,
@@ -127,14 +127,14 @@ function runTests() {
       });
 
       it("pays the interest to the sablier contract", async function() {
-        const earnings = await this.sablier.getEarnings(this.cToken.address);
+        const earnings = await this.sablier.getEarnings(this.cToken.address, this.opts);
         const balance = await this.cToken.balanceOf(this.sablier.address, this.opts);
         const stream = await this.sablier.contract.methods.getStream(this.streamId).call();
         const { sablierInterest } = await this.sablier.contract.methods
           .interestOf(this.streamId, recipientBalance)
           .call();
         await this.sablier.cancelStream(this.streamId, this.opts);
-        const newEarnings = await this.sablier.getEarnings(this.cToken.address);
+        const newEarnings = await this.sablier.getEarnings(this.cToken.address, this.opts);
         const newBalance = await this.cToken.balanceOf(this.sablier.address, this.opts);
         // The sender and the recipient's interests are included in `stream.remainingBalance`,
         // so we don't subtract them again
@@ -160,8 +160,8 @@ function runTests() {
   describe("when there were withdrawals", function() {
     contextForStreamDidStartButNotEnd(function() {
       beforeEach(async function() {
-        const amount = FIVE_UNITS_CTOKEN.toString(10);
-        await this.sablier.withdrawFromStream(this.streamId, amount, this.opts);
+        const streamedAmount = FIVE_UNITS_CTOKEN.toString(10);
+        await this.sablier.withdrawFromStream(this.streamId, streamedAmount, this.opts);
       });
 
       it("cancels the stream", async function() {

@@ -55,7 +55,7 @@ function shouldBehaveLikeERC1620Stream(alice, bob) {
                     streamObject.ratePerSecond.should.be.bignumber.equal(STANDARD_RATE_PER_SECOND);
                   });
 
-                  it("transfers the tokens", async function() {
+                  it("transfers the tokens to the contract", async function() {
                     const balance = await this.token.balanceOf(sender, opts);
                     await this.sablier.createStream(recipient, deposit, this.token.address, startTime, stopTime, opts);
                     const newBalance = await this.token.balanceOf(sender, opts);

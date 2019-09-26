@@ -27,7 +27,7 @@ function runTests() {
   });
 
   contextForStreamDidStartButNotEnd(function() {
-    const amount = FIVE_UNITS;
+    const streamedAmount = FIVE_UNITS.toString(10);
 
     it("cancels the stream", async function() {
       await this.sablier.cancelStream(this.streamId, this.opts);
@@ -40,7 +40,7 @@ function runTests() {
       const newBalance = await this.token.balanceOf(this.sender, this.opts);
       const tolerateByAddition = false;
       newBalance.should.tolerateTheBlockTimeVariation(
-        balance.minus(amount).plus(this.deposit),
+        balance.minus(streamedAmount).plus(this.deposit),
         STANDARD_SCALE,
         tolerateByAddition,
       );
@@ -50,7 +50,7 @@ function runTests() {
       const balance = await this.token.balanceOf(this.recipient, this.opts);
       await this.sablier.cancelStream(this.streamId, this.opts);
       const newBalance = await this.token.balanceOf(this.recipient, this.opts);
-      newBalance.should.tolerateTheBlockTimeVariation(balance.plus(amount), STANDARD_SCALE);
+      newBalance.should.tolerateTheBlockTimeVariation(balance.plus(streamedAmount), STANDARD_SCALE);
     });
 
     it("emits a cancel event", async function() {
@@ -60,6 +60,8 @@ function runTests() {
   });
 
   contextForStreamDidEnd(function() {
+    const streamedAmount = this.deposit;
+
     it("cancels the stream", async function() {
       await this.sablier.cancelStream(this.streamId, this.opts);
       await truffleAssert.reverts(this.sablier.getStream(this.streamId), "stream does not exist");
@@ -76,7 +78,7 @@ function runTests() {
       const balance = await this.token.balanceOf(this.recipient, this.opts);
       await this.sablier.cancelStream(this.streamId, this.opts);
       const newBalance = await this.token.balanceOf(this.recipient, this.opts);
-      newBalance.should.be.bignumber.equal(balance.plus(this.deposit));
+      newBalance.should.be.bignumber.equal(balance.plus(streamedAmount));
     });
 
     it("emits a cancel event", async function() {

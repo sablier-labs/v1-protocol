@@ -13,6 +13,11 @@ const {
   STANDARD_TIME_OFFSET,
 } = devConstants;
 
+/**
+ * We do not tests all the logical branches as in `CreateStream.js`, because these are unit tests.
+ * The `createCompoundingStream` method uses `createStream`, so if that fails with non-compliant erc20
+ * or insufficient allowances, this must fail too.
+ */
 function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
   const sender = alice;
   const recipient = bob;
@@ -22,11 +27,6 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
   const startTime = now.plus(STANDARD_TIME_OFFSET);
   const stopTime = startTime.plus(STANDARD_TIME_DELTA);
 
-  /**
-   * Note that we do not tests the same branches as in `CreateStream.js`, because these are unit tests.
-   * The `createCompoundingStream` method uses `createStream`, so if that fails with non-compliant erc20
-   * or insufficient allowances, this must fail too.
-   */
   describe("when not paused", function() {
     describe("when the cToken is whitelisted", function() {
       beforeEach(async function() {
@@ -70,7 +70,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
           );
         });
 
-        it("transfers the tokens", async function() {
+        it("transfers the tokens to the contract", async function() {
           const balance = await this.cToken.balanceOf(sender, opts);
           await this.sablier.createCompoundingStream(
             recipient,
