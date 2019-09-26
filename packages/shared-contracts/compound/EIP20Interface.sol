@@ -1,10 +1,11 @@
-pragma solidity 0.5.11;
+pragma solidity ^0.5.8;
 
 /**
  * @title ERC 20 Token Standard Interface
  *  https://eips.ethereum.org/EIPS/eip-20
  */
 interface EIP20Interface {
+
     /**
       * @notice Get the total number of tokens in circulation
       * @return The supply of tokens

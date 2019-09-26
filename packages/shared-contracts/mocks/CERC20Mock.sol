@@ -3,7 +3,6 @@ pragma solidity 0.5.11;
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 
-import "../compound/EIP20NonStandardInterface.sol";
 import "../compound/EIP20Interface.sol";
 
 /**
