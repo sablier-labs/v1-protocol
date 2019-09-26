@@ -1,18 +1,21 @@
 pragma solidity 0.5.11;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/Context.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/access/roles/PauserRole.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
+import "./PauserRoleWithoutRenounce.sol";
+
 /**
- * @notice Fork of OpenZeppelin's Pausable, a contract module which allows children to implement
- *  an emergency stop mechanism that can be triggered by an authorized account, but with the
- *  `renouncePauser` function removed to avoid fat-finger errors.
+ * @title PausableWithoutRenounce
+ * @author Sablier
+ * @notice Fork of OpenZeppelin's Pausable, a contract module which allows children to implement an
+ *  emergency stop mechanism that can be triggered by an authorized account, but with the `renouncePauser`
+ *  function removed to avoid fat-finger errors.
  *  We inherit from `Context` to keep this contract compatible with the Gas Station Network.
- * See https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/lifecycle/Pausable.sol
+ * See https://github.com/OpenZeppelin/openzeppelin-contracts-ethereum-package/blob/master/contracts/lifecycle/Pausable.sol
  * See https://docs.openzeppelin.com/contracts/2.x/gsn#_msg_sender_and_msg_data
  */
-contract PausableWithoutRenounce is Initializable, Context, PauserRole {
+contract PausableWithoutRenounce is Initializable, Context, PauserRoleWithoutRenounce {
     /**
      * @dev Emitted when the pause is triggered by a pauser (`account`).
      */
@@ -30,7 +33,7 @@ contract PausableWithoutRenounce is Initializable, Context, PauserRole {
      * to the deployer.
      */
     function initialize(address sender) public initializer {
-        PauserRole.initialize(sender);
+        PauserRoleWithoutRenounce.initialize(sender);
         _paused = false;
     }
 
