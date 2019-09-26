@@ -4,7 +4,7 @@ const BigNumber = require("bignumber.js");
 const devConstants = require("./constants");
 
 module.exports = (chai, _utils) => {
-  // see https://twitter.com/nicksdjohnson/status/1132394932361023488
+  // See https://twitter.com/nicksdjohnson/status/1132394932361023488
   const convert = (value) => {
     let number;
 
