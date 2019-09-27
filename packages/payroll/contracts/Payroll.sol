@@ -50,7 +50,7 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     /**
      * @notice The salary objects identifiable by their unsigned integer ids.
      */
-    mapping(uint256 => Salary) salaries;
+    mapping(uint256 => Salary) private salaries;
 
     /*** Events ***/
 
