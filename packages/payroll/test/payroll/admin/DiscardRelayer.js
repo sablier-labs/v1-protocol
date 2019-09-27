@@ -45,16 +45,6 @@ function shouldBehaveLikeDiscardRelayer(alice, bob, carol) {
         });
       });
     });
-
-    describe("when the salary does not exist", function() {
-      const relayer = carol;
-      const opts = { from: alice };
-
-      it("reverts", async function() {
-        const salaryId = new BigNumber(419863);
-        await truffleAssert.reverts(this.payroll.discardRelayer(relayer, salaryId, opts), "salary does not exist");
-      });
-    });
   });
 }
 

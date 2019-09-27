@@ -50,7 +50,7 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     /**
      * @notice The salary objects identifiable by their unsigned integer ids.
      */
-    mapping(uint256 => Salary) salaries;
+    mapping(uint256 => Salary) private salaries;
 
     /*** Events ***/
 
@@ -139,20 +139,19 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
      * @param salaryId The id of the salary to whitelist the relayer for.
      */
     function whitelistRelayer(address relayer, uint256 salaryId) external onlyOwner salaryExists(salaryId) {
-        require(relayers[relayer][salaryId] == false, "relayer is whitelisted");
+        require(!relayers[relayer][salaryId], "relayer is whitelisted");
         relayers[relayer][salaryId] = true;
     }
 
     /**
      * @notice Discard a previously whitelisted relayer to prevent them from processing withdrawals.
      * @dev Throws if the caller is not the owner of the contract.
-     *  Throws if the id does not point to a valid salary.
      *  Throws if the relayer is not whitelisted.
      * @param relayer The address of the relayer account.
      * @param salaryId The id of the salary to discard the relayer for.
      */
-    function discardRelayer(address relayer, uint256 salaryId) external onlyOwner salaryExists(salaryId) {
-        require(relayers[relayer][salaryId] == true, "relayer is not whitelisted");
+    function discardRelayer(address relayer, uint256 salaryId) external onlyOwner {
+        require(relayers[relayer][salaryId], "relayer is not whitelisted");
         relayers[relayer][salaryId] = false;
     }
 
