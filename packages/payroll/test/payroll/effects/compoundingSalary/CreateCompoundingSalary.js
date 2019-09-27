@@ -33,7 +33,7 @@ function shouldBehaveLikeCreateCompoundingSalary(alice, bob) {
 
   describe("when the cToken is whitelisted", function() {
     beforeEach(async function() {
-      await this.sablier.whitelistCToken(this.cToken.address, opts);
+      await this.cTokenManager.whitelistCToken(this.cToken.address, opts);
     });
 
     describe("when interest shares are valid", function() {

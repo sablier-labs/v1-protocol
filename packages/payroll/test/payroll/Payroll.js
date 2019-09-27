@@ -2,12 +2,14 @@ const { devConstants } = require("@sablier/dev-utils");
 const { shouldBehaveLikePayroll } = require("./Payroll.behavior");
 
 const CERC20Mock = artifacts.require("./CERC20Mock.sol");
+const CTokenManager = artifacts.require("./CTokenManager.sol");
 const ERC20Mock = artifacts.require("./ERC20Mock.sol");
 const NonStandardERC20 = artifacts.require("./NonStandardERC20.sol");
 const Payroll = artifacts.require("./Payroll.sol");
 const Sablier = artifacts.require("./Sablier.sol");
 
 CERC20Mock.numberFormat = "BigNumber";
+CTokenManager.numberFormat = "BigNumber";
 ERC20Mock.numberFormat = "BigNumber";
 NonStandardERC20.numberFormat = "BigNumber";
 Payroll.numberFormat = "BigNumber";
@@ -29,7 +31,8 @@ contract("Payroll", function([alice, bob, carol, eve]) {
     this.nonStandardERC20Token = await NonStandardERC20.new(opts);
     this.nonStandardERC20Token.nonStandardMint(alice, STANDARD_SALARY.toString(10), opts);
 
-    this.sablier = await Sablier.new(opts);
+    this.cTokenManager = await CTokenManager.new(opts);
+    this.sablier = await Sablier.new(this.cTokenManager.address, opts);
     this.payroll = await Payroll.new(opts);
 
     // See https://github.com/trufflesuite/truffle/issues/737#issuecomment-454892913

@@ -95,7 +95,7 @@ function shouldBehaveLikeCancelCompoundingSalary(alice, bob, eve) {
   describe("when the salary exists", function() {
     beforeEach(async function() {
       this.opts = { from: this.company };
-      await this.sablier.whitelistCToken(this.cToken.address, this.opts);
+      await this.cTokenManager.whitelistCToken(this.cToken.address, this.opts);
       await this.cToken.approve(this.payroll.address, this.salary, this.opts);
       const result = await this.payroll.createCompoundingSalary(
         this.employee,
