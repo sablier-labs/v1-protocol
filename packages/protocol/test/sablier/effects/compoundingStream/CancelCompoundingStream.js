@@ -183,7 +183,7 @@ function shouldBehaveLikeCancelCompoundingStream(alice, bob) {
     this.recipient = bob;
     this.deposit = STANDARD_SALARY_CTOKEN.toString(10);
     this.opts = { from: this.sender };
-    await this.sablier.whitelistCToken(this.cToken.address, { from: alice });
+    await this.cTokenManager.whitelistCToken(this.cToken.address, { from: alice });
     await this.cToken.approve(this.sablier.address, this.deposit, { from: alice });
   });
 

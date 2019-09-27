@@ -8,13 +8,13 @@ function shouldBehaveLikeWhitelistCToken(alice, eve) {
 
     describe("when the cToken is not whitelisted", function() {
       it("whitelists the cToken", async function() {
-        await this.sablier.whitelistCToken(this.cToken.address, opts);
-        const result = await this.sablier.isCToken(this.cToken.address);
+        await this.cTokenManager.whitelistCToken(this.cToken.address, opts);
+        const result = await this.cTokenManager.isCToken(this.cToken.address);
         result.should.be.equal(true);
       });
 
       it("emits a whitelistctoken event", async function() {
-        const result = await this.sablier.whitelistCToken(this.cToken.address, opts);
+        const result = await this.cTokenManager.whitelistCToken(this.cToken.address, opts);
         await truffleAssert.eventEmitted(result, "WhitelistCToken");
       });
     });
@@ -23,7 +23,7 @@ function shouldBehaveLikeWhitelistCToken(alice, eve) {
       it("reverts", async function() {
         // Fails because `this.token` doesn't have the `isCToken` method
         await truffleAssert.reverts(
-          this.sablier.whitelistCToken(this.token.address, opts),
+          this.cTokenManager.whitelistCToken(this.token.address, opts),
           truffleAssert.ErrorType.REVERT,
         );
       });
@@ -31,8 +31,11 @@ function shouldBehaveLikeWhitelistCToken(alice, eve) {
 
     describe("when the cToken is whitelisted", function() {
       it("reverts", async function() {
-        await this.sablier.whitelistCToken(this.cToken.address, opts);
-        await truffleAssert.reverts(this.sablier.whitelistCToken(this.cToken.address, opts), "cToken is whitelisted");
+        await this.cTokenManager.whitelistCToken(this.cToken.address, opts);
+        await truffleAssert.reverts(
+          this.cTokenManager.whitelistCToken(this.cToken.address, opts),
+          "cToken is whitelisted",
+        );
       });
     });
   });
@@ -42,7 +45,7 @@ function shouldBehaveLikeWhitelistCToken(alice, eve) {
 
     it("reverts", async function() {
       await truffleAssert.reverts(
-        this.sablier.whitelistCToken(this.cToken.address, opts),
+        this.cTokenManager.whitelistCToken(this.cToken.address, opts),
         truffleAssert.ErrorType.REVERT,
       );
     });

@@ -8,24 +8,27 @@ function shouldBehaveLikeDiscardCToken(alice, eve) {
 
     describe("when the cToken is whitelisted", function() {
       beforeEach(async function() {
-        await this.sablier.whitelistCToken(this.cToken.address, opts);
+        await this.cTokenManager.whitelistCToken(this.cToken.address, opts);
       });
 
       it("discards the cToken", async function() {
-        await this.sablier.discardCToken(this.cToken.address, opts);
-        const result = await this.sablier.isCToken(this.cToken.address);
+        await this.cTokenManager.discardCToken(this.cToken.address, opts);
+        const result = await this.cTokenManager.isCToken(this.cToken.address);
         result.should.be.equal(false);
       });
 
       it("emits a discardctoken event", async function() {
-        const result = await this.sablier.discardCToken(this.cToken.address, opts);
+        const result = await this.cTokenManager.discardCToken(this.cToken.address, opts);
         await truffleAssert.eventEmitted(result, "DiscardCToken");
       });
     });
 
     describe("when the cToken is not whitelisted", function() {
       it("reverts", async function() {
-        await truffleAssert.reverts(this.sablier.discardCToken(this.cToken.address, opts), "cToken is not whitelisted");
+        await truffleAssert.reverts(
+          this.cTokenManager.discardCToken(this.cToken.address, opts),
+          "cToken is not whitelisted",
+        );
       });
     });
   });
@@ -35,7 +38,7 @@ function shouldBehaveLikeDiscardCToken(alice, eve) {
 
     it("reverts", async function() {
       await truffleAssert.reverts(
-        this.sablier.discardCToken(this.cToken.address, opts),
+        this.cTokenManager.discardCToken(this.cToken.address, opts),
         truffleAssert.ErrorType.REVERT,
       );
     });

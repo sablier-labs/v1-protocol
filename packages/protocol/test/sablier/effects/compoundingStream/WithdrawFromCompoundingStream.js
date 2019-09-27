@@ -204,7 +204,7 @@ function shouldBehaveLikeWithdrawFromCompoundingStream(alice, bob) {
     this.sender = alice;
     this.recipient = bob;
     this.opts = { from: this.sender };
-    await this.sablier.whitelistCToken(this.cToken.address, this.opts);
+    await this.cTokenManager.whitelistCToken(this.cToken.address, this.opts);
     await this.cToken.approve(this.sablier.address, deposit, this.opts);
   });
 

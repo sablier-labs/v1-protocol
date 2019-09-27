@@ -27,7 +27,7 @@ function shouldBehaveLikeIsCompoundingStream(alice, bob) {
     const recipientSharePercentage = STANDARD_RECIPIENT_SHARE_PERCENTAGE;
 
     beforeEach(async function() {
-      await this.sablier.whitelistCToken(this.cToken.address);
+      await this.cTokenManager.whitelistCToken(this.cToken.address);
       await this.cToken.approve(this.sablier.address, deposit, opts);
       const result = await this.sablier.createCompoundingStream(
         recipient,

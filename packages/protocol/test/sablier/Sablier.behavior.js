@@ -1,7 +1,3 @@
-const traveler = require("ganache-time-traveler");
-
-const shouldBehaveLikeWhitelistCToken = require("./admin/WhitelistCToken");
-const shouldBehaveLikeDiscardCToken = require("./admin/DiscardCToken");
 const shouldBehaveLikeUpdateFee = require("./admin/UpdateFee");
 const shouldBehaveLikeTakeEarnings = require("./admin/TakeEarnings");
 
@@ -22,27 +18,7 @@ const shouldBehaveLikeERC1620CancelStream = require("./effects/stream/CancelStre
 const shouldBehaveLikeCancelCompoundingStream = require("./effects/compoundingStream/CancelCompoundingStream");
 
 function shouldBehaveLikeSablier(alice, bob, carol, eve) {
-  let snapshot;
-  let snapshotId;
-
-  before(async () => {
-    snapshot = await traveler.takeSnapshot();
-    snapshotId = snapshot.result;
-  });
-
-  after(async () => {
-    await traveler.revertToSnapshot(snapshotId);
-  });
-
   describe("admin functions", function() {
-    describe("whitelistCToken", function() {
-      shouldBehaveLikeWhitelistCToken(alice, eve);
-    });
-
-    describe("discardCToken", function() {
-      shouldBehaveLikeDiscardCToken(alice, eve);
-    });
-
     describe("updateFee", function() {
       shouldBehaveLikeUpdateFee(alice, eve);
     });
@@ -109,6 +85,4 @@ function shouldBehaveLikeSablier(alice, bob, carol, eve) {
   });
 }
 
-module.exports = {
-  shouldBehaveLikeSablier,
-};
+module.exports = shouldBehaveLikeSablier;

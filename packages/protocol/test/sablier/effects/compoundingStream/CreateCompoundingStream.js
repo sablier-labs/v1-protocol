@@ -30,7 +30,7 @@ function shouldBehaveLikeCreateCompoundingStream(alice, bob) {
   describe("when not paused", function() {
     describe("when the cToken is whitelisted", function() {
       beforeEach(async function() {
-        await this.sablier.whitelistCToken(this.cToken.address, opts);
+        await this.cTokenManager.whitelistCToken(this.cToken.address, opts);
         await this.cToken.approve(this.sablier.address, deposit, opts);
       });
 

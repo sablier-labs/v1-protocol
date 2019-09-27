@@ -60,7 +60,7 @@ function runTests() {
   });
 
   contextForStreamDidEnd(function() {
-    const streamedAmount = this.deposit;
+    const streamedAmount = STANDARD_SALARY.toString(10);
 
     it("cancels the stream", async function() {
       await this.sablier.cancelStream(this.streamId, this.opts);
