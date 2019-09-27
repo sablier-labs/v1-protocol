@@ -20,14 +20,12 @@ interface IERC1620 {
     );
 
     /**
-     * @notice Emits when the recipient of a stream withdraws a portion or all their pro rata share
-     *  of an active stream.
+     * @notice Emits when the recipient of a stream withdraws a portion or all their pro rata share of the stream.
      */
     event WithdrawFromStream(uint256 indexed streamId, address indexed recipient, uint256 amount);
 
     /**
-     * @notice Emits when a stream is successfully cancelled and both parties get their pro rata
-     *  share of the available funds.
+     * @notice Emits when a stream is successfully cancelled and tokens are transferred back on a pro rata basis.
      */
     event CancelStream(
         uint256 indexed streamId,
