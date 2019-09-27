@@ -1,7 +1,7 @@
 {
   "name": "@sablier/protocol",
   "description": "Smart contracts for the money streaming protocol",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": {
     "name": "Sablier",
     "email": "paul@sablier.app",
@@ -14,9 +14,9 @@
     "@openzeppelin/contracts-ethereum-package": "2.2.3"
   },
   "devDependencies": {
-    "@sablier/dev-utils": "0.0.1",
-    "@sablier/eslint-config": "0.0.1",
-    "@sablier/shared-contracts": "0.0.1",
+    "@sablier/dev-utils": "1.0.0",
+    "@sablier/eslint-config": "1.0.0",
+    "@sablier/shared-contracts": "1.0.0",
     "@truffle/hdwallet-provider": "^1.0.18",
     "bignumber.js": "8.1.1",
     "chai": "^4.2.0",

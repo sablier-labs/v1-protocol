@@ -1,7 +1,7 @@
 {
   "name": "@sablier/payroll",
   "description": "Smart contracts for the payroll proxy",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "author": {
     "name": "Sablier",
     "email": "paul@sablier.app",
@@ -13,12 +13,12 @@
   "dependencies": {
     "@openzeppelin/contracts-ethereum-package": "2.2.3",
     "@openzeppelin/upgrades": "2.5.2",
-    "@sablier/protocol": "0.1.0"
+    "@sablier/protocol": "1.0.0"
   },
   "devDependencies": {
-    "@sablier/dev-utils": "0.0.1",
-    "@sablier/eslint-config": "0.0.1",
-    "@sablier/shared-contracts": "0.0.1",
+    "@sablier/dev-utils": "1.0.0",
+    "@sablier/eslint-config": "1.0.0",
+    "@sablier/shared-contracts": "1.0.0",
     "@truffle/hdwallet-provider": "^1.0.18",
     "dotenv": "^7.0.0",
     "eslint": "^6.1.0",

@@ -43,7 +43,7 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     mapping(address => mapping(uint256 => bool)) public relayers;
 
     /**
-     * @notice The contract responsible for creating, withdrawing from and cancelling streams.
+     * @notice An instance of Sablier, the contract responsible for creating, withdrawing from and cancelling streams.
      */
     Sablier public sablier;
 

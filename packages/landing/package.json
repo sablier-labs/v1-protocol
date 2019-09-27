@@ -1,7 +1,7 @@
 {
   "name": "@sablier/landing",
   "description": "Landing page",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "author": {
     "name": "Sablier",
     "email": "paul@sablier.app",
@@ -37,7 +37,7 @@
     "validator": "^11.1.0"
   },
   "devDependencies": {
-    "@sablier/eslint-config": "0.0.1",
+    "@sablier/eslint-config": "1.0.0",
     "eslint": "^6.1.0",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-plugin-import": "^2.18.2",
