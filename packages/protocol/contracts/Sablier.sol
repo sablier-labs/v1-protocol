@@ -442,7 +442,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Creates a new stream.
+     * @notice Creates a new stream funded by `msg.sender` and paid towards `recipient`.
      * @dev Throws if paused.
      *  Throws if the recipient is the zero address, the contract itself or the caller.
      *  Throws if the deposit is 0.
@@ -455,11 +455,11 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
      *  Throws if the next stream id calculation has a math error.
      *  Throws if the contract is not allowed to transfer enough tokens.
      *  Throws if there is a token transfer failure.
-     * @param recipient The address towards which the money will be streamed.
+     * @param recipient The address towards which the money is streamed.
      * @param deposit The amount of money to be streamed.
      * @param tokenAddress The ERC20 token to use as streaming currency.
-     * @param startTime The unix timestamp of when the stream starts.
-     * @param stopTime The unix timestamp of when the stream stops.
+     * @param startTime The unix timestamp for when the stream starts.
+     * @param stopTime The unix timestamp for when the stream stops.
      * @return The uint256 id of the newly created stream.
      */
     function createStream(address recipient, uint256 deposit, address tokenAddress, uint256 startTime, uint256 stopTime)
@@ -521,17 +521,17 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Creates a new compounding stream.
-     * @dev Inherits all the security checks from `createStream`.
+     * @notice Creates a new compounding stream funded by `msg.sender` and paid towards `recipient`.
+     * @dev Inherits all security checks from `createStream`.
      *  Throws if the cToken is not whitelisted.
      *  Throws if the sender share percentage and the recipient share percentage do not sum up to 100.
      *  Throws if the the sender share mantissa calculation has a math error.
      *  Throws if the the recipient share mantissa calculation has a math error.
-     * @param recipient The address towards which the money will be streamed.
+     * @param recipient The address towards which the money is streamed.
      * @param deposit The amount of money to be streamed.
      * @param tokenAddress The ERC20 token to use as streaming currency.
-     * @param startTime The unix timestamp of when the stream starts.
-     * @param stopTime The unix timestamp of when the stream stops.
+     * @param startTime The unix timestamp for when the stream starts.
+     * @param stopTime The unix timestamp for when the stream stops.
      * @param senderSharePercentage The sender's share of the interest, as a percentage.
      * @param recipientSharePercentage The sender's share of the interest, as a percentage.
      * @return The uint256 id of the newly created compounding stream.
@@ -587,7 +587,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Withdraws from the stream.
+     * @notice Withdraws from the contract to the recipient's account.
      * @dev Throws if the id does not point to a valid stream.
      *  Throws if the caller is not the sender or the recipient of the stream.
      *  Throws if the amount exceeds the available balance.
@@ -618,7 +618,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Cancels the stream.
+     * @notice Cancels the stream and transfers the tokens back on a pro rata basis.
      * @dev Throws if the id does not point to a valid stream.
      *  Throws if the caller is not the sender or the recipient of the stream.
      *  Throws if there is a token transfer failure.
@@ -676,8 +676,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Makes the withdrawal to the recipient of the compounding stream and pays the accrued interest
-     *  to all parties.
+     * @notice Withdraws to the recipient's account and pays the accrued interest to all parties.
      * @dev If the stream balance has been depleted to 0, the stream object to save gas and optimise
      *  contract storage.
      *  Throws if there is a math error.
@@ -725,7 +724,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Cancels the stream and transfers all tokens on pro rata basis.
+     * @notice Cancels the stream and transfers the tokens back on a pro rata basis.
      * @dev The stream and compounding stream vars objects get deleted to save gas
      *  and optimise contract storage.
      *  Throws if there is a token transfer failure.
@@ -753,8 +752,8 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Cancels the stream, transfers all tokens on a pro rata basis and pays the accrued interest
-     *  to all parties.
+     * @notice Cancels the stream, transfers the tokens back on a pro rata basis and pays the accrued
+     * interest to all parties.
      * @dev Importantly, the money that has not been streamed yet is not considered chargeable.
      *  All the interest generated by that underlying will be returned to the sender.
      *  Throws if there is a math error.

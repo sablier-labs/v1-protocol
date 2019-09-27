@@ -65,8 +65,7 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     event CreateCompoundingSalary(uint256 indexed salaryId, uint256 indexed streamId);
 
     /**
-     * @notice Emits when the recipient of a stream withdraws a portion or all their pro rata share
-     *  of an active stream.
+     * @notice Emits when the employee withdraws a portion or all their pro rata share of the stream.
      */
     event WithdrawFromSalary(uint256 indexed salaryId, uint256 indexed streamId);
 
@@ -242,14 +241,14 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     }
 
     /**
-     * @notice Creates a new salary and a stream for it.
+     * @notice Creates a new salary funded by `msg.sender` and paid towards `employee`.
      * @dev Throws if there is a math error.
      *  Throws if there is a token transfer failure.
      * @param employee The address of the employee who receives the salary.
      * @param salary The amount of tokens to be streamed.
      * @param tokenAddress The ERC20 token to use as streaming currency.
-     * @param startTime The unix timestamp of when the stream starts.
-     * @param stopTime The unix timestamp of when the stream stops.
+     * @param startTime The unix timestamp for when the stream starts.
+     * @param stopTime The unix timestamp for when the stream stops.
      * @return The uint256 id of the newly created salary.
      */
     function createSalary(address employee, uint256 salary, address tokenAddress, uint256 startTime, uint256 stopTime)
@@ -276,7 +275,7 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     }
 
     /**
-     * @notice Creates a new compounding salary and a compounding stream for it.
+     * @notice Creates a new compounding salary funded by `msg.sender` and paid towards `employee`.
      * @dev There's a bit of redundancy between `createSalary` and this function, but one has to
      *  call `sablier.createStream` and the other `sablier.createCompoundingStream`, so it's not
      *  worth it to run DRY code.
@@ -285,8 +284,8 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
      * @param employee The address of the employee who receives the salary.
      * @param salary The amount of tokens to be streamed.
      * @param tokenAddress The ERC20 token to use as streaming currency.
-     * @param startTime The unix timestamp of when the stream starts.
-     * @param stopTime The unix timestamp of when the stream stops.
+     * @param startTime The unix timestamp for when the stream starts.
+     * @param stopTime The unix timestamp for when the stream stops.
      * @param senderSharePercentage The sender's share of the interest, as a percentage.
      * @param recipientSharePercentage The sender's share of the interest, as a percentage.
      * @return The uint256 id of the newly created compounding salary.
@@ -334,7 +333,27 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     }
 
     /**
-     * @notice Cancels the salary.
+     * @notice Withdraws from the contract to the employee's account.
+     * @dev Throws if the id does not point to a valid salary.
+     *  Throws if the caller is not the employee or a relayer.
+     *  Throws if there is a token transfer failure.
+     * @param salaryId The id of the salary to withdraw from.
+     * @param amount The amount of tokens to withdraw.
+     * @return bool true=success, false otherwise.
+     */
+    function withdrawFromSalary(uint256 salaryId, uint256 amount)
+        external
+        salaryExists(salaryId)
+        onlyEmployeeOrRelayer(salaryId)
+        returns (bool success)
+    {
+        Salary memory salary = salaries[salaryId];
+        success = sablier.withdrawFromStream(salary.streamId, amount);
+        emit WithdrawFromSalary(salaryId, salary.streamId);
+    }
+
+    /**
+     * @notice Cancels the salary and transfers the tokens back on a pro rata basis.
      * @dev Throws if the id does not point to a valid salary.
      *  Throws if the caller is not the company or the employee.
      *  Throws if there is a token transfer failure.
@@ -379,25 +398,5 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
             );
 
         emit CancelSalary(salaryId, salary.streamId);
-    }
-
-    /**
-     * @notice Withdraws from the salary.
-     * @dev Throws if the id does not point to a valid salary.
-     *  Throws if the caller is not the employee or a relayer.
-     *  Throws if there is a token transfer failure.
-     * @param salaryId The id of the salary to withdraw from.
-     * @param amount The amount of tokens to withdraw.
-     * @return bool true=success, false otherwise.
-     */
-    function withdrawFromSalary(uint256 salaryId, uint256 amount)
-        external
-        salaryExists(salaryId)
-        onlyEmployeeOrRelayer(salaryId)
-        returns (bool success)
-    {
-        Salary memory salary = salaries[salaryId];
-        success = sablier.withdrawFromStream(salary.streamId, amount);
-        emit WithdrawFromSalary(salaryId, salary.streamId);
     }
 }
