@@ -8,8 +8,8 @@ import "@sablier/shared-contracts/interfaces/ICERC20.sol";
 import "@sablier/shared-contracts/lifecycle/OwnableWithoutRenounce.sol";
 import "@sablier/shared-contracts/lifecycle/PausableWithoutRenounce.sol";
 
+import "./interfaces/ICTokenManager.sol";
 import "./interfaces/IERC1620.sol";
-import "./CTokenManager.sol";
 import "./Types.sol";
 
 /**
@@ -37,7 +37,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     /**
      * @notice An instance of CTokenManager, responsible for whitelisting and discarding cTokens.
      */
-    CTokenManager public cTokenManager;
+    ICTokenManager public cTokenManager;
 
     /**
      * @notice The amount of interest has been accrued per token address.
@@ -120,7 +120,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     constructor(address cTokenManagerAddress) public {
         OwnableWithoutRenounce.initialize(msg.sender);
         PausableWithoutRenounce.initialize(msg.sender);
-        cTokenManager = CTokenManager(cTokenManagerAddress);
+        cTokenManager = ICTokenManager(cTokenManagerAddress);
         nextStreamId = 1;
     }
 

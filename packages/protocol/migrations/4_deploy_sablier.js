@@ -6,13 +6,14 @@ const ERC20Mock = artifacts.require("./ERC20Mock.sol");
 const Sablier = artifacts.require("./Sablier.sol");
 
 module.exports = (deployer, network, accounts) => {
-  deployer.deploy(Sablier, CTokenManager.address).then(async (sablier) => {
+  const opts = { from: accounts[0] };
+  deployer.deploy(Sablier, CTokenManager.address, opts).then(async (sablier) => {
     if (network !== "development") {
       return;
     }
     const allowance = new BigNumber(3600).multipliedBy(1e18).toString(10);
     const erc20 = await ERC20Mock.deployed();
-    await erc20.approve(sablier.address, allowance, { from: accounts[0] });
+    await erc20.approve(sablier.address, allowance, opts);
 
     const recipient = accounts[1];
     const deposit = allowance;
@@ -21,7 +22,6 @@ module.exports = (deployer, network, accounts) => {
     const startTime = new BigNumber(timestamp).plus(300);
     const stopTime = startTime.plus(3600);
 
-    const opts = { from: accounts[0] };
     await sablier.createStream(recipient, deposit, tokenAddress, startTime, stopTime, opts);
   });
 };

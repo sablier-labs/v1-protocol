@@ -3,29 +3,19 @@ pragma solidity 0.5.11;
 import "@sablier/shared-contracts/interfaces/ICERC20.sol";
 import "@sablier/shared-contracts/lifecycle/OwnableWithoutRenounce.sol";
 
+import "./interfaces/ICTokenManager.sol";
+
 /**
  * @title CTokenManager
  * @author Sablier
  */
-contract CTokenManager is OwnableWithoutRenounce {
+contract CTokenManager is ICTokenManager, OwnableWithoutRenounce {
     /*** Storage Properties ***/
 
     /**
      * @notice Mapping of cTokens which can be used
      */
     mapping(address => bool) private cTokens;
-
-    /*** Events ***/
-
-    /**
-     * @notice Emits when the owner discards a cToken.
-     */
-    event DiscardCToken(address indexed tokenAddress);
-
-    /**
-     * @notice Emits when the owner whitelists a cToken.
-     */
-    event WhitelistCToken(address indexed tokenAddress);
 
     /*** Contract Logic Starts Here */
 
@@ -70,5 +60,4 @@ contract CTokenManager is OwnableWithoutRenounce {
     function isCToken(address tokenAddress) public view returns (bool) {
         return cTokens[tokenAddress];
     }
-
 }
