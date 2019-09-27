@@ -1,21 +1,23 @@
 # folders
 .0x-artifacts/
+.coverage_artifacts/
+.coverage_contracts/
 .nyc_output/
-.vscode/
+.openzeppelin/dev-*.json
+.openzeppelin/.session
 artifacts/
 build/
 coverage/
 coverageEnv/
-docs/
 lib/
 node_modules/
 
 # files
-.DS_Store
 .env
 *.log
 coverage.json
 lerna-debug.log*
 npm-debug.log*
+scTopics
 yarn-debug.log*
 yarn-error.log*

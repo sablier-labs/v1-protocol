@@ -1,34 +1,22 @@
-/* global web3 */
+const { chaiPlugin } = require("@sablier/dev-utils");
+const traveler = require("ganache-time-traveler");
+
 const BigNumber = require("bignumber.js");
 const chai = require("chai");
 const chaiBigNumber = require("chai-bignumber");
 
-chai.use(chaiBigNumber(BigNumber));
 chai.should();
+chai.use(chaiBigNumber(BigNumber));
+chai.use(chaiPlugin);
 
-web3.extend({
-  property: "evm",
-  methods: [
-    {
-      name: "mine",
-      call: "evm_mine",
-      params: 0,
-    },
-  ],
+let snapshot;
+let snapshotId;
+
+before(async () => {
+  snapshot = await traveler.takeSnapshot();
+  snapshotId = snapshot.result;
 });
 
-web3.utils.advanceBlock = async (count) => {
-  const promises = [];
-  for (let i = 0; i < count; i += 1) {
-    promises.push(web3.evm.mine());
-  }
-  await Promise.all(promises);
-};
-
-after("Generate coverage report", async () => {
-  if (process.env.MODE === "profiler") {
-    await global.profilerSubprovider.writeCoverageAsync();
-  } else if (process.env.MODE === "coverage") {
-    await global.coverageSubprovider.writeCoverageAsync();
-  }
+after(async () => {
+  await traveler.revertToSnapshot(snapshotId);
 });

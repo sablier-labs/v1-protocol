@@ -1,41 +1,49 @@
 {
   "name": "@sablier/protocol",
-  "description": "Ethereum contracts for the Sablier dApp",
-  "version": "0.0.2",
+  "description": "Smart contracts for the money streaming protocol",
+  "version": "1.0.0",
   "author": {
-    "name": "Paul Berg",
-    "url": "https://paulrberg.com"
+    "name": "Sablier",
+    "email": "paul@sablier.app",
+    "url": "https://sablier.app"
   },
   "bugs": {
     "url": "https://github.com/sablierhq/sablier/issues"
   },
+  "dependencies": {
+    "@openzeppelin/contracts-ethereum-package": "2.2.3"
+  },
   "devDependencies": {
-    "@0x/sol-coverage": "^3.0.2",
-    "@0x/sol-profiler": "^3.1.4",
-    "@0x/sol-trace": "^2.0.10",
-    "@0x/subproviders": "^4.0.4",
-    "@sablier/dev-utils": "0.0.1",
-    "bignumber.js": "^8.1.1",
+    "@sablier/dev-utils": "1.0.0",
+    "@sablier/eslint-config": "1.0.0",
+    "@sablier/shared-contracts": "1.0.0",
+    "@truffle/hdwallet-provider": "^1.0.18",
+    "bignumber.js": "8.1.1",
     "chai": "^4.2.0",
-    "chai-bignumber": "^3.0.0",
-    "coveralls": "3.0.3",
+    "chai-bignumber": "3.0.0",
+    "dayjs": "^1.8.15",
     "dotenv": "^7.0.0",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
     "fixpack": "^2.3.1",
-    "ganache-cli": "^6.4.1",
+    "ganache-cli": "^6.6.0",
+    "ganache-time-traveler": "^1.0.5",
     "istanbul": "^0.4.5",
+    "prettier-plugin-solidity": "1.0.0-alpha.27",
     "shx": "^0.3.2",
-    "solc": "^0.5.9",
-    "solhint": "^2.0.0",
-    "truffle": "^5.0.19",
+    "solc": "0.5.11",
+    "solhint": "^2.1.2",
+    "solidity-coverage": "0.7.0-beta.0",
+    "truffle": "^5.0.37",
     "truffle-assertions": "^0.8.2",
-    "truffle-hdwallet-provider": "^1.0.6",
-    "web3": "1.0.0-beta.55",
-    "web3-utils": "1.0.0-beta.55"
+    "web3": "1.2.1",
+    "web3-utils": "1.2.1"
   },
   "files": [
     "/contracts"
   ],
-  "homepage": "https://github.com/sablierhq/sablier#readme",
+  "homepage": "https://github.com/sablierhq/sablier/tree/develop/packages/protocol#readme",
   "license": "LGPL-3.0",
   "publishConfig": {
     "access": "public"
@@ -45,14 +53,11 @@
     "url": "git+https://github.com/sablierhq/sablier.git"
   },
   "scripts": {
-    "clean": "shx rm -rf ./.0x-artifacts ./coverage.json ./build ./coverage ./coverageEnv ./export",
+    "clean": "shx rm -rf ./.0x-artifacts ./artifacts ./build ./coverage ./coverage.json",
     "coverage": "scripts/coverage.sh",
     "lint": "yarn lint:js && yarn lint:sol",
     "lint:js": "eslint --ignore-path ../../.eslintignore .",
-    "lint:sol": "solhint --config ../../.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
-    "profile": "scripts/profile.sh",
-    "test": "scripts/test.sh",
-    "trace": "scripts/trace.sh",
-    "verify": "truffle run verify contracts/Sablier.sol:Sablier contracts/interfaces/IERC1620.sol:IERC1620"
+    "lint:sol": "solhint --config ../../.solhint.json --max-warnings 0 'contracts/**/*.sol'",
+    "test": "scripts/test.sh"
   }
 }

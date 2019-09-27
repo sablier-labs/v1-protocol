@@ -1,10 +1,11 @@
 {
   "name": "@sablier/landing",
-  "description": "Sablier landing page",
-  "version": "0.0.1",
+  "description": "Landing page",
+  "version": "1.0.0",
   "author": {
-    "name": "Paul Berg",
-    "url": "https://paulrberg.com"
+    "name": "Sablier",
+    "email": "paul@sablier.app",
+    "url": "https://sablier.app"
   },
   "browserslist": {
     "production": [
@@ -18,20 +19,33 @@
       "last 1 safari version"
     ]
   },
+  "bugs": {
+    "url": "https://github.com/sablierhq/sablier/issues"
+  },
   "dependencies": {
     "classnames": "^2.2.6",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-css-devices": "^0.1.7",
     "react-dom": "^16.8.6",
-    "react-scripts": "3.0.1",
+    "react-ga": "^2.6.0",
+    "react-router": "^5.0.1",
+    "react-router-dom": "^5.0.1",
     "react-tooltip": "^3.10.0",
     "react-transition-group": "1.x",
     "sanitize.css": "^8.0.0",
-    "validator": "^11.0.0"
+    "validator": "^11.1.0"
   },
-  "eslintConfig": {
-    "extends": "react-app"
+  "devDependencies": {
+    "@sablier/eslint-config": "1.0.0",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.3",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "node-sass": "^4.12.0",
+    "react-scripts": "3.1.0"
   },
   "homepage": "https://sablier.app",
   "private": true,
@@ -41,8 +55,9 @@
   },
   "scripts": {
     "build:ui": "react-scripts build",
+    "clean": "shx rm -rf ./build",
     "eject": "react-scripts eject",
-    "lint": "eslint --ignore-path ../../.eslintignore .",
+    "lint": "eslint --ext js,jsx --ignore-path ../../.eslintignore .",
     "start": "react-scripts start"
   }
 }

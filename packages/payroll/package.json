@@ -1,0 +1,60 @@
+{
+  "name": "@sablier/payroll",
+  "description": "Smart contracts for the payroll proxy",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sablier",
+    "email": "paul@sablier.app",
+    "url": "https://sablier.app"
+  },
+  "bugs": {
+    "url": "https://github.com/sablierhq/sablier/issues"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts-ethereum-package": "2.2.3",
+    "@openzeppelin/upgrades": "2.5.2",
+    "@sablier/protocol": "1.0.0"
+  },
+  "devDependencies": {
+    "@sablier/dev-utils": "1.0.0",
+    "@sablier/eslint-config": "1.0.0",
+    "@sablier/shared-contracts": "1.0.0",
+    "@truffle/hdwallet-provider": "^1.0.18",
+    "dotenv": "^7.0.0",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "fixpack": "^2.3.1",
+    "ganache-cli": "^6.5.1",
+    "ganache-time-traveler": "^1.0.5",
+    "istanbul": "^0.4.5",
+    "prettier-plugin-solidity": "1.0.0-alpha.27",
+    "shx": "^0.3.2",
+    "solc": "0.5.11",
+    "solhint": "^2.1.2",
+    "solidity-coverage": "0.7.0-beta.0",
+    "truffle": "^5.0.37",
+    "web3": "1.2.1",
+    "web3-utils": "1.2.1"
+  },
+  "files": [
+    "/contracts"
+  ],
+  "homepage": "https://github.com/sablierhq/sablier/tree/develop/packages/payroll#readme",
+  "license": "LGPL-3.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sablierhq/sablier.git"
+  },
+  "scripts": {
+    "clean": "shx rm -rf ./.0x-artifacts ./artifacts ./build ./coverage ./coverage.json",
+    "coverage": "scripts/coverage.sh",
+    "lint": "yarn lint:js && yarn lint:sol",
+    "lint:js": "eslint --ignore-path ../../.eslintignore .",
+    "lint:sol": "solhint --config ../../.solhint.json --max-warnings 0 'contracts/**/*.sol'",
+    "test": "scripts/test.sh"
+  }
+}

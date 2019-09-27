@@ -1,0 +1,11 @@
+{
+  "env": {
+    "browser": true
+  },
+  "extends": ["react-app", "airbnb", "@sablier/eslint-config"],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
+}

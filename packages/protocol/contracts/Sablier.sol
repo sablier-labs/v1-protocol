@@ -1,504 +1,816 @@
-pragma solidity 0.5.9;
+pragma solidity 0.5.11;
 
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
+
+import "@sablier/shared-contracts/compound/Exponential.sol";
+import "@sablier/shared-contracts/interfaces/ICERC20.sol";
+import "@sablier/shared-contracts/lifecycle/OwnableWithoutRenounce.sol";
+import "@sablier/shared-contracts/lifecycle/PausableWithoutRenounce.sol";
+
+import "./interfaces/ICTokenManager.sol";
 import "./interfaces/IERC1620.sol";
-import "./zeppelin/IERC20.sol";
-import "./zeppelin/SafeMath.sol";
+import "./Types.sol";
 
-/// @title Sablier - ERC Money Streaming Implementation
-/// @author Paul Berg - <hello@paulrberg.com>
-
-contract Sablier is IERC1620 {
-    using SafeMath for uint256;
-
-    /**
-     * Types
-     */
-    struct Timeframe {
-        uint256 start;
-        uint256 stop;
-    }
-
-    struct Rate {
-        uint256 payment;
-        uint256 interval;
-    }
-
-    struct Stream {
-        address sender;
-        address recipient;
-        address tokenAddress;
-        Timeframe timeframe;
-        Rate rate;
-        uint256 balance;
-    }
+/**
+ * @title Sablier's Money Streaming
+ * @author Sablier
+ */
+contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, Exponential, ReentrancyGuard {
+    /*** Storage Properties ***/
 
     /**
-     * Storage
+     * @notice In Exp terms, 1e18 is 1, or 100%
      */
-    mapping(uint256 => Stream) private streams;
-    uint256 private streamNonce;
-    mapping(uint256 => mapping(address => bool)) private updates;
+    uint256 constant hundredPercent = 1e18;
 
     /**
-     * Events
+     * @notice In Exp terms, 1e16 is 0.01, or 1%
      */
-    event CreateStream(
+    uint256 constant onePercent = 1e16;
+
+    /**
+     * @notice Stores information about the initial state of the underlying of the cToken.
+     */
+    mapping(uint256 => Types.CompoundingStreamVars) private compoundingStreamsVars;
+
+    /**
+     * @notice An instance of CTokenManager, responsible for whitelisting and discarding cTokens.
+     */
+    ICTokenManager public cTokenManager;
+
+    /**
+     * @notice The amount of interest has been accrued per token address.
+     */
+    mapping(address => uint256) private earnings;
+
+    /**
+     * @notice The percentage fee charged by the contract on the accrued interest.
+     */
+    Exp public fee;
+
+    /**
+     * @notice Counter for new stream ids.
+     */
+    uint256 public nextStreamId;
+
+    /**
+     * @notice The stream objects identifiable by their unsigned integer ids.
+     */
+    mapping(uint256 => Types.Stream) private streams;
+
+    /*** Events ***/
+
+    /**
+     * @notice Emits when a compounding stream is successfully created.
+     */
+    event CreateCompoundingStream(
         uint256 indexed streamId,
-        address indexed sender,
-        address indexed recipient,
-        address tokenAddress,
-        uint256 startBlock,
-        uint256 stopBlock,
-        uint256 payment,
-        uint256 interval,
-        uint256 deposit
+        uint256 exchangeRate,
+        uint256 senderSharePercentage,
+        uint256 recipientSharePercentage
     );
 
-    event WithdrawFromStream(
-        uint256 indexed streamId,
-        address indexed recipient,
-        uint256 amount
-    );
+    /**
+     * @notice Emits when the owner discards a cToken.
+     */
+    event PayInterest(uint256 streamId, uint256 senderInterest, uint256 recipientInterest, uint256 sablierInterest);
 
-    event RedeemStream(
-        uint256 indexed streamId,
-        address indexed sender,
-        address indexed recipient,
-        uint256 senderAmount,
-        uint256 recipientAmount
-    );
+    /**
+     * @notice Emits when the owner takes the earnings.
+     */
+    event TakeEarnings(address indexed tokenAddress, uint256 indexed amount);
 
-    event ConfirmUpdate(
-        uint256 indexed streamId,
-        address indexed confirmer,
-        address newTokenAddress,
-        uint256 newStopBlock,
-        uint256 newPayment,
-        uint256 newInterval
-    );
+    /**
+     * @notice Emits when the owner updates the percentage fee.
+     */
+    event UpdateFee(uint256 indexed fee);
 
-    event RevokeUpdate(
-        uint256 indexed streamId,
-        address indexed revoker,
-        address newTokenAddress,
-        uint256 newStopBlock,
-        uint256 newPayment,
-        uint256 newInterval
-    );
+    /*** Modifiers ***/
 
-    event ExecuteUpdate(
-        uint256 indexed streamId,
-        address indexed sender,
-        address indexed recipient,
-        address newTokenAddress,
-        uint256 newStopBlock,
-        uint256 newPayment,
-        uint256 newInterval
-    );
-
-    /*
-    * Modifiers
-    */
-    modifier onlyRecipient(uint256 _streamId) {
+    /**
+     * @dev Throws if the caller is not the sender of the recipient of the stream.
+     */
+    modifier onlySenderOrRecipient(uint256 streamId) {
         require(
-            streams[_streamId].recipient == msg.sender,
-            "only the stream recipient is allowed to perform this action"
-        );
-        _;
-    }
-
-    modifier onlySenderOrRecipient(uint256 _streamId) {
-        require(
-            msg.sender == streams[_streamId].sender ||
-            msg.sender == streams[_streamId].recipient,
-            "only the sender or the recipient of the stream can perform this action"
-        );
-        _;
-    }
-
-    modifier streamExists(uint256 _streamId) {
-        require(
-            streams[_streamId].sender != address(0x0), "stream doesn't exist");
-        _;
-    }
-
-    modifier updateConfirmed(uint256 _streamId, address _addr) {
-        require(
-            updates[_streamId][_addr] == true,
-            "msg.sender has not confirmed the update"
+            msg.sender == streams[streamId].sender || msg.sender == streams[streamId].recipient,
+            "caller is not the sender or the recipient of the stream"
         );
         _;
     }
 
     /**
-     * Functions
+     * @dev Throws if the id does not point to a valid stream.
      */
-    constructor() public {
-        streamNonce = 1;
+    modifier streamExists(uint256 streamId) {
+        require(streams[streamId].isEntity, "stream does not exist");
+        _;
     }
 
-    function balanceOf(uint256 _streamId, address _addr)
-    public
-    view
-    streamExists(_streamId)
-    returns (uint256 balance)
+    /**
+     * @dev Throws if the id does not point to a valid compounding stream.
+     */
+    modifier compoundingStreamExists(uint256 streamId) {
+        require(compoundingStreamsVars[streamId].isEntity, "compounding stream does not exist");
+        _;
+    }
+
+    /*** Contract Logic Starts Here */
+
+    constructor(address cTokenManagerAddress) public {
+        OwnableWithoutRenounce.initialize(msg.sender);
+        PausableWithoutRenounce.initialize(msg.sender);
+        cTokenManager = ICTokenManager(cTokenManagerAddress);
+        nextStreamId = 1;
+    }
+
+    /*** Owner Functions ***/
+
+    struct UpdateFeeLocalVars {
+        MathError mathErr;
+        uint256 feeMantissa;
+    }
+
+    /**
+     * @notice Updates the Sablier fee.
+     * @dev Throws if the caller is not the owner of the contract.
+     *  Throws if `feePercentage` is not lower or equal to 100.
+     * @param feePercentage The new fee as a percentage.
+     */
+    function updateFee(uint256 feePercentage) external onlyOwner {
+        require(feePercentage <= 100, "fee percentage higher than 100%");
+        UpdateFeeLocalVars memory vars;
+
+        /* `feePercentage` will be stored as a mantissa, so we scale it up by one percent in Exp terms. */
+        (vars.mathErr, vars.feeMantissa) = mulUInt(feePercentage, onePercent);
+        /*
+         * `mulUInt` can only return MathError.INTEGER_OVERFLOW but we control `onePercent`
+         * and we know `feePercentage` is maximum 100.
+         */
+        assert(vars.mathErr == MathError.NO_ERROR);
+
+        fee = Exp({ mantissa: vars.feeMantissa });
+        emit UpdateFee(feePercentage);
+    }
+
+    struct TakeEarningsLocalVars {
+        MathError mathErr;
+    }
+
+    /**
+     * @notice Withdraws the earnings for the given token address.
+     * @dev Throws if `amount` exceeds the available blance.
+     * @param tokenAddress The address of the token to withdraw earnings for.
+     * @param amount The amount of tokens to withdraw.
+     */
+    function takeEarnings(address tokenAddress, uint256 amount) external onlyOwner nonReentrant {
+        require(cTokenManager.isCToken(tokenAddress), "cToken is not whitelisted");
+        require(amount > 0, "amount is zero");
+        require(earnings[tokenAddress] >= amount, "amount exceeds the available balance");
+
+        TakeEarningsLocalVars memory vars;
+        (vars.mathErr, earnings[tokenAddress]) = subUInt(earnings[tokenAddress], amount);
+        /*
+         * `subUInt` can only return MathError.INTEGER_UNDERFLOW but we know `earnings[tokenAddress]`
+         * is at least as big as `amount`.
+         */
+        assert(vars.mathErr == MathError.NO_ERROR);
+
+        emit TakeEarnings(tokenAddress, amount);
+        require(IERC20(tokenAddress).transfer(msg.sender, amount), "token transfer failure");
+    }
+
+    /*** View Functions ***/
+
+    /**
+     * @notice Returns the compounding stream with all its properties.
+     * @dev Throws if the id does not point to a valid stream.
+     * @param streamId The id of the stream to query.
+     * @return The stream object.
+     */
+    function getStream(uint256 streamId)
+        external
+        view
+        streamExists(streamId)
+        returns (
+            address sender,
+            address recipient,
+            uint256 deposit,
+            address tokenAddress,
+            uint256 startTime,
+            uint256 stopTime,
+            uint256 remainingBalance,
+            uint256 ratePerSecond
+        )
     {
-        Stream memory stream = streams[_streamId];
-        uint256 deposit = depositOf(_streamId);
-        uint256 delta = deltaOf(_streamId);
-        uint256 funds = delta.div(stream.rate.interval).mul(stream.rate.payment);
+        sender = streams[streamId].sender;
+        recipient = streams[streamId].recipient;
+        deposit = streams[streamId].deposit;
+        tokenAddress = streams[streamId].tokenAddress;
+        startTime = streams[streamId].startTime;
+        stopTime = streams[streamId].stopTime;
+        remainingBalance = streams[streamId].remainingBalance;
+        ratePerSecond = streams[streamId].ratePerSecond;
+    }
 
-        if (stream.balance != deposit)
-            funds = funds.sub(deposit.sub(stream.balance));
+    /**
+     * @notice Returns either the delta in seconds between `block.timestmap and `startTime` or
+     *  between `stopTime` and `startTime, whichever is smaller. If `block.timestamp` is before
+     *  `startTime`, it returns 0.
+     * @dev Throws if the id does not point to a valid stream.
+     * @param streamId The id of the stream for whom to query the delta.
+     * @return The time delta in seconds.
+     */
+    function deltaOf(uint256 streamId) public view streamExists(streamId) returns (uint256 delta) {
+        Types.Stream memory stream = streams[streamId];
+        if (block.timestamp <= stream.startTime) return 0;
+        if (block.timestamp < stream.stopTime) return block.timestamp - stream.startTime;
+        return stream.stopTime - stream.startTime;
+    }
 
-        if (_addr == stream.recipient) {
-            return funds;
-        } else if (_addr == stream.sender) {
-            return stream.balance.sub(funds);
+    struct BalanceOfLocalVars {
+        MathError mathErr;
+        uint256 recipientBalance;
+        uint256 withdrawalAmount;
+        uint256 senderBalance;
+    }
+
+    /**
+     * @notice Returns the available funds for the given stream id and address.
+     * @dev Throws if the id does not point to a valid stream.
+     * @param streamId The id of the stream for whom to query the balance.
+     * @param who The address for whom to query the balance.
+     * @return The total funds allocated to `who` as uint256.
+     */
+    function balanceOf(uint256 streamId, address who) public view streamExists(streamId) returns (uint256 balance) {
+        Types.Stream memory stream = streams[streamId];
+        BalanceOfLocalVars memory vars;
+
+        uint256 delta = deltaOf(streamId);
+        (vars.mathErr, vars.recipientBalance) = mulUInt(delta, stream.ratePerSecond);
+        require(vars.mathErr == MathError.NO_ERROR, "recipient balance calculation error");
+
+        /*
+         * If the stream `balance` does not equal `deposit`, it means there have been withdrawals.
+         * We have to subtract the total amount withdrawn from the amount of money that has been
+         * streamed until now.
+         */
+        if (stream.deposit > stream.remainingBalance) {
+            (vars.mathErr, vars.withdrawalAmount) = subUInt(stream.deposit, stream.remainingBalance);
+            assert(vars.mathErr == MathError.NO_ERROR);
+            (vars.mathErr, vars.recipientBalance) = subUInt(vars.recipientBalance, vars.withdrawalAmount);
+            /* `withdrawalAmount` cannot and should not be bigger than `recipientBalance`. */
+            assert(vars.mathErr == MathError.NO_ERROR);
+        }
+
+        if (who == stream.recipient) return vars.recipientBalance;
+        if (who == stream.sender) {
+            (vars.mathErr, vars.senderBalance) = subUInt(stream.remainingBalance, vars.recipientBalance);
+            /* `recipientBalance` cannot and should not be bigger than `remainingBalance`. */
+            assert(vars.mathErr == MathError.NO_ERROR);
+            return vars.senderBalance;
+        }
+        return 0;
+    }
+
+    /**
+     * @notice Checks if the given id points to a compounding stream.
+     * @param streamId The id of the compounding stream to check.
+     * @return bool true=it is compounding stream, otherwise false.
+     */
+    function isCompoundingStream(uint256 streamId) public view returns (bool) {
+        return compoundingStreamsVars[streamId].isEntity;
+    }
+
+    /**
+     * @notice Returns the compounding stream object with all its properties.
+     * @dev Throws if the id does not point to a valid compounding stream.
+     * @param streamId The id of the compounding stream to query.
+     * @return The compounding stream object.
+     */
+    function getCompoundingStream(uint256 streamId)
+        external
+        view
+        streamExists(streamId)
+        compoundingStreamExists(streamId)
+        returns (
+            address sender,
+            address recipient,
+            uint256 deposit,
+            address tokenAddress,
+            uint256 startTime,
+            uint256 stopTime,
+            uint256 remainingBalance,
+            uint256 ratePerSecond,
+            uint256 exchangeRateInitial,
+            uint256 senderSharePercentage,
+            uint256 recipientSharePercentage
+        )
+    {
+        sender = streams[streamId].sender;
+        recipient = streams[streamId].recipient;
+        deposit = streams[streamId].deposit;
+        tokenAddress = streams[streamId].tokenAddress;
+        startTime = streams[streamId].startTime;
+        stopTime = streams[streamId].stopTime;
+        remainingBalance = streams[streamId].remainingBalance;
+        ratePerSecond = streams[streamId].ratePerSecond;
+        exchangeRateInitial = compoundingStreamsVars[streamId].exchangeRateInitial.mantissa;
+        senderSharePercentage = compoundingStreamsVars[streamId].senderShare.mantissa;
+        recipientSharePercentage = compoundingStreamsVars[streamId].recipientShare.mantissa;
+    }
+
+    struct InterestOfLocalVars {
+        MathError mathErr;
+        Exp exchangeRateDelta;
+        Exp underlyingInterest;
+        Exp netUnderlyingInterest;
+        Exp senderUnderlyingInterest;
+        Exp recipientUnderlyingInterest;
+        Exp sablierUnderlyingInterest;
+        Exp senderInterest;
+        Exp recipientInterest;
+        Exp sablierInterest;
+    }
+
+    /**
+     * @notice Computes the interest accrued by keeping the amount of tokens in the contract. Returns (0, 0, 0) if
+     *  the stream is not a compounding stream.
+     * @dev Throws if there is a math error. We do not assert the calculations which involve the current
+     *  exchange rate, because we can't know what value we'll get back from the cToken contract.
+     * @return The interest accrued by the sender, the recipient and sablier, respectively, as uint256s.
+     */
+    function interestOf(uint256 streamId, uint256 amount)
+        public
+        streamExists(streamId)
+        returns (uint256 senderInterest, uint256 recipientInterest, uint256 sablierInterest)
+    {
+        if (!compoundingStreamsVars[streamId].isEntity) {
+            return (0, 0, 0);
+        }
+        Types.Stream memory stream = streams[streamId];
+        Types.CompoundingStreamVars memory compoundingStreamVars = compoundingStreamsVars[streamId];
+        InterestOfLocalVars memory vars;
+
+        /*
+         * The exchange rate delta is a key variable, since it leads us to how much interest has been earned
+         * since the compounding stream was created.
+         */
+        Exp memory exchangeRateCurrent = Exp({ mantissa: ICERC20(stream.tokenAddress).exchangeRateCurrent() });
+        if (exchangeRateCurrent.mantissa <= compoundingStreamVars.exchangeRateInitial.mantissa) {
+            return (0, 0, 0);
+        }
+        (vars.mathErr, vars.exchangeRateDelta) = subExp(exchangeRateCurrent, compoundingStreamVars.exchangeRateInitial);
+        assert(vars.mathErr == MathError.NO_ERROR);
+
+        /* Calculate how much interest has been earned by holding `amount` in the smart contract. */
+        (vars.mathErr, vars.underlyingInterest) = mulScalar(vars.exchangeRateDelta, amount);
+        require(vars.mathErr == MathError.NO_ERROR, "interest calculation error");
+
+        /* Calculate our share from that interest. */
+        if (fee.mantissa == hundredPercent) {
+            (vars.mathErr, vars.sablierInterest) = divExp(vars.underlyingInterest, exchangeRateCurrent);
+            require(vars.mathErr == MathError.NO_ERROR, "sablier interest conversion error");
+            return (0, 0, truncate(vars.sablierInterest));
+        } else if (fee.mantissa == 0) {
+            vars.sablierUnderlyingInterest = Exp({ mantissa: 0 });
+            vars.netUnderlyingInterest = vars.underlyingInterest;
         } else {
-            return 0;
-        }
-    }
+            (vars.mathErr, vars.sablierUnderlyingInterest) = mulExp(vars.underlyingInterest, fee);
+            require(vars.mathErr == MathError.NO_ERROR, "sablier interest calculation error");
 
-    function getStream(uint256 _streamId)
-    public
-    view
-    streamExists(_streamId)
-    returns (
-        address sender,
-        address recipient,
-        address tokenAddress,
-        uint256 balance,
-        uint256 startBlock,
-        uint256 stopBlock,
-        uint256 payment,
-        uint256 interval
-    )
-    {
-        Stream memory stream = streams[_streamId];
-        return (
-            stream.sender,
-            stream.recipient,
-            stream.tokenAddress,
-            stream.balance,
-            stream.timeframe.start,
-            stream.timeframe.stop,
-            stream.rate.payment,
-            stream.rate.interval
-        );
-    }
-
-    function getUpdate(uint256 _streamId, address _addr)
-    public
-    view
-    streamExists(_streamId)
-    returns (bool active)
-    {
-        return updates[_streamId][_addr];
-    }
-
-    function createStream(
-        address _sender,
-        address _recipient,
-        address _tokenAddress,
-        uint256 _startBlock,
-        uint256 _stopBlock,
-        uint256 _payment,
-        uint256 _interval
-    )
-        public
-    {
-        verifyTerms(
-            _tokenAddress,
-            _startBlock,
-            _stopBlock,
-            _interval
-        );
-
-        // only ERC20 tokens can be streamed
-        uint256 deposit = _stopBlock.sub(_startBlock).div(_interval).mul(_payment);
-        IERC20 tokenContract = IERC20(_tokenAddress);
-        uint256 allowance = tokenContract.allowance(_sender, address(this));
-        require(allowance >= deposit, "contract not allowed to transfer enough tokens");
-
-        // create and log the stream if the deposit is okay
-        streams[streamNonce] = Stream({
-            balance : deposit,
-            sender : _sender,
-            recipient : _recipient,
-            tokenAddress : _tokenAddress,
-            timeframe : Timeframe(_startBlock, _stopBlock),
-            rate : Rate(_payment, _interval)
-        });
-        emit CreateStream(
-            streamNonce,
-            _sender,
-            _recipient,
-            _tokenAddress,
-            _startBlock,
-            _stopBlock,
-            _payment,
-            _interval,
-            deposit
-        );
-        streamNonce = streamNonce.add(1);
-
-        // apply Checks-Effects-Interactions
-        require(tokenContract.transferFrom(_sender, address(this), deposit), "initial deposit failed");
-    }
-
-    function withdrawFromStream(
-        uint256 _streamId,
-        uint256 _amount
-    )
-    public
-    streamExists(_streamId)
-    onlyRecipient(_streamId)
-    {
-        Stream memory stream = streams[_streamId];
-        uint256 availableFunds = balanceOf(_streamId, stream.recipient);
-        require(availableFunds >= _amount, "not enough funds");
-
-        streams[_streamId].balance = streams[_streamId].balance.sub(_amount);
-        emit WithdrawFromStream(_streamId, stream.recipient, _amount);
-
-        // saving gas
-        if (streams[_streamId].balance == 0) {
-            delete streams[_streamId];
-            updates[_streamId][stream.sender] = false;
-            updates[_streamId][stream.recipient] = false;
+            /* Calculate how much interest is left for the sender and the recipient. */
+            (vars.mathErr, vars.netUnderlyingInterest) = subExp(
+                vars.underlyingInterest,
+                vars.sablierUnderlyingInterest
+            );
+            /*
+             * `subUInt` can only return MathError.INTEGER_UNDERFLOW but we know that `sablierUnderlyingInterest`
+             * is less or equal than `underlyingInterest`, because we control the value of `fee`.
+             */
+            assert(vars.mathErr == MathError.NO_ERROR);
         }
 
-        // saving gas by checking beforehand
-        if (_amount > 0)
-            require(IERC20(stream.tokenAddress).transfer(stream.recipient, _amount), "erc20 transfer failed");
-    }
-
-    function redeemStream(uint256 _streamId)
-    public
-    streamExists(_streamId)
-    onlySenderOrRecipient(_streamId)
-    {
-        Stream memory stream = streams[_streamId];
-        uint256 senderAmount = balanceOf(_streamId, stream.sender);
-        uint256 recipientAmount = balanceOf(_streamId, stream.recipient);
-        emit RedeemStream(
-            _streamId,
-            stream.sender,
-            stream.recipient,
-            senderAmount,
-            recipientAmount
+        /* Calculate the sender's share of the interest. */
+        (vars.mathErr, vars.senderUnderlyingInterest) = mulExp(
+            vars.netUnderlyingInterest,
+            compoundingStreamVars.senderShare
         );
+        require(vars.mathErr == MathError.NO_ERROR, "sender interest calculation error");
 
-        // saving gas
-        delete streams[_streamId];
-        updates[_streamId][stream.sender] = false;
-        updates[_streamId][stream.recipient] = false;
-
-        IERC20 tokenContract = IERC20(stream.tokenAddress);
-        // saving gas by checking beforehand
-        if (recipientAmount > 0)
-            require(tokenContract.transfer(stream.recipient, recipientAmount), "erc20 transfer failed");
-        if (senderAmount > 0)
-            require(tokenContract.transfer(stream.sender, senderAmount), "erc20 transfer failed");
-    }
-
-    function confirmUpdate(
-        uint256 _streamId,
-        address _tokenAddress,
-        uint256 _stopBlock,
-        uint256 _payment,
-        uint256 _interval
-    )
-    public
-    streamExists(_streamId)
-    onlySenderOrRecipient(_streamId)
-    {
-        onlyNewTerms(
-            _streamId,
-            _tokenAddress,
-            _stopBlock,
-            _payment,
-            _interval
+        /* Calculate the recipient's share of the interest. */
+        (vars.mathErr, vars.recipientUnderlyingInterest) = subExp(
+            vars.netUnderlyingInterest,
+            vars.senderUnderlyingInterest
         );
-        verifyTerms(
-            _tokenAddress,
-            block.number,
-            _stopBlock,
-            _interval
-        );
+        /*
+         * `subUInt` can only return MathError.INTEGER_UNDERFLOW but we know that `senderUnderlyingInterest`
+         * is less or equal than `netUnderlyingInterest`, because `senderShare` is bounded between 1e16 and 1e18.
+         */
+        assert(vars.mathErr == MathError.NO_ERROR);
 
-        emit ConfirmUpdate(
-            _streamId,
-            msg.sender,
-            _tokenAddress,
-            _stopBlock,
-            _payment,
-            _interval
-        );
-        updates[_streamId][msg.sender] = true;
+        /* Convert the interest to the equivalent cToken denomination. */
+        (vars.mathErr, vars.senderInterest) = divExp(vars.senderUnderlyingInterest, exchangeRateCurrent);
+        require(vars.mathErr == MathError.NO_ERROR, "sender interest conversion error");
 
-        executeUpdate(
-            _streamId,
-            _tokenAddress,
-            _stopBlock,
-            _payment,
-            _interval
-        );
-    }
+        (vars.mathErr, vars.recipientInterest) = divExp(vars.recipientUnderlyingInterest, exchangeRateCurrent);
+        require(vars.mathErr == MathError.NO_ERROR, "recipient interest conversion error");
 
-    function revokeUpdate(
-        uint256 _streamId,
-        address _tokenAddress,
-        uint256 _stopBlock,
-        uint256 _payment,
-        uint256 _interval
-    )
-        public
-        updateConfirmed(_streamId, msg.sender)
-    {
-        emit RevokeUpdate(
-            _streamId,
-            msg.sender,
-            _tokenAddress,
-            _stopBlock,
-            _payment,
-            _interval
-        );
-        updates[_streamId][msg.sender] = false;
+        (vars.mathErr, vars.sablierInterest) = divExp(vars.sablierUnderlyingInterest, exchangeRateCurrent);
+        require(vars.mathErr == MathError.NO_ERROR, "sablier interest conversion error");
+
+        /* Truncating the results means losing everything on the last 1e18 positions of the mantissa */
+        return (truncate(vars.senderInterest), truncate(vars.recipientInterest), truncate(vars.sablierInterest));
     }
 
     /**
-     * Private
+     * @notice Returns the amount of interest that has been accrued for the given token address.
+     * @param tokenAddress The address of the token to get the earnings for.
+     * @return The amount of interest as uint256.
      */
-    function deltaOf(uint256 _streamId)
-    private
-    view
-    returns (uint256 delta)
-    {
-        Stream memory stream = streams[_streamId];
-        uint256 startBlock = stream.timeframe.start;
-        uint256 stopBlock = stream.timeframe.stop;
-
-        // before the start of the stream
-        if (block.number <= startBlock)
-            return 0;
-
-        // during the stream
-        if (block.number <= stopBlock)
-            return block.number - startBlock;
-
-        // after the end of the stream
-        return stopBlock - startBlock;
+    function getEarnings(address tokenAddress) external view returns (uint256) {
+        require(cTokenManager.isCToken(tokenAddress), "token is not cToken");
+        return earnings[tokenAddress];
     }
 
-    function depositOf(uint256 _streamId)
-    private
-    view
-    returns (uint256 funds)
-    {
-        Stream memory stream = streams[_streamId];
-        return stream.timeframe.stop
-            .sub(stream.timeframe.start)
-            .div(stream.rate.interval)
-            .mul(stream.rate.payment);
+    /*** Public Effects & Interactions Functions ***/
+
+    struct CreateStreamLocalVars {
+        MathError mathErr;
+        uint256 duration;
+        uint256 ratePerSecond;
     }
 
-    function onlyNewTerms(
-        uint256 _streamId,
-        address _tokenAddress,
-        uint256 _stopBlock,
-        uint256 _payment,
-        uint256 _interval
-    )
-    private
-    view
-    returns (bool valid)
+    /**
+     * @notice Creates a new stream.
+     * @dev Throws if paused.
+     *  Throws if the recipient is the zero address, the contract itself or the caller.
+     *  Throws if the deposit is 0.
+     *  Throws if the start time is before `block.timestamp`.
+     *  Throws if the stop time is before the start time.
+     *  Throws if the duration calculation has a math error.
+     *  Throws if the deposit is smaller than the duration.
+     *  Throws if the deposit is not a multiple of the duration.
+     *  Throws if the rate calculation has a math error.
+     *  Throws if the next stream id calculation has a math error.
+     *  Throws if the contract is not allowed to transfer enough tokens.
+     *  Throws if there is a token transfer failure.
+     * @param recipient The address towards which the money will be streamed.
+     * @param deposit The amount of money to be streamed.
+     * @param tokenAddress The ERC20 token to use as streaming currency.
+     * @param startTime The unix timestamp of when the stream starts.
+     * @param stopTime The unix timestamp of when the stream stops.
+     * @return The uint256 id of the newly created stream.
+     */
+    function createStream(address recipient, uint256 deposit, address tokenAddress, uint256 startTime, uint256 stopTime)
+        public
+        whenNotPaused
+        returns (uint256)
     {
-        require(
-            streams[_streamId].tokenAddress != _tokenAddress ||
-            streams[_streamId].timeframe.stop != _stopBlock ||
-            streams[_streamId].rate.payment != _payment ||
-            streams[_streamId].rate.interval != _interval,
-            "stream has these terms already"
-        );
+        require(recipient != address(0x00), "stream to the zero address");
+        require(recipient != address(this), "stream to the contract itself");
+        require(recipient != msg.sender, "stream to the caller");
+        require(deposit > 0, "deposit is zero");
+        require(startTime >= block.timestamp, "start time before block.timestamp");
+        require(stopTime > startTime, "stop time before the start time");
+
+        CreateStreamLocalVars memory vars;
+        (vars.mathErr, vars.duration) = subUInt(stopTime, startTime);
+        /* `subUInt` can only return MathError.INTEGER_UNDERFLOW but we know `stopTime` is higher than `startTime`. */
+        assert(vars.mathErr == MathError.NO_ERROR);
+
+        /* Without this, the rate per second would be zero. */
+        require(deposit >= vars.duration, "deposit smaller than time delta");
+
+        /* This condition avoids dealing with remainders */
+        require(deposit % vars.duration == 0, "deposit not multiple of time delta");
+
+        (vars.mathErr, vars.ratePerSecond) = divUInt(deposit, vars.duration);
+        /* `divUInt` can only return MathError.DIVISION_BY_ZERO but we know `duration` is not zero. */
+        assert(vars.mathErr == MathError.NO_ERROR);
+
+        /* Create and store the stream object. */
+        uint256 streamId = nextStreamId;
+        streams[streamId] = Types.Stream({
+            remainingBalance: deposit,
+            deposit: deposit,
+            isEntity: true,
+            ratePerSecond: vars.ratePerSecond,
+            recipient: recipient,
+            sender: msg.sender,
+            startTime: startTime,
+            stopTime: stopTime,
+            tokenAddress: tokenAddress
+        });
+
+        /* Increment the next stream id. */
+        (vars.mathErr, nextStreamId) = addUInt(nextStreamId, uint256(1));
+        require(vars.mathErr == MathError.NO_ERROR, "next stream id calculation error");
+
+        require(IERC20(tokenAddress).transferFrom(msg.sender, address(this), deposit), "token transfer failure");
+        emit CreateStream(streamId, msg.sender, recipient, deposit, tokenAddress, startTime, stopTime);
+        return streamId;
+    }
+
+    struct CreateCompoundingStreamLocalVars {
+        MathError mathErr;
+        uint256 shareSum;
+        uint256 underlyingBalance;
+        uint256 senderShareMantissa;
+        uint256 recipientShareMantissa;
+    }
+
+    /**
+     * @notice Creates a new compounding stream.
+     * @dev Inherits all the security checks from `createStream`.
+     *  Throws if the cToken is not whitelisted.
+     *  Throws if the sender share percentage and the recipient share percentage do not sum up to 100.
+     *  Throws if the the sender share mantissa calculation has a math error.
+     *  Throws if the the recipient share mantissa calculation has a math error.
+     * @param recipient The address towards which the money will be streamed.
+     * @param deposit The amount of money to be streamed.
+     * @param tokenAddress The ERC20 token to use as streaming currency.
+     * @param startTime The unix timestamp of when the stream starts.
+     * @param stopTime The unix timestamp of when the stream stops.
+     * @param senderSharePercentage The sender's share of the interest, as a percentage.
+     * @param recipientSharePercentage The sender's share of the interest, as a percentage.
+     * @return The uint256 id of the newly created compounding stream.
+     */
+    function createCompoundingStream(
+        address recipient,
+        uint256 deposit,
+        address tokenAddress,
+        uint256 startTime,
+        uint256 stopTime,
+        uint256 senderSharePercentage,
+        uint256 recipientSharePercentage
+    ) external whenNotPaused returns (uint256) {
+        require(cTokenManager.isCToken(tokenAddress), "cToken is not whitelisted");
+        CreateCompoundingStreamLocalVars memory vars;
+
+        /* Ensure that the interest shares sum up to 100%. */
+        (vars.mathErr, vars.shareSum) = addUInt(senderSharePercentage, recipientSharePercentage);
+        require(vars.mathErr == MathError.NO_ERROR, "share sum calculation error");
+        require(vars.shareSum == 100, "shares do not sum up to 100");
+
+        uint256 streamId = createStream(recipient, deposit, tokenAddress, startTime, stopTime);
+
+        /*
+         * `senderSharePercentage` and `recipientSharePercentage` will be stored as mantissas, so we scale them up
+         * by one percent in Exp terms.
+         */
+        (vars.mathErr, vars.senderShareMantissa) = mulUInt(senderSharePercentage, onePercent);
+        /*
+         * `mulUInt` can only return MathError.INTEGER_OVERFLOW but we control `onePercent` and
+         * we know `senderSharePercentage` is maximum 100.
+         */
+        assert(vars.mathErr == MathError.NO_ERROR);
+
+        (vars.mathErr, vars.recipientShareMantissa) = mulUInt(recipientSharePercentage, onePercent);
+        /*
+         * `mulUInt` can only return MathError.INTEGER_OVERFLOW but we control `onePercent` and
+         * we know `recipientSharePercentage` is maximum 100.
+         */
+        assert(vars.mathErr == MathError.NO_ERROR);
+
+        /* Create and store the compounding stream vars. */
+        uint256 exchangeRateCurrent = ICERC20(tokenAddress).exchangeRateCurrent();
+        compoundingStreamsVars[streamId] = Types.CompoundingStreamVars({
+            exchangeRateInitial: Exp({ mantissa: exchangeRateCurrent }),
+            isEntity: true,
+            recipientShare: Exp({ mantissa: vars.recipientShareMantissa }),
+            senderShare: Exp({ mantissa: vars.senderShareMantissa })
+        });
+
+        emit CreateCompoundingStream(streamId, exchangeRateCurrent, senderSharePercentage, recipientSharePercentage);
+        return streamId;
+    }
+
+    /**
+     * @notice Withdraws from the stream.
+     * @dev Throws if the id does not point to a valid stream.
+     *  Throws if the caller is not the sender or the recipient of the stream.
+     *  Throws if the amount exceeds the available balance.
+     *  Throws if there is a token transfer failure.
+     * @param streamId The id of the stream to withdraw tokens from.
+     * @param amount The amount of tokens to withdraw.
+     * @return bool true=success, otherwise false.
+     */
+    function withdrawFromStream(uint256 streamId, uint256 amount)
+        external
+        whenNotPaused
+        nonReentrant
+        streamExists(streamId)
+        onlySenderOrRecipient(streamId)
+        returns (bool)
+    {
+        require(amount > 0, "amount is zero");
+        Types.Stream memory stream = streams[streamId];
+        uint256 balance = balanceOf(streamId, stream.recipient);
+        require(balance >= amount, "amount exceeds the available balance");
+
+        if (!compoundingStreamsVars[streamId].isEntity) {
+            withdrawFromStreamInternal(streamId, amount);
+        } else {
+            withdrawFromCompoundingStreamInternal(streamId, amount);
+        }
         return true;
     }
 
-    function verifyTerms(
-        address _tokenAddress,
-        uint256 _startBlock,
-        uint256 _stopBlock,
-        uint256 _interval
-    )
-    private
-    view
-    returns (bool valid)
+    /**
+     * @notice Cancels the stream.
+     * @dev Throws if the id does not point to a valid stream.
+     *  Throws if the caller is not the sender or the recipient of the stream.
+     *  Throws if there is a token transfer failure.
+     * @param streamId The id of the stream to cancel.
+     * @return bool true=success, otherwise false.
+     */
+    function cancelStream(uint256 streamId)
+        external
+        nonReentrant
+        streamExists(streamId)
+        onlySenderOrRecipient(streamId)
+        returns (bool)
     {
-        require(
-            _tokenAddress != address(0x0),
-            "token contract address needs to be provided"
-        );
-        require(
-            _startBlock >= block.number,
-            "the start block needs to be higher than the current block number"
-        );
-        require(
-            _stopBlock > _startBlock,
-            "the stop block needs to be higher than the start block"
-        );
-        uint256 delta = _stopBlock - _startBlock;
-        require(
-            delta >= _interval,
-            "the block difference needs to be higher than the payment interval"
-        );
-        require(
-            delta.mod(_interval) == 0,
-            "the block difference needs to be a multiple of the payment interval"
-        );
+        if (!compoundingStreamsVars[streamId].isEntity) {
+            cancelStreamInternal(streamId);
+        } else {
+            cancelCompoundingStreamInternal(streamId);
+        }
         return true;
     }
 
-    function executeUpdate(
-        uint256 _streamId,
-        address _tokenAddress,
-        uint256 _stopBlock,
-        uint256 _payment,
-        uint256 _interval
-    )
-        private
-        streamExists(_streamId)
-    {
-        Stream memory stream = streams[_streamId];
-        if (updates[_streamId][stream.sender] == false)
-            return;
-        if (updates[_streamId][stream.recipient] == false)
-            return;
+    /*** Internal Effects & Interactions Functions ***/
 
-        // adjust stop block
-        uint256 remainder = _stopBlock.sub(block.number).mod(_interval);
-        uint256 adjustedStopBlock = _stopBlock.sub(remainder);
-        emit ExecuteUpdate(
-            _streamId,
-            stream.sender,
-            stream.recipient,
-            _tokenAddress,
-            adjustedStopBlock,
-            _payment,
-            _interval
-        );
-        updates[_streamId][stream.sender] = false;
-        updates[_streamId][stream.recipient] = false;
+    struct WithdrawFromStreamInternalLocalVars {
+        MathError mathErr;
+    }
 
-        redeemStream(_streamId);
-        createStream(
-            stream.sender,
-            stream.recipient,
-            _tokenAddress,
-            block.number,
-            adjustedStopBlock,
-            _payment,
-            _interval
+    /**
+     * @notice Makes the withdrawal to the recipient of the stream.
+     * @dev If the stream balance has been depleted to 0, the stream object is deleted
+     *  to save gas and optimise contract storage.
+     *  Throws if the stream balance calculation has a math error.
+     *  Throws if there is a token transfer failure.
+     */
+    function withdrawFromStreamInternal(uint256 streamId, uint256 amount) internal {
+        Types.Stream memory stream = streams[streamId];
+        WithdrawFromStreamInternalLocalVars memory vars;
+        (vars.mathErr, streams[streamId].remainingBalance) = subUInt(stream.remainingBalance, amount);
+        /**
+         * `subUInt` can only return MathError.INTEGER_UNDERFLOW but we know that `remainingBalance` is at least
+         * as big as `amount`. See the `require` check in `withdrawFromInternal`.
+         */
+        assert(vars.mathErr == MathError.NO_ERROR);
+
+        if (streams[streamId].remainingBalance == 0) delete streams[streamId];
+
+        require(IERC20(stream.tokenAddress).transfer(stream.recipient, amount), "token transfer failure");
+        emit WithdrawFromStream(streamId, stream.recipient, amount);
+    }
+
+    struct WithdrawFromCompoundingStreamInternalLocalVars {
+        MathError mathErr;
+        uint256 amountWithoutSenderInterest;
+        uint256 netWithdrawalAmount;
+    }
+
+    /**
+     * @notice Makes the withdrawal to the recipient of the compounding stream and pays the accrued interest
+     *  to all parties.
+     * @dev If the stream balance has been depleted to 0, the stream object to save gas and optimise
+     *  contract storage.
+     *  Throws if there is a math error.
+     *  Throws if there is a token transfer failure.
+     */
+    function withdrawFromCompoundingStreamInternal(uint256 streamId, uint256 amount) internal {
+        Types.Stream memory stream = streams[streamId];
+        WithdrawFromCompoundingStreamInternalLocalVars memory vars;
+
+        /* Calculate the interest earned by each party for keeping `stream.balance` in the smart contract. */
+        (uint256 senderInterest, uint256 recipientInterest, uint256 sablierInterest) = interestOf(streamId, amount);
+
+        /*
+         * Calculate the net withdrawal amount by subtracting `senderInterest` and `sablierInterest`.
+         * Because the decimal points are lost when we truncate Exponentials, the recipient will implicitly earn
+         * `recipientInterest` plus a tiny-weeny amount of interest, max 2e-8 in cToken denomination.
+         */
+        (vars.mathErr, vars.amountWithoutSenderInterest) = subUInt(amount, senderInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "amount without sender interest calculation error");
+        (vars.mathErr, vars.netWithdrawalAmount) = subUInt(vars.amountWithoutSenderInterest, sablierInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "net withdrawal amount calculation error");
+
+        /* Subtract `amount` from the remaining balance of the stream. */
+        (vars.mathErr, streams[streamId].remainingBalance) = subUInt(stream.remainingBalance, amount);
+        require(vars.mathErr == MathError.NO_ERROR, "balance subtraction calculation error");
+
+        /* Delete the objects from storage if the remainig balance has been depleted to 0. */
+        if (streams[streamId].remainingBalance == 0) {
+            delete streams[streamId];
+            delete compoundingStreamsVars[streamId];
+        }
+
+        /* Add the sablier interest to the earnings for this cToken. */
+        (vars.mathErr, earnings[stream.tokenAddress]) = addUInt(earnings[stream.tokenAddress], sablierInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "earnings addition calculation error");
+
+        /* Transfer the tokens to the sender and the recipient. */
+        ICERC20 cToken = ICERC20(stream.tokenAddress);
+        if (senderInterest > 0)
+            require(cToken.transfer(stream.sender, senderInterest), "sender token transfer failure");
+        require(cToken.transfer(stream.recipient, vars.netWithdrawalAmount), "recipient token transfer failure");
+
+        emit WithdrawFromStream(streamId, stream.recipient, vars.netWithdrawalAmount);
+        emit PayInterest(streamId, senderInterest, recipientInterest, sablierInterest);
+    }
+
+    /**
+     * @notice Cancels the stream and transfers all tokens on pro rata basis.
+     * @dev The stream and compounding stream vars objects get deleted to save gas
+     *  and optimise contract storage.
+     *  Throws if there is a token transfer failure.
+     */
+    function cancelStreamInternal(uint256 streamId) internal {
+        Types.Stream memory stream = streams[streamId];
+        uint256 senderBalance = balanceOf(streamId, stream.sender);
+        uint256 recipientBalance = balanceOf(streamId, stream.recipient);
+
+        delete streams[streamId];
+
+        IERC20 token = IERC20(stream.tokenAddress);
+        if (recipientBalance > 0)
+            require(token.transfer(stream.recipient, recipientBalance), "recipient token transfer failure");
+        if (senderBalance > 0) require(token.transfer(stream.sender, senderBalance), "sender token transfer failure");
+
+        emit CancelStream(streamId, stream.sender, stream.recipient, senderBalance, recipientBalance);
+    }
+
+    struct CancelCompoundingStreamInternal {
+        MathError mathErr;
+        uint256 netSenderBalance;
+        uint256 recipientBalanceWithoutSenderInterest;
+        uint256 netRecipientBalance;
+    }
+
+    /**
+     * @notice Cancels the stream, transfers all tokens on a pro rata basis and pays the accrued interest
+     *  to all parties.
+     * @dev Importantly, the money that has not been streamed yet is not considered chargeable.
+     *  All the interest generated by that underlying will be returned to the sender.
+     *  Throws if there is a math error.
+     *  Throws if there is a token transfer failure.
+     */
+    function cancelCompoundingStreamInternal(uint256 streamId) internal {
+        Types.Stream memory stream = streams[streamId];
+        CancelCompoundingStreamInternal memory vars;
+
+        /*
+         * The sender gets back all the money that has not been streamed so far. By that, we mean both
+         * the underlying amount and the interest generated by it.
+         */
+        uint256 senderBalance = balanceOf(streamId, stream.sender);
+        uint256 recipientBalance = balanceOf(streamId, stream.recipient);
+
+        /* Calculate the interest earned by each party for keeping `recipientBalance` in the smart contract. */
+        (uint256 senderInterest, uint256 recipientInterest, uint256 sablierInterest) = interestOf(
+            streamId,
+            recipientBalance
         );
+
+        /*
+         * We add `senderInterest` to `senderBalance` to compute the net balance for the sender.
+         * After this, the rest of the function is similar to `withdrawFromCompoundingStreamInternal`, except
+         * we add the sender's share of the interest generated by `recipientBalance` to `senderBalance`.
+         */
+        (vars.mathErr, vars.netSenderBalance) = addUInt(senderBalance, senderInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "net sender balance calculation error");
+
+        /*
+         * Calculate the net withdrawal amount by subtracting `senderInterest` and `sablierInterest`.
+         * Because the decimal points are lost when we truncate Exponentials, the recipient will implicitly earn
+         * `recipientInterest` plus a tiny-weeny amount of interest, max 2e-8 in cToken denomination.
+         */
+        (vars.mathErr, vars.recipientBalanceWithoutSenderInterest) = subUInt(recipientBalance, senderInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "recipient balance without sender interest calculation error");
+        (vars.mathErr, vars.netRecipientBalance) = subUInt(vars.recipientBalanceWithoutSenderInterest, sablierInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "net recipient balance calculation error");
+
+        /* Add the sablier interest to the earnings attributed to this cToken. */
+        (vars.mathErr, earnings[stream.tokenAddress]) = addUInt(earnings[stream.tokenAddress], sablierInterest);
+        require(vars.mathErr == MathError.NO_ERROR, "earnings addition calculation error");
+
+        /* Delete the objects from storage. */
+        delete streams[streamId];
+        delete compoundingStreamsVars[streamId];
+
+        /* Transfer the tokens to the sender and the recipient. */
+        IERC20 token = IERC20(stream.tokenAddress);
+        if (vars.netSenderBalance > 0)
+            require(token.transfer(stream.sender, vars.netSenderBalance), "sender token transfer failure");
+        if (vars.netRecipientBalance > 0)
+            require(token.transfer(stream.recipient, vars.netRecipientBalance), "recipient token transfer failure");
+
+        emit CancelStream(streamId, stream.sender, stream.recipient, vars.netSenderBalance, vars.netRecipientBalance);
+        emit PayInterest(streamId, senderInterest, recipientInterest, sablierInterest);
     }
 }

@@ -4,11 +4,10 @@
 artifacts/
 build/
 coverage/
-docs/
+coverageEnv/
 lib/
 node_modules/
+packages/shared-contracts/compound/
 
 # files
-package.json
-
-
+coverage.json

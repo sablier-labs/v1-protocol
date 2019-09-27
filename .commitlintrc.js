@@ -1,7 +1,3 @@
-// prettier-ignore
 module.exports = {
-    extends: [
-        "@commitlint/config-conventional",
-        "@commitlint/config-lerna-scopes"
-    ],
-  };
+  extends: ["@commitlint/config-conventional", "@commitlint/config-lerna-scopes"],
+};
