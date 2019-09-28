@@ -39,10 +39,6 @@ contract PauserRoleWithoutRenounce is Initializable, Context {
         _addPauser(account);
     }
 
-    function renouncePauser() public {
-        _removePauser(_msgSender());
-    }
-
     function _addPauser(address account) internal {
         _pausers.add(account);
         emit PauserAdded(account);
