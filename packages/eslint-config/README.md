@@ -28,21 +28,3 @@ contributing or have any questions, please ping us on [Twitter](https://twitter.
 ```bash
 $ yarn install
 ```
-
-### Build
-
-```bash
-$ yarn build
-```
-
-### Lint
-
-```bash
-$ yarn lint
-```
-
-### Clean
-
-```bash
-$ yarn clean
-```
