@@ -47,7 +47,7 @@ module.exports = {
       },
     ],
     "prefer-template": "off",
-    quotes: ["error", "double"],
+    quotes: ["error", "double", { avoidEscape: true }],
     strict: "off",
   },
 };
