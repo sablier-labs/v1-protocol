@@ -3,6 +3,11 @@
     "browser": true
   },
   "extends": ["react-app", "airbnb", "@sablier/eslint-config"],
+  "rules": {
+    "no-plusplus": "off",
+    "react/destructuring-assignment": "off",
+    "react/jsx-props-no-spreading": "off"
+  },
   "settings": {
     "react": {
       "version": "detect"
