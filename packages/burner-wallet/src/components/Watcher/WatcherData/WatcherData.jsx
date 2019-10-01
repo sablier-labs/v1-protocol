@@ -88,7 +88,7 @@ class WatcherData extends PureComponent {
             <div className="info">
               <div className="content">
                 <div className="total">
-                  <p>/{this.props.total} DAI streamed</p>
+                  <p>/{this.props.total} DAI in total</p>
                 </div>
               </div>
             </div>

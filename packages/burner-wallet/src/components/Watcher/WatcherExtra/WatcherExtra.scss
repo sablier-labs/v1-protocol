@@ -2,9 +2,11 @@
 
 .WatcherExtra {
   width: 100%;
+
   & > .container {
     width: 100%;
     padding-top: 30px;
+
     & > .content {
       width: 100%;
       display: flex;
@@ -70,12 +72,14 @@
       & > .withdrawButton {
         width: 100%;
         padding-top: 50px;
+
         & > .container {
           padding: 20px 25px;
           width: calc(100% - 2 * 25px - 2 * 1px);
           border: 1px solid $colorBorder;
-          background: #ffffff;
+          background: $colorPrimary;
           border-radius: 4px;
+          cursor: pointer;
 
           & > .content {
             width: 100%;
@@ -84,19 +88,13 @@
             align-items: flex-end;
             justify-content: center;
             text-align: center;
-            & > p {
-              font-size: 15pt;
-              font-family: $fontSecondary;
-              color: $colorDark;
-              font-weight: 600;
 
-              & > span {
-                font-size: 12pt;
-                font-family: $fontSecondary;
-                color: $colorDark;
-                margin-left: 1px;
-                font-weight: 600;
-              }
+            & > span {
+              font-size: 12pt;
+              font-family: $fontSecondary;
+              color: #eeeeee;
+              margin-left: 1px;
+              font-weight: 600;
             }
           }
         }

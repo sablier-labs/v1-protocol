@@ -31,7 +31,7 @@ class Watcher extends Component {
             </div>
             <div className="bottom">
               <div className="content">
-                <WatcherExtra {...data} />
+                <WatcherExtra onClickWithdraw={() => this.props.onClickWithdraw()} {...data} />
               </div>
             </div>
           </div>
@@ -44,12 +44,8 @@ class Watcher extends Component {
 Watcher.propTypes = {
   total: PropTypes.number.isRequired,
   streamed: PropTypes.number.isRequired,
-  withdrawn: PropTypes.number.isRequired,
-
-  time: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  timeRemaining: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-
   size: PropTypes.number,
+  withdrawn: PropTypes.number.isRequired,
 };
 
 Watcher.defaultProps = {

@@ -20,10 +20,12 @@
     "@burner-wallet/plugins": "^0.0.3",
     "@burner-wallet/ui": "^0.0.38",
     "classnames": "^2.2.6",
+    "ethers": "^4.0.37",
     "prop-types": "^15.7.2",
     "react": "16.10.1",
     "react-dom": "16.10.1",
-    "react-ga": "^2.6.0"
+    "react-ga": "^2.6.0",
+    "react-responsive": "^8.0.1"
   },
   "devDependencies": {
     "@sablier/eslint-config": "1.0.0",

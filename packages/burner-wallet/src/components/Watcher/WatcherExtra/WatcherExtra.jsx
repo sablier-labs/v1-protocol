@@ -114,10 +114,8 @@ class WatcherExtra extends PureComponent {
             </div>
             <div className="withdrawButton">
               <div className="container">
-                <div className="content">
-                  <p>
-                    <span>Withdraw</span>
-                  </p>
+                <div className="content" onClick={() => this.props.onClickWithdraw()}>
+                  <span>Withdraw</span>
                 </div>
               </div>
             </div>
