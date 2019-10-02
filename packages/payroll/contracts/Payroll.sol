@@ -60,11 +60,6 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     event CreateSalary(uint256 indexed salaryId, uint256 indexed streamId);
 
     /**
-     * @notice Emits when a compounding salary is successfully created.
-     */
-    event CreateCompoundingSalary(uint256 indexed salaryId, uint256 indexed streamId);
-
-    /**
      * @notice Emits when the employee withdraws a portion or all their pro rata share of the stream.
      */
     event WithdrawFromSalary(uint256 indexed salaryId, uint256 indexed streamId);
