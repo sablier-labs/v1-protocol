@@ -114,7 +114,7 @@ class WatcherExtra extends PureComponent {
             </div>
             <div className="withdrawButton">
               <div className="container">
-                <div className="content" onClick={() => this.props.onClickWithdraw()}>
+                <div className="content" onClick={this.props.onClickWithdraw}>
                   <span>Withdraw</span>
                 </div>
               </div>
@@ -127,9 +127,10 @@ class WatcherExtra extends PureComponent {
 }
 
 WatcherExtra.propTypes = {
+  onClickWithdraw: PropTypes.func.isRequired,
   streamed: PropTypes.number.isRequired,
-  withdrawn: PropTypes.number.isRequired,
   streamedPercentage: PropTypes.number.isRequired,
+  withdrawn: PropTypes.number.isRequired,
   withdrawnPercentage: PropTypes.number.isRequired,
 };
 

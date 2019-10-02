@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@burner-wallet/assets": "^0.0.22",
-    "@burner-wallet/core": "^0.0.24",
+    "@burner-wallet/core": "^0.0.25",
     "@burner-wallet/exchange": "^0.0.5",
     "@burner-wallet/plugins": "^0.0.3",
     "@burner-wallet/ui": "^0.0.38",

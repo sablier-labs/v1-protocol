@@ -30,7 +30,7 @@ class WithdrawFromStreamPlugin {
     this.pluginContext = pluginContext;
 
     pluginContext.addPage("/stream/:id?", WithdrawFromStream);
-    pluginContext.addHomeButton("Withdraw", "/stream");
+    pluginContext.addHomeButton("Withdraw from Stream", "/stream");
 
     pluginContext.addPage("/follow-us", FollowUsOnTwitter);
     pluginContext.addHomeButton("Follow Us", "/follow-us");
