@@ -1,0 +1,62 @@
+@import "../../../config/Config.scss";
+
+.WatcherProgress {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+
+  @keyframes progress {
+    0% {
+      stroke-dasharray: 0 100;
+    }
+  }
+
+  .watcherProgressStreamed,
+  .watcherProgressWithdrawn {
+    animation: progress 1s ease-out;
+    transition: stroke-dasharray 0.4s;
+  }
+  @keyframes progress0to100Stream {
+    0% {
+      opacity: 0.9;
+      stroke-dasharray: 0 100;
+    }
+
+    40% {
+      opacity: 0.9;
+      stroke-dasharray: 100 100;
+    }
+    50% {
+      opacity: 0;
+      stroke-dasharray: 100 100;
+    }
+    100% {
+      opacity: 0;
+      stroke-dasharray: 100 100;
+    }
+  }
+
+  @keyframes progress0to100Withdraw {
+    0%,
+    40% {
+      opacity: 0.8;
+      stroke-dasharray: 0 100;
+    }
+
+    90% {
+      opacity: 0.8;
+      stroke-dasharray: 100 100;
+    }
+    100% {
+      opacity: 0;
+      stroke-dasharray: 100 100;
+    }
+  }
+
+  .watcherProgressAnimatorStream {
+    animation: progress0to100Stream 16s ease-in-out infinite;
+  }
+  .watcherProgressAnimatorWithdraw {
+    animation: progress0to100Withdraw 16s ease-in-out infinite;
+  }
+}

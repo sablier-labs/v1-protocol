@@ -1,0 +1,13 @@
+{
+  "short_name": "Sablier",
+  "name": "Sablier Burner Wallet",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "background_color": "#F8FAFF",
+  "theme_color": "#f77423"
+}

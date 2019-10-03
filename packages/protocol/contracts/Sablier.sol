@@ -74,7 +74,12 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     /**
      * @notice Emits when the owner discards a cToken.
      */
-    event PayInterest(uint256 streamId, uint256 senderInterest, uint256 recipientInterest, uint256 sablierInterest);
+    event PayInterest(
+        uint256 indexed streamId,
+        uint256 senderInterest,
+        uint256 recipientInterest,
+        uint256 sablierInterest
+    );
 
     /**
      * @notice Emits when the owner takes the earnings.
