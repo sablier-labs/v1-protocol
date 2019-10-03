@@ -57,18 +57,18 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     /**
      * @notice Emits when a salary is successfully created.
      */
-    event CreateSalary(uint256 indexed salaryId, uint256 indexed streamId);
+    event CreateSalary(uint256 indexed salaryId, uint256 indexed streamId, address indexed company);
 
     /**
      * @notice Emits when the employee withdraws a portion or all their pro rata share of the stream.
      */
-    event WithdrawFromSalary(uint256 indexed salaryId, uint256 indexed streamId);
+    event WithdrawFromSalary(uint256 indexed salaryId, uint256 indexed streamId, address indexed company);
 
     /**
      * @notice Emits when a salary is successfully cancelled and both parties get their pro rata
      *  share of the available funds.
      */
-    event CancelSalary(uint256 indexed salaryId, uint256 indexed streamId);
+    event CancelSalary(uint256 indexed salaryId, uint256 indexed streamId, address indexed company);
 
     /**
      * @dev Throws if the caller is not the company or the employee.
@@ -266,7 +266,7 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
         (vars.mathErr, nextSalaryId) = addUInt(nextSalaryId, uint256(1));
         require(vars.mathErr == MathError.NO_ERROR, "next stream id calculation error");
 
-        emit CreateSalary(salaryId, streamId);
+        emit CreateSalary(salaryId, streamId, _msgSender());
     }
 
     /**
@@ -319,7 +319,7 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
         require(vars.mathErr == MathError.NO_ERROR, "next stream id calculation error");
 
         /* We don't emit a different event for compounding salaries because we emit CreateCompoundingStream. */
-        emit CreateSalary(salaryId, streamId);
+        emit CreateSalary(salaryId, streamId, _msgSender());
     }
 
     struct CancelSalaryLocalVars {
@@ -344,7 +344,7 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     {
         Salary memory salary = salaries[salaryId];
         success = sablier.withdrawFromStream(salary.streamId, amount);
-        emit WithdrawFromSalary(salaryId, salary.streamId);
+        emit WithdrawFromSalary(salaryId, salary.streamId, salary.company);
     }
 
     /**
@@ -392,6 +392,6 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
                 "company token transfer failure"
             );
 
-        emit CancelSalary(salaryId, salary.streamId);
+        emit CancelSalary(salaryId, salary.streamId, salary.company);
     }
 }
