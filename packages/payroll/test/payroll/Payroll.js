@@ -38,7 +38,7 @@ contract("Payroll", function([alice, bob, carol, eve]) {
     // See https://github.com/trufflesuite/truffle/issues/737#issuecomment-454892913
     const ownerAddress = alice;
     const signerAddress = alice;
-    const sablierAddress = alice;
+    const sablierAddress = this.sablier.address;
     await this.payroll.methods["initialize(address,address,address)"](
       ownerAddress,
       signerAddress,
