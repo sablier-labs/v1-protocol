@@ -1,3 +1,4 @@
+/* eslint-disable react/sort-comp */
 /* eslint-disable max-classes-per-file */
 import React, { Component } from "react";
 import MediaQuery from "react-responsive";
@@ -38,7 +39,19 @@ class WithdrawFromStream extends Component {
     this.updateBalance = this.updateBalance.bind(this);
   }
 
-  async componentDidMount() {
+  componentDidUpdate(oldProps) {
+    if (oldProps.defaultAccount !== this.props.defaultAccount) {
+      this.fetchStream();
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.state.intervalId) {
+      clearInterval(this.state.intervalId);
+    }
+  }
+
+  async fetchStream() {
     const { defaultAccount, match, plugin } = this.props;
     let streamId = localStorage.getItem("streamId");
 
@@ -103,12 +116,6 @@ class WithdrawFromStream extends Component {
       streamed,
       withdrawn,
     });
-  }
-
-  componentWillUnmount() {
-    if (this.state.intervalId) {
-      clearInterval(this.state.intervalId);
-    }
   }
 
   async onClickWithdraw() {
