@@ -52,9 +52,12 @@ Sablier is maintained as a monorepo with multiple sub packages. Please find a co
 
 ## Usage :hammer_and_pick:
 
-If you want to use the dapp, head to [beta.sablier.app](https://beta.sablier.app).
+If you want to use the dapp, head to [beta.sablier.app](https://beta.sablier.app). You'll need
+[RinkebyDAI](https://rinkeby.etherscan.io/token/0x8ad3aa5d5ff084307d28c8f514d7a193b2bfe725) for this, which you can get
+by calling the `mint` function on Etherscan. The token has 18 decimals, so 1,000 DAI is represented as
+`1000000000000000000000`. [Reach out on Telegram](https://t.me/sablier) if you need further help.
 
-If you want to check out and compile your smart contracts for yourself, head to each individual package as presented
+If you want to check out and compile the smart contracts for yourself, head to each individual package as presented
 above. For example, here are the instructions for `@sablier/protocol`:
 
 ```bash
