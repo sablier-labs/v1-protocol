@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import "./WatcherExtra.scss";
 
 import ConfigStyle from "../../../config/Config.scss";
-import { Helper } from "../../../config/Util";
+import Helper from "../../../config/Helper";
 
 class WatcherExtra extends PureComponent {
   render() {

@@ -3,15 +3,16 @@ import PropTypes from "prop-types";
 import WatcherDataDigit from "./WatcherDataDigit/WatcherDataDigit";
 
 import AssetDai from "../../../assets/ic_dai_default.svg";
-import Config from "../../../config/Config";
 
 import "./WatcherData.scss";
+
+const DEFAULT_DECIMAL_SEPARATOR = ".";
 
 class WatcherData extends PureComponent {
   configureBalanceComponent = () => {
     // const value = Helper.standardizeNumber(this.props.streamed);
 
-    const parts = String(this.props.streamed.toFixed(7)).split(Config.DEFAULT_DECIMAL_SEPARATOR);
+    const parts = String(this.props.streamed.toFixed(7)).split(DEFAULT_DECIMAL_SEPARATOR);
     if (parts.length === 1) parts[1] = "0";
 
     const BC = [];

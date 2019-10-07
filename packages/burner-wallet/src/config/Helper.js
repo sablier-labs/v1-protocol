@@ -4,7 +4,7 @@
  */
 import cx from "classnames";
 
-class Helper {
+export default class Helper {
   /**
    * The purpose of this functionality is to extend the styling received from the
    * default CSS module with a dynamic styling. Due to the dynamic generation of
@@ -194,14 +194,3 @@ class Helper {
     return result;
   }
 }
-
-class Streamer {
-  static parse(source) {
-    const stream = {};
-    stream.id = Helper.getValue("id", source);
-
-    return stream;
-  }
-}
-
-export { Helper, Streamer };

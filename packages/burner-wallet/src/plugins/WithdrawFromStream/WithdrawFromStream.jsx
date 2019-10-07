@@ -1,16 +1,16 @@
 /* eslint-disable react/sort-comp */
-/* eslint-disable max-classes-per-file */
 import React, { Component } from "react";
 import MediaQuery from "react-responsive";
 
 import { utils } from "ethers";
 
-import Config from "../../config/Config";
 import Loader from "../../components/Loader/Loader";
 import SablierABI from "../../abis/Sablier";
 import Watcher from "../../components/Watcher/Watcher";
 
 import "./WithdrawFromStream.scss";
+
+const SABLIER_CONTRACT_ADDRESS = "0xE46AE47F2A81A571E234C0Acb5717D0653F22b30";
 
 function isUndefined(obj) {
   return obj === "undefined" || !obj;
@@ -39,8 +39,14 @@ class WithdrawFromStream extends Component {
     this.updateBalance = this.updateBalance.bind(this);
   }
 
+  componentDidMount() {
+    if (this.state.loading) {
+      this.fetchStream();
+    }
+  }
+
   componentDidUpdate(oldProps) {
-    if (oldProps.defaultAccount !== this.props.defaultAccount) {
+    if (this.state.loading || oldProps.defaultAccount !== this.props.defaultAccount) {
       this.fetchStream();
     }
   }
@@ -55,67 +61,65 @@ class WithdrawFromStream extends Component {
     const { defaultAccount, match, plugin } = this.props;
     let streamId = localStorage.getItem("streamId");
 
-    /**
-     * If the there is no parameter and no stream id in storage, consider the stream as not found.
-     * In the actual Sablier dapp, we will have a dashboard where one can see all of their streams.
-     */
-    if (match.params.id && match.params.id !== streamId) {
-      /* If the provided stream id is not yet in storage, save it */
-      localStorage.setItem("streamId", match.params.id);
-      streamId = match.params.id;
-    }
+    try {
+      /**
+       * If the there is no parameter and no stream id in storage, consider the stream as not found.
+       * In the actual Sablier dapp, we will have a dashboard where one can see all of their streams.
+       */
+      if (match.params.id && match.params.id !== streamId) {
+        /* If the provided stream id is not yet in storage, save it */
+        localStorage.setItem("streamId", match.params.id);
+        streamId = match.params.id;
+      }
 
-    /* See https://stackoverflow.com/a/19891952/3873510 */
-    if (isUndefined(streamId)) {
-      console.info("Stream id not provided");
+      /* See https://stackoverflow.com/a/19891952/3873510 */
+      if (isUndefined(streamId)) {
+        throw new Error("Stream id not provided");
+      }
+
+      const web3 = plugin.getWeb3();
+      const sablier = new web3.eth.Contract(SablierABI, SABLIER_CONTRACT_ADDRESS);
+      const stream = await sablier.methods.getStream(streamId).call();
+
+      /* It's possible that the given stream id does not point to any valid stream */
+      if (isUndefined(stream)) {
+        throw new Error("Stream not found");
+      }
+
+      /* Don't let others see your money */
+      if (stream.recipient !== defaultAccount) {
+        throw new Error("Stream recipient not the same with the default account");
+      }
+
+      const withdrawn = stream.deposit.sub(stream.remainingBalance);
+      const balance = await sablier.methods.balanceOf(streamId, stream.recipient).call();
+      if (isUndefined(balance)) {
+        throw new Error("Error reading the balance of the stream");
+      }
+
+      const streamed = balance.add(withdrawn);
+      let intervalId = null;
+
+      /**
+       * Update the balance in real-time only if the stream is active. That is, the
+       * current time has to be higher than the start time and lower then the stop time.
+       */
+      const now = utils.bigNumberify(Math.round(new Date().getTime() / 1000));
+      if (now.gte(stream.startTime) && now.lte(stream.stopTime)) {
+        intervalId = setInterval(this.updateBalance, 1000);
+      }
+      this.setState({
+        balance,
+        intervalId,
+        stream,
+        streamed,
+        withdrawn,
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
       this.setState({ loading: false });
-      return;
     }
-
-    const web3 = plugin.getWeb3();
-    const sablier = new web3.eth.Contract(SablierABI, Config.SABLIER_CONTRACT_ADDRESS);
-    const stream = await sablier.methods.getStream(streamId).call();
-
-    /* It's possible that the given stream id does not point to any valid stream */
-    if (isUndefined(stream)) {
-      console.info("Stream not found");
-      this.setState({ loading: false });
-      return;
-    }
-
-    /* Don't let others see your money */
-    if (stream.recipient !== defaultAccount) {
-      console.info("Stream recipient not the same with the default account");
-      this.setState({ loading: false });
-      return;
-    }
-
-    const withdrawn = stream.deposit.sub(stream.remainingBalance);
-    const balance = await sablier.methods.balanceOf(streamId, stream.recipient).call();
-    if (isUndefined(balance)) {
-      console.error("Error reading the balance of the stream");
-      return;
-    }
-
-    const streamed = balance.add(withdrawn);
-    let intervalId = null;
-
-    /**
-     * Update the balance in real-time only if the stream is active. That is, the
-     * current time has to be higher than the start time and lower then the stop time.
-     */
-    const now = utils.bigNumberify(Math.round(new Date().getTime() / 1000));
-    if (now.gte(stream.startTime) && now.lte(stream.stopTime)) {
-      intervalId = setInterval(this.updateBalance, 1000);
-    }
-    this.setState({
-      balance,
-      intervalId,
-      loading: false,
-      stream,
-      streamed,
-      withdrawn,
-    });
   }
 
   async onClickWithdraw() {
@@ -146,7 +150,7 @@ class WithdrawFromStream extends Component {
     }
 
     const web3 = plugin.getWeb3();
-    const sablier = new web3.eth.Contract(SablierABI, Config.SABLIER_CONTRACT_ADDRESS);
+    const sablier = new web3.eth.Contract(SablierABI, SABLIER_CONTRACT_ADDRESS);
     actions.setLoading("Withdrawing...");
     try {
       await sablier.methods.withdrawFromStream(streamId, balance).send({ from: defaultAccount });
