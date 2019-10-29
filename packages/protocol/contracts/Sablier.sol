@@ -123,6 +123,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     /*** Contract Logic Starts Here */
 
     constructor(address cTokenManagerAddress) public {
+        require(cTokenManagerAddress != address(0x00), "cTokenManager contract is the zero address");
         OwnableWithoutRenounce.initialize(msg.sender);
         PausableWithoutRenounce.initialize(msg.sender);
         cTokenManager = ICTokenManager(cTokenManagerAddress);
@@ -164,7 +165,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
 
     /**
      * @notice Withdraws the earnings for the given token address.
-     * @dev Throws if `amount` exceeds the available blance.
+     * @dev Throws if `amount` exceeds the available balance.
      * @param tokenAddress The address of the token to withdraw earnings for.
      * @param amount The amount of tokens to withdraw.
      */
@@ -219,7 +220,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     }
 
     /**
-     * @notice Returns either the delta in seconds between `block.timestmap and `startTime` or
+     * @notice Returns either the delta in seconds between `block.timestamp` and `startTime` or
      *  between `stopTime` and `startTime, whichever is smaller. If `block.timestamp` is before
      *  `startTime`, it returns 0.
      * @dev Throws if the id does not point to a valid stream.
@@ -538,7 +539,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
      * @param startTime The unix timestamp for when the stream starts.
      * @param stopTime The unix timestamp for when the stream stops.
      * @param senderSharePercentage The sender's share of the interest, as a percentage.
-     * @param recipientSharePercentage The sender's share of the interest, as a percentage.
+     * @param recipientSharePercentage The recipient's share of the interest, as a percentage.
      * @return The uint256 id of the newly created compounding stream.
      */
     function createCompoundingStream(
@@ -708,7 +709,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
         (vars.mathErr, streams[streamId].remainingBalance) = subUInt(stream.remainingBalance, amount);
         require(vars.mathErr == MathError.NO_ERROR, "balance subtraction calculation error");
 
-        /* Delete the objects from storage if the remainig balance has been depleted to 0. */
+        /* Delete the objects from storage if the remaining balance has been depleted to 0. */
         if (streams[streamId].remainingBalance == 0) {
             delete streams[streamId];
             delete compoundingStreamsVars[streamId];
