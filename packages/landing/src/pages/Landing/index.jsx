@@ -121,13 +121,13 @@ class Landing extends Component {
                 {error}
               </div>
 
-              <form className="landing__submit-container" name="Early Access Form" onSubmit={(e) => this.onSubmit(e)}>
+              <form className="landing__submit-container" name="Early Access Form" onSubmit={e => this.onSubmit(e)}>
                 <input
                   className="landing__email-input"
                   name="email"
-                  onChange={(value) => this.onChangeState(value)}
+                  onChange={value => this.onChangeState(value)}
                   placeholder="Work Email"
-                  ref={(ref) => {
+                  ref={ref => {
                     this.emailRef = ref;
                   }}
                   required
