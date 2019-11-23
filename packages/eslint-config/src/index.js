@@ -13,7 +13,6 @@ module.exports = {
         SwitchCase: 1,
       },
     ],
-    "jsx-a11y/control-has-associated-label": "off",
     "linebreak-style": "off",
     "max-len": [
       "warn",
