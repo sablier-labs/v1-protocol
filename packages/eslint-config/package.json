@@ -11,9 +11,9 @@
     "url": "https://github.com/sablierhq/sablier/issues"
   },
   "dependencies": {
-    "eslint": "^6.1.0",
-    "eslint-config-prettier": "^4.1.0",
-    "eslint-plugin-react": "^7.14.3"
+    "eslint": "^6.5.1",
+    "eslint-config-prettier": "^6.4.0",
+    "eslint-plugin-react": "^7.16.0"
   },
   "devDependencies": {
     "fixpack": "^2.3.1"

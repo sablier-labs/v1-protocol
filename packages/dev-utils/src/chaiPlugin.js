@@ -5,7 +5,7 @@ const devConstants = require("./constants");
 
 module.exports = (chai, _utils) => {
   // See https://twitter.com/nicksdjohnson/status/1132394932361023488
-  const convert = (value) => {
+  const convert = value => {
     let number;
 
     if (typeof value === "string" || typeof value === "number") {

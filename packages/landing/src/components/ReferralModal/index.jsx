@@ -71,7 +71,7 @@ class ReferralModal extends Component {
             Become a VIP member by inviting your friends
           </div>
           <div
-            ref={(ref) => {
+            ref={ref => {
               this.copyButtonRef = ref;
             }}
             className="referral-modal__url-container"
