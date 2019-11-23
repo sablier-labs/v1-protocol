@@ -115,6 +115,9 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
      * @param sablierAddress The address of the Sablier contract.
      */
     function initialize(address ownerAddress, address signerAddress, address sablierAddress) public initializer {
+        require(ownerAddress != address(0x00), "owner is the zero address");
+        require(signerAddress != address(0x00), "signer is the zero address");
+        require(sablierAddress != address(0x00), "sablier contract is the zero address");
         OwnableWithoutRenounce.initialize(ownerAddress);
         GSNRecipient.initialize();
         GSNBouncerSignature.initialize(signerAddress);

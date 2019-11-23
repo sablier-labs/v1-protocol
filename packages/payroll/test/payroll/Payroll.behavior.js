@@ -1,4 +1,5 @@
-const traveler = require("ganache-time-traveler");
+const { devConstants } = require("@sablier/dev-utils");
+const truffleAssert = require("truffle-assertions");
 
 const shouldBehaveLikeDiscardRelayer = require("./admin/DiscardRelayer");
 const shouldBehaveLikeWhitelistRelayer = require("./admin/WhitelistRelayer");
@@ -11,16 +12,52 @@ const shouldBehaveLikeWithdrawFromSalary = require("./effects/salary/WithdrawFro
 const shouldBehaveLikeCancelSalary = require("./effects/salary/CancelSalary");
 const shouldBehaveLikeCancelCompoundingSalary = require("./effects/compoundingSalary/CancelCompoundingSalary");
 
+const Payroll = artifacts.require("./Payroll.sol");
+const { ZERO_ADDRESS } = devConstants;
+
 function shouldBehaveLikePayroll(alice, bob, carol, eve) {
-  let snapshotId;
+  describe("initialization", function() {
+    it("reverts when the owner is the zero address", async function() {
+      const opts = { from: alice };
+      const payroll = await Payroll.new(opts);
 
-  beforeEach(async () => {
-    const snapshot = await traveler.takeSnapshot();
-    snapshotId = snapshot.result;
-  });
+      const ownerAddress = ZERO_ADDRESS;
+      const signerAddress = alice;
+      const sablierAddress = this.sablier.address;
 
-  afterEach(async () => {
-    await traveler.revertToSnapshot(snapshotId);
+      await truffleAssert.reverts(
+        payroll.methods["initialize(address,address,address)"](ownerAddress, signerAddress, sablierAddress, opts),
+        "owner is the zero address",
+      );
+    });
+
+    it("reverts when the signer is the zero address", async function() {
+      const opts = { from: alice };
+      const payroll = await Payroll.new(opts);
+
+      const ownerAddress = alice;
+      const signerAddress = ZERO_ADDRESS;
+      const sablierAddress = this.sablier.address;
+
+      await truffleAssert.reverts(
+        payroll.methods["initialize(address,address,address)"](ownerAddress, signerAddress, sablierAddress, opts),
+        "signer is the zero address",
+      );
+    });
+
+    it("reverts when the sablier contract is the zero address", async function() {
+      const opts = { from: alice };
+      const payroll = await Payroll.new(opts);
+
+      const ownerAddress = alice;
+      const signerAddress = alice;
+      const sablierAddress = ZERO_ADDRESS;
+
+      await truffleAssert.reverts(
+        payroll.methods["initialize(address,address,address)"](ownerAddress, signerAddress, sablierAddress, opts),
+        "sablier contract is the zero address",
+      );
+    });
   });
 
   describe("admin functions", function() {

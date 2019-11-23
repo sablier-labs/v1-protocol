@@ -1,3 +1,6 @@
+const { devConstants } = require("@sablier/dev-utils");
+const truffleAssert = require("truffle-assertions");
+
 const shouldBehaveLikeUpdateFee = require("./admin/UpdateFee");
 const shouldBehaveLikeTakeEarnings = require("./admin/TakeEarnings");
 
@@ -17,7 +20,20 @@ const shouldBehaveLikeWithdrawFromCompoundingStream = require("./effects/compoun
 const shouldBehaveLikeERC1620CancelStream = require("./effects/stream/CancelStream");
 const shouldBehaveLikeCancelCompoundingStream = require("./effects/compoundingStream/CancelCompoundingStream");
 
+const Sablier = artifacts.require("./Sablier.sol");
+const { ZERO_ADDRESS } = devConstants;
+
 function shouldBehaveLikeSablier(alice, bob, carol, eve) {
+  describe("initialization", function() {
+    it("reverts when the cTokenManager contract is the zero address", async function() {
+      const opts = { from: alice };
+      await truffleAssert.reverts(
+        Sablier.new(ZERO_ADDRESS, opts),
+        "cTokenManager contract is the zero address"
+      );
+    });
+  });
+
   describe("admin functions", function() {
     describe("updateFee", function() {
       shouldBehaveLikeUpdateFee(alice, eve);
