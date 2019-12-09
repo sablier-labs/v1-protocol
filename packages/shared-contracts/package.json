@@ -11,7 +11,8 @@
     "url": "https://github.com/sablierhq/sablier/issues"
   },
   "dependencies": {
-    "@openzeppelin/contracts-ethereum-package": "2.2.3"
+    "@openzeppelin/contracts-ethereum-package": "2.2.3",
+    "@openzeppelin/upgrades": "2.5.2"
   },
   "devDependencies": {
     "fixpack": "^2.3.1",

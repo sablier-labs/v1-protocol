@@ -33,18 +33,11 @@ contract("Payroll", function([alice, bob, carol, eve]) {
 
     this.cTokenManager = await CTokenManager.new(opts);
     this.sablier = await Sablier.new(this.cTokenManager.address, opts);
-    this.payroll = await Payroll.new(opts);
 
-    // See https://github.com/trufflesuite/truffle/issues/737#issuecomment-454892913
     const ownerAddress = alice;
     const signerAddress = alice;
     const sablierAddress = this.sablier.address;
-    await this.payroll.methods["initialize(address,address,address)"](
-      ownerAddress,
-      signerAddress,
-      sablierAddress,
-      opts,
-    );
+    this.payroll = await Payroll.new(ownerAddress, signerAddress, sablierAddress, opts);
   });
 
   shouldBehaveLikePayroll(alice, bob, carol, eve);

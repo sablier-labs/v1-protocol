@@ -19,42 +19,39 @@ function shouldBehaveLikePayroll(alice, bob, carol, eve) {
   describe("initialization", function() {
     it("reverts when the owner is the zero address", async function() {
       const opts = { from: alice };
-      const payroll = await Payroll.new(opts);
 
       const ownerAddress = ZERO_ADDRESS;
       const signerAddress = alice;
       const sablierAddress = this.sablier.address;
 
       await truffleAssert.reverts(
-        payroll.methods["initialize(address,address,address)"](ownerAddress, signerAddress, sablierAddress, opts),
+        Payroll.new(ownerAddress, signerAddress, sablierAddress, opts),
         "owner is the zero address",
       );
     });
 
     it("reverts when the signer is the zero address", async function() {
       const opts = { from: alice };
-      const payroll = await Payroll.new(opts);
 
       const ownerAddress = alice;
       const signerAddress = ZERO_ADDRESS;
       const sablierAddress = this.sablier.address;
 
       await truffleAssert.reverts(
-        payroll.methods["initialize(address,address,address)"](ownerAddress, signerAddress, sablierAddress, opts),
+        Payroll.new(ownerAddress, signerAddress, sablierAddress, opts),
         "signer is the zero address",
       );
     });
 
     it("reverts when the sablier contract is the zero address", async function() {
       const opts = { from: alice };
-      const payroll = await Payroll.new(opts);
 
       const ownerAddress = alice;
       const signerAddress = alice;
       const sablierAddress = ZERO_ADDRESS;
 
       await truffleAssert.reverts(
-        payroll.methods["initialize(address,address,address)"](ownerAddress, signerAddress, sablierAddress, opts),
+        Payroll.new(ownerAddress, signerAddress, sablierAddress, opts),
         "sablier contract is the zero address",
       );
     });

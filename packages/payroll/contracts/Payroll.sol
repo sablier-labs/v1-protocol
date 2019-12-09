@@ -3,7 +3,6 @@ pragma solidity 0.5.11;
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/bouncers/GSNBouncerSignature.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipient.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
 import "@sablier/protocol/contracts/Sablier.sol";
 import "@sablier/protocol/contracts/Types.sol";
@@ -16,7 +15,7 @@ import "@sablier/shared-contracts/lifecycle/OwnableWithoutRenounce.sol";
  * @title Payroll Proxy
  * @author Sablier
  */
-contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecipient, GSNBouncerSignature {
+contract Payroll is OwnableWithoutRenounce, Exponential, GSNRecipient, GSNBouncerSignature {
     /*** Storage Properties ***/
 
     /**
@@ -107,14 +106,12 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
     /*** Contract Logic Starts Here ***/
 
     /**
-     * @notice Only called once after the contract is deployed. We ask for the owner and the signer address
-     *  to be specified as parameters to avoid handling `msg.sender` directly.
-     * @dev The `initializer` modifier ensures that the function can only be called once.
+     * @notice We ask for the owner and the signer address to be specified as parameters to avoid handling `msg.sender` directly.
      * @param ownerAddress The address of the contract owner.
      * @param signerAddress The address of the account able to authorise relayed transactions.
      * @param sablierAddress The address of the Sablier contract.
      */
-    function initialize(address ownerAddress, address signerAddress, address sablierAddress) public initializer {
+    constructor(address ownerAddress, address signerAddress, address sablierAddress) public {
         require(ownerAddress != address(0x00), "owner is the zero address");
         require(signerAddress != address(0x00), "signer is the zero address");
         require(sablierAddress != address(0x00), "sablier contract is the zero address");
@@ -250,7 +247,7 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
      * @return The uint256 id of the newly created salary.
      */
     function createSalary(address employee, uint256 salary, address tokenAddress, uint256 startTime, uint256 stopTime)
-        external
+        public
         returns (uint256 salaryId)
     {
         /* Transfer the tokens to this contract. */
@@ -270,6 +267,32 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
         require(vars.mathErr == MathError.NO_ERROR, "next stream id calculation error");
 
         emit CreateSalary(salaryId, streamId, _msgSender());
+    }
+
+    struct CreateSalaryWithDurationLocalVars {
+        MathError mathErr;
+    }
+
+    /**
+     * @notice Creates a new salary funded by `msg.sender` and paid towards `employee` for `duration` seconds.
+     * @dev Function overloading for `createSalary`.
+     * @param employee The address of the employee who receives the salary.
+     * @param salary The amount of tokens to be streamed.
+     * @param tokenAddress The ERC20 token to use as streaming currency.
+     * @param duration The total duration of the stream, measured in seconds.
+     * @return The uint256 id of the newly created salary.
+     */
+    function createSalaryWithDuration(address employee, uint256 salary, address tokenAddress, uint256 duration)
+        external
+        returns (uint256 salaryId)
+    {
+        uint256 startTime = block.timestamp;
+        uint256 stopTime;
+
+        CreateSalaryWithDurationLocalVars memory vars;
+        (vars.mathErr, stopTime) = addUInt(startTime, duration);
+        require(vars.mathErr == MathError.NO_ERROR, "stop time calculation error");
+        return createSalary(employee, salary, tokenAddress, startTime, stopTime);
     }
 
     /**
@@ -296,7 +319,7 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
         uint256 stopTime,
         uint256 senderSharePercentage,
         uint256 recipientSharePercentage
-    ) external returns (uint256 salaryId) {
+    ) public returns (uint256 salaryId) {
         /* Transfer the tokens to this contract. */
         require(IERC20(tokenAddress).transferFrom(_msgSender(), address(this), salary), "token transfer failure");
 
@@ -323,6 +346,43 @@ contract Payroll is Initializable, OwnableWithoutRenounce, Exponential, GSNRecip
 
         /* We don't emit a different event for compounding salaries because we emit CreateCompoundingStream. */
         emit CreateSalary(salaryId, streamId, _msgSender());
+    }
+
+    /**
+     * @notice Creates a new compounding salary funded by `msg.sender` and paid towards `employee` for `duration` seconds.
+     * @dev Function overloading for `createCompoundingSalary`.
+     * @param employee The address of the employee who receives the salary.
+     * @param salary The amount of tokens to be streamed.
+     * @param tokenAddress The ERC20 token to use as streaming currency.
+     * @param duration The total duration of the stream, measured in seconds.
+     * @param senderSharePercentage The sender's share of the interest, as a percentage.
+     * @param recipientSharePercentage The sender's share of the interest, as a percentage.
+     * @return The uint256 id of the newly created salary.
+     */
+    function createCompoundingSalaryWithDuration(
+        address employee,
+        uint256 salary,
+        address tokenAddress,
+        uint256 duration,
+        uint256 senderSharePercentage,
+        uint256 recipientSharePercentage
+    ) external returns (uint256 salaryId) {
+        uint256 startTime = block.timestamp;
+        uint256 stopTime;
+
+        CreateSalaryWithDurationLocalVars memory vars;
+        (vars.mathErr, stopTime) = addUInt(startTime, duration);
+        require(vars.mathErr == MathError.NO_ERROR, "stop time calculation error");
+        return
+            createCompoundingSalary(
+                employee,
+                salary,
+                tokenAddress,
+                startTime,
+                stopTime,
+                senderSharePercentage,
+                recipientSharePercentage
+            );
     }
 
     struct CancelSalaryLocalVars {

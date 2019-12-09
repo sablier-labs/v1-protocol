@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@openzeppelin/contracts-ethereum-package": "2.2.3",
-    "@openzeppelin/upgrades": "2.5.2",
     "@sablier/protocol": "1.0.0"
   },
   "devDependencies": {
