@@ -3,9 +3,6 @@
 <p align="center">Sablier is a decentralised app for continuous salaries on Ethereum. Read <a href="https://medium.com/sablier-app/introducing-sablier-continuous-payments-on-ethereum-c2bf04446d31" target="_blank">this article</a> to find out more about our mission. For a demo, see <a href="https://www.youtube.com/watch?v=2onYeCwAY3c" target="_blank">this video</a>.</p>
 
 <p align="center">
-  <a href="https://app.netlify.com/sites/infallible-visvesvaraya-6d594e/deploys" alt="Netlify">
-    <img src="https://api.netlify.com/api/v1/badges/7a05c307-d1c2-43c0-b914-691dc1fa3104/deploy-status">
-  </a>
   <a href="https://circleci.com/gh/sablierhq/sablier" alt="CircleCI">
     <img src="https://circleci.com/gh/sablierhq/sablier.svg?style=svg">
   </a>
@@ -38,26 +35,19 @@ Sablier is maintained as a monorepo with multiple sub packages. Please find a co
 
 | Package                                                   | Version                                                                                                                       | Description                                                       |
 | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [`@sablier/dev-utils`](/packages/dev-utils)               | [![npm](https://img.shields.io/npm/v/@sablier/dev-utils.svg)](https://www.npmjs.com/package/@sablier/dev-utils)               | Dev utils to be shared across Sablier projects and packages       |
 | [`@sablier/payroll`](/packages/payroll)                   | [![npm](https://img.shields.io/npm/v/@sablier/payroll.svg)](https://www.npmjs.com/package/@sablier/payroll)                   | Payroll proxy                                                     |
 | [`@sablier/protocol`](/packages/protocol)                 | [![npm](https://img.shields.io/npm/v/@sablier/protocol.svg)](https://www.npmjs.com/package/@sablier/protocol)                 | Money streaming protocol                                          |
 | [`@sablier/shared-contracts`](/packages/shared-contracts) | [![npm](https://img.shields.io/npm/v/@sablier/shared-contracts.svg)](https://www.npmjs.com/package/@sablier/shared-contracts) | Smart contracts to be shared across Sablier projects and packages |
 
 ### Private Packages
 
-| Package                                             | Description   |
-| --------------------------------------------------- | ------------- |
-| [`@sablier/eslint-config`](/packages/eslint-config) | Eslint config |
-| [`@sablier/landing`](/packages/landing)             | Landing page  |
+| Package                                     | Description                                                                                                     |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| [`@sablier/dev-utils`](/packages/dev-utils) | [![npm](https://img.shields.io/npm/v/@sablier/dev-utils.svg)](https://www.npmjs.com/package/@sablier/dev-utils) | Dev utils to be shared across Sablier projects and packages |
 
 ## Usage :hammer_and_pick:
 
-If you want to use the dapp, head to [beta.sablier.app](https://beta.sablier.app). You'll need
-[RinkebyDAI](https://rinkeby.etherscan.io/token/0x8ad3aa5d5ff084307d28c8f514d7a193b2bfe725) for this, which you can get
-by calling the `mint` function on Etherscan. The token has 18 decimals, so 1,000 DAI is represented as
-`1000000000000000000000`. [Reach out on Telegram](https://t.me/sablier) if you need further help.
-
-If you want to check out and compile the smart contracts for yourself, head to each individual package as presented
+To check out and compile the smart contracts for yourself, head to each individual package as presented
 above. For example, here are the instructions for `@sablier/protocol`:
 
 ```bash
@@ -69,7 +59,7 @@ truffle migrate --reset --network development
 ## Contributing :raising_hand_woman:
 
 We highly encourage participation from the community to help shape the development of Sablier. If you are interested in
-contributing or have any questions, please ping us on [Twitter](https://twitter.com/SablierHQ).
+contributing or have any questions, please ping us on [Twitter](https://twitter.com/SablierHQ) or [Telegram](https://t.me/sablier);
 
 We use [Yarn](https://yarnpkg.com/) as a dependency manager and [Truffle](https://github.com/trufflesuite/truffle)
 as a development environment for compiling, testing, and deploying our contracts. The contracts were written in [Solidity](https://github.com/ethereum/solidity).
