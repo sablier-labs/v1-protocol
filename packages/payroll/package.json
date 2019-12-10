@@ -29,7 +29,7 @@
     "ganache-cli": "^6.5.1",
     "ganache-time-traveler": "^1.0.5",
     "istanbul": "^0.4.5",
-    "prettier-plugin-solidity": "1.0.0-alpha.27",
+    "prettier-plugin-solidity": "^1.0.0-alpha.34",
     "shx": "^0.3.2",
     "solc": "0.5.11",
     "solhint": "^2.1.2",
