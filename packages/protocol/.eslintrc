@@ -2,5 +2,5 @@
   "env": {
     "node": true
   },
-  "extends": ["airbnb-base", "@sablier/eslint-config"]
+  "extends": ["airbnb-base", "@paulrberg/eslint-config"]
 }

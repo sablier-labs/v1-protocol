@@ -3,7 +3,7 @@ pragma solidity 0.5.11;
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 
 /// @dev Mock class using ERC20
-/// @author Paul Razvan Berg - <paul@sablier.app>
+/// @author Sablier
 
 contract EvilERC20 is ERC20 {
     bool shouldDisableTransfer;

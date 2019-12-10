@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "author": {
     "name": "Sablier",
-    "email": "paul@sablier.app",
-    "url": "https://sablier.app"
+    "email": "hello@sablier.finance",
+    "url": "https://sablier.finance"
   },
   "bugs": {
     "url": "https://github.com/sablierhq/sablier/issues"
@@ -16,13 +16,14 @@
     "@sablier/protocol": "1.0.0"
   },
   "devDependencies": {
+    "@paulrberg/eslint-config": "^1.0.0",
     "@sablier/dev-utils": "1.0.0",
-    "@sablier/eslint-config": "1.0.0",
     "@sablier/shared-contracts": "1.0.0",
     "@truffle/hdwallet-provider": "^1.0.18",
     "dotenv": "^7.0.0",
     "eslint": "^6.1.0",
     "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.7.0",
     "eslint-plugin-import": "^2.18.2",
     "fixpack": "^2.3.1",
     "ganache-cli": "^6.5.1",
@@ -47,7 +48,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sablierhq/sablier.git"
+    "url": "https://github.com/sablierhq/sablier.git",
+    "directory": "packages/payroll"
   },
   "scripts": {
     "clean": "shx rm -rf ./.0x-artifacts ./artifacts ./build ./coverage ./coverage.json",

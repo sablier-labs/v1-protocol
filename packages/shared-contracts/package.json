@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "author": {
     "name": "Sablier",
-    "email": "paul@sablier.app",
-    "url": "https://sablier.app"
+    "email": "hello@sablier.finance",
+    "url": "https://sablier.finance"
   },
   "bugs": {
     "url": "https://github.com/sablierhq/sablier/issues"
@@ -33,7 +33,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sablierhq/sablier.git"
+    "url": "https://github.com/sablierhq/sablier.git",
+    "directory": "packages/shared-contracts"
   },
   "scripts": {
     "lint": "solhint --config ../../.solhint.json --max-warnings 0 'compound/**/*.sol' 'interfaces/**/*.sol' 'mocks/**/*.sol' 'test/**/*.sol'"

@@ -2,7 +2,7 @@ pragma solidity 0.5.11;
 
 /**
  * @title ERC-1620 Money Streaming Standard
- * @author Paul Razvan Berg - <paul@sablier.app>
+ * @author Sablier
  * @dev See https://eips.ethereum.org/EIPS/eip-1620
  */
 interface IERC1620 {
