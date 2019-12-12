@@ -19,7 +19,7 @@ const sablierDevUtils = require("@sablier/dev-utils");
 ## Contributing
 
 We highly encourage participation from the community to help shape the development of Sablier. If you are interested in
-contributing or have any questions, please ping us on [Twitter](https://twitter.com/SablierHQ).
+contributing or have any questions, please ping us on [Twitter](https://twitter.com/sablierhq).
 
 ### Install Modules
 

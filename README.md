@@ -1,6 +1,6 @@
 <p align="center"><img src="https://i.imgur.com/q6UHTt1.png" width="280px"/></p>
 
-<p align="center">Sablier is a decentralised app for continuous salaries on Ethereum. Read <a href="https://medium.com/sablier-app/introducing-sablier-continuous-payments-on-ethereum-c2bf04446d31" target="_blank">this article</a> to find out more about our mission. For a demo, see <a href="https://www.youtube.com/watch?v=2onYeCwAY3c" target="_blank">this video</a>.</p>
+<p align="center">Sablier is the protocol for real-time finance on Ethereum. Read this <a href="https://medium.com/@PaulRBerg/the-protocol-for-real-time-finance-on-ethereum-5a5350db16ae" target="_blank">article</a> to find out more about what we're up to.</p>
 
 <p align="center">
   <a href="https://circleci.com/gh/sablierhq/sablier" alt="CircleCI">
@@ -22,11 +22,6 @@
 
 ---
 
-## Warning :rotating_light:
-
-Please take note that this is experimental, beta software and is provided on an "as is" and "as available" basis. We do
-not give any warranties and will not be liable for any loss, direct or indirect through continued use of this codebase.
-
 ## Packages :package:
 
 Sablier is maintained as a monorepo with multiple sub packages. Please find a comprehensive list below.
@@ -45,21 +40,49 @@ Sablier is maintained as a monorepo with multiple sub packages. Please find a co
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | [`@sablier/dev-utils`](/packages/dev-utils) | [![npm](https://img.shields.io/npm/v/@sablier/dev-utils.svg)](https://www.npmjs.com/package/@sablier/dev-utils) | Dev utils to be shared across Sablier projects and packages |
 
+## Contracts :memo:
+
+Find the addresses for our smart contracts below. They have been audited by [Quantstamp](https://github.com/sablierhq/sablier/tree/audit-v2) and [ConsenSys
+Diligence](https://github.com/sablierhq/sablier/tree/audit-v1).
+
+### Ethereum Mainnet
+
+| Name          | Address                                                                                                               |
+| ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| CTokenManager | [0x342A6596F50b4Db7c3246C0F4eFb1f06843d7405](https://etherscan.io/address/0x342A6596F50b4Db7c3246C0F4eFb1f06843d7405) |
+| Payroll       | [0xbd6a40Bb904aEa5a49c59050B5395f7484A4203d](https://etherscan.io/address/0xbd6a40Bb904aEa5a49c59050B5395f7484A4203d) |
+| Sablier       | [0xA4fc358455Febe425536fd1878bE67FfDBDEC59a](https://etherscan.io/address/0xA4fc358455Febe425536fd1878bE67FfDBDEC59a) |
+
+### Ethereum Testnets
+
+These are Goerli, Kovan, Rinkeby and Ropsten. Each contract has the same address on all testnets.
+
+| Name          | Address                                                                                                               |
+| ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| CTokenManager | [0xEE5dfDf2e98FdC572786b9E5649cB8Cc93D47a19](https://etherscan.io/address/0x342A6596F50b4Db7c3246C0F4eFb1f06843d7405) |
+| Payroll       | [0x7ee114C3628Ca90119fC699f03665bF9dB8f5faF](https://etherscan.io/address/0xbd6a40Bb904aEa5a49c59050B5395f7484A4203d) |
+| Sablier       | [0xc04Ad234E01327b24a831e3718DBFcbE245904CC](https://etherscan.io/address/0xA4fc358455Febe425536fd1878bE67FfDBDEC59a) |
+
 ## Usage :hammer_and_pick:
 
-To check out and compile the smart contracts for yourself, head to each individual package as presented
-above. For example, here are the instructions for `@sablier/protocol`:
+If you just want to use the dapps, head to [pay.sablier.finance](https://pay.sablier.finance) to create streams and to
+[app.sablier.finance] to withdraw from streams. You'll need an Ethereum wallet and some ERC20 tokens to interact
+with the dapps.
+
+To check out and compile the smart contracts, bootstrap the monorepo and head to each individual package as presented
+above. For example, these are the instructions for `@sablier/protocol`:
 
 ```bash
-cd packages/protocol
-truffle compile --all
-truffle migrate --reset --network development
+$ yarn run bootstrap
+$ cd packages/protocol
+$ truffle compile --all
+$ truffle migrate --reset --network development
 ```
 
 ## Contributing :raising_hand_woman:
 
 We highly encourage participation from the community to help shape the development of Sablier. If you are interested in
-contributing or have any questions, please ping us on [Twitter](https://twitter.com/SablierHQ) or [Telegram](https://t.me/sablier);
+contributing or have any questions, ping us on [Twitter](https://twitter.com/sablierhq) or [Telegram](https://t.me/sablier);
 
 We use [Yarn](https://yarnpkg.com/) as a dependency manager and [Truffle](https://github.com/trufflesuite/truffle)
 as a development environment for compiling, testing, and deploying our contracts. The contracts were written in [Solidity](https://github.com/ethereum/solidity).
@@ -119,6 +142,16 @@ To lint a specific package:
 ```bash
 $ PKG=@sablier/protocol yarn lint
 ```
+
+### Prettier
+
+To run prettier on all packages:
+
+```bash
+$ yarn prettier
+```
+
+Prettier cannot be run on individual packages.
 
 ### Test
 
