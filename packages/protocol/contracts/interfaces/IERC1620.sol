@@ -47,8 +47,8 @@ interface IERC1620 {
             address token,
             uint256 startTime,
             uint256 stopTime,
-            uint256 balance,
-            uint256 rate
+            uint256 remainingBalance,
+            uint256 ratePerSecond
         );
 
     function createStream(address recipient, uint256 deposit, address tokenAddress, uint256 startTime, uint256 stopTime)

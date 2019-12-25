@@ -224,7 +224,7 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
      *  between `stopTime` and `startTime, whichever is smaller. If `block.timestamp` is before
      *  `startTime`, it returns 0.
      * @dev Throws if the id does not point to a valid stream.
-     * @param streamId The id of the stream for whom to query the delta.
+     * @param streamId The id of the stream for which to query the delta.
      * @return The time delta in seconds.
      */
     function deltaOf(uint256 streamId) public view streamExists(streamId) returns (uint256 delta) {
@@ -244,8 +244,8 @@ contract Sablier is IERC1620, OwnableWithoutRenounce, PausableWithoutRenounce, E
     /**
      * @notice Returns the available funds for the given stream id and address.
      * @dev Throws if the id does not point to a valid stream.
-     * @param streamId The id of the stream for whom to query the balance.
-     * @param who The address for whom to query the balance.
+     * @param streamId The id of the stream for which to query the balance.
+     * @param who The address for which to query the balance.
      * @return The total funds allocated to `who` as uint256.
      */
     function balanceOf(uint256 streamId, address who) public view streamExists(streamId) returns (uint256 balance) {
