@@ -65,8 +65,8 @@ These are Goerli, Kovan, Rinkeby and Ropsten. Each contract has the same address
 
 ## Usage :hammer_and_pick:
 
-If you just want to use the dapps, head to [pay.sablier.finance](https://pay.sablier.finance) to create streams and to
-[app.sablier.finance] to withdraw from streams. You'll need an Ethereum wallet and some ERC20 tokens to interact
+If you just want to use the dapps, head to [pay.sablier.finance](https://pay.sablier.finance) to create streams and
+[app.sablier.finance](https://app.sablier.finance) to withdraw from streams. You'll need an Ethereum wallet and some ERC20 tokens to interact
 with the dapps.
 
 To check out and compile the smart contracts, bootstrap the monorepo and head to each individual package as presented
