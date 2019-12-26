@@ -47,21 +47,21 @@ Diligence](https://github.com/sablierhq/sablier/tree/audit-v1).
 
 ### Ethereum Mainnet
 
-| Name          | Address                                                                                                               |
-| ------------- | --------------------------------------------------------------------------------------------------------------------- |
-| CTokenManager | [0x342A6596F50b4Db7c3246C0F4eFb1f06843d7405](https://etherscan.io/address/0x342A6596F50b4Db7c3246C0F4eFb1f06843d7405) |
-| Payroll       | [0xbd6a40Bb904aEa5a49c59050B5395f7484A4203d](https://etherscan.io/address/0xbd6a40Bb904aEa5a49c59050B5395f7484A4203d) |
-| Sablier       | [0xA4fc358455Febe425536fd1878bE67FfDBDEC59a](https://etherscan.io/address/0xA4fc358455Febe425536fd1878bE67FfDBDEC59a) |
+| Name          | Description                      | Address                                                                                                               |
+| ------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| CTokenManager | Whitelist and discard cTokens    | [0x342A6596F50b4Db7c3246C0F4eFb1f06843d7405](https://etherscan.io/address/0x342A6596F50b4Db7c3246C0F4eFb1f06843d7405) |
+| Payroll       | Proxy used in our web interfaces | [0xbd6a40Bb904aEa5a49c59050B5395f7484A4203d](https://etherscan.io/address/0xbd6a40Bb904aEa5a49c59050B5395f7484A4203d) |
+| Sablier       | Money streaming engine           | [0xA4fc358455Febe425536fd1878bE67FfDBDEC59a](https://etherscan.io/address/0xA4fc358455Febe425536fd1878bE67FfDBDEC59a) |
 
 ### Ethereum Testnets
 
 These are Goerli, Kovan, Rinkeby and Ropsten. Each contract has the same address on all testnets.
 
-| Name          | Address                                                                                                               |
-| ------------- | --------------------------------------------------------------------------------------------------------------------- |
-| CTokenManager | [0xEE5dfDf2e98FdC572786b9E5649cB8Cc93D47a19](https://etherscan.io/address/0x342A6596F50b4Db7c3246C0F4eFb1f06843d7405) |
-| Payroll       | [0x7ee114C3628Ca90119fC699f03665bF9dB8f5faF](https://etherscan.io/address/0xbd6a40Bb904aEa5a49c59050B5395f7484A4203d) |
-| Sablier       | [0xc04Ad234E01327b24a831e3718DBFcbE245904CC](https://etherscan.io/address/0xA4fc358455Febe425536fd1878bE67FfDBDEC59a) |
+| Name          | Description                      | Address                                                                                                               |
+| ------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| CTokenManager | Whitelist and discard cTokens    | [0xEE5dfDf2e98FdC572786b9E5649cB8Cc93D47a19](https://etherscan.io/address/0xEE5dfDf2e98FdC572786b9E5649cB8Cc93D47a19) |
+| Payroll       | Proxy used in our web interfaces | [0x7ee114C3628Ca90119fC699f03665bF9dB8f5faF](https://etherscan.io/address/0x7ee114C3628Ca90119fC699f03665bF9dB8f5faF) |
+| Sablier       | Money streaming engine           | [0xc04Ad234E01327b24a831e3718DBFcbE245904CC](https://etherscan.io/address/0xc04Ad234E01327b24a831e3718DBFcbE245904CC) |
 
 ## Usage :hammer_and_pick:
 
