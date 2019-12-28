@@ -57,11 +57,11 @@ Diligence](https://github.com/sablierhq/sablier/tree/audit-v1).
 
 These are Goerli, Kovan, Rinkeby and Ropsten. Each contract has the same address on all testnets.
 
-| Name          | Description                      | Address                                                                                                               |
-| ------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| CTokenManager | Whitelist and discard cTokens    | [0xEE5dfDf2e98FdC572786b9E5649cB8Cc93D47a19](https://etherscan.io/address/0xEE5dfDf2e98FdC572786b9E5649cB8Cc93D47a19) |
-| Payroll       | Proxy used in our web interfaces | [0x7ee114C3628Ca90119fC699f03665bF9dB8f5faF](https://etherscan.io/address/0x7ee114C3628Ca90119fC699f03665bF9dB8f5faF) |
-| Sablier       | Money streaming engine           | [0xc04Ad234E01327b24a831e3718DBFcbE245904CC](https://etherscan.io/address/0xc04Ad234E01327b24a831e3718DBFcbE245904CC) |
+| Name          | Description                      | Address                                                                                                                     |
+| ------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| CTokenManager | Whitelist and discard cTokens    | [0xEE5dfDf2e98FdC572786b9E5649cB8Cc93D47a19](https://kovan.etherscan.io/address/0xEE5dfDf2e98FdC572786b9E5649cB8Cc93D47a19) |
+| Payroll       | Proxy used in our web interfaces | [0x7ee114C3628Ca90119fC699f03665bF9dB8f5faF](https://kovan.etherscan.io/address/0x7ee114C3628Ca90119fC699f03665bF9dB8f5faF) |
+| Sablier       | Money streaming engine           | [0xc04Ad234E01327b24a831e3718DBFcbE245904CC](https://kovan.etherscan.io/address/0xc04Ad234E01327b24a831e3718DBFcbE245904CC) |
 
 ## Usage :hammer_and_pick:
 
