@@ -6,6 +6,9 @@
   <a href="https://circleci.com/gh/sablierhq/sablier" alt="CircleCI">
     <img src="https://circleci.com/gh/sablierhq/sablier.svg?style=svg">
   </a>
+  <a href="https://docs.openzeppelin.com/">
+    <img src="https://img.shields.io/badge/built%20with-OpenZeppelin-3677FF" alt="Built with OpenZeppelin">
+  </a>
   <a href="https://coveralls.io/github/sablierhq/sablier?branch=develop">
     <img src="https://coveralls.io/repos/github/sablierhq/sablier/badge.svg?branch=develop" alt="Coverage Status"/>
   </a>
@@ -17,9 +20,6 @@
   </a>
   <a href="https://www.gnu.org/licenses/lgpl-3.0">
     <img src="https://img.shields.io/badge/License-LGPL%20v3-008033.svg" alt="License: LGPL v3">
-  </a>
-  <a href="https://docs.openzeppelin.com/">
-    <img src="https://img.shields.io/badge/built%20with-OpenZeppelin-3677FF" alt="built-with OpenZeppelin">
   </a>
 </p>
 
