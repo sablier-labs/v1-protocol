@@ -78,7 +78,7 @@ function shouldBehaveLikeCancelSalary(alice, bob, eve) {
 
     describe("when the caller is the employee", function() {
       beforeEach(async function() {
-        this.opts = { from: this.company };
+        this.opts = { from: this.employee };
       });
 
       runTests();
