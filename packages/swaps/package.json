@@ -1,0 +1,41 @@
+{
+  "name": "@sablier/swaps",
+  "description": "Smart contracts for the swaps proxy",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sablier",
+    "email": "hello@sablier.finance",
+    "url": "https://sablier.finance"
+  },
+  "bugs": {
+    "url": "https://github.com/sablierhq/sablier/issues"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts-ethereum-package": "2.2.3"
+  },
+  "devDependencies": {
+    "solc": "0.5.11",
+    "solhint": "^2.1.2",
+    "truffle": "5.0.37"
+  },
+  "files": [
+    "/compound",
+    "/interfaces",
+    "/mocks",
+    "/test"
+  ],
+  "homepage": "https://github.com/sablierhq/sablier/tree/develop/packages/shared-contracts#readme",
+  "license": "LGPL-3.0",
+  "main": "./contracts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sablierhq/sablier.git",
+    "directory": "packages/shared-contracts"
+  },
+  "scripts": {
+    "lint": "solhint --config ../../.solhint.json --max-warnings 0 'compound/**/*.sol' 'interfaces/**/*.sol' 'mocks/**/*.sol' 'test/**/*.sol'"
+  }
+}

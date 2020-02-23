@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "id": "solui-repo-erc20",
+  "title": "Streamed Atomic Swaps",
+  "description": "Deploy your own ERC-20 token and manage it.",
+  "aboutUrl": "https://github.com/TomAFrench/sablier-atomic-swaps",
+  "panels": [
+    {
+      "id": "create",
+      "title": "Create Swap contract",
+      "description": "Perform an atomic swap",
+      "inputs": [
+        {
+          "name": "sablierAddress",
+          "title": "Sablier Address",
+          "type": "address"
+        }
+      ],
+      "execs": [
+        {
+          "type": "deploy",
+          "contract": "StreamedSwap",
+          "args": {
+            "_sablierContractAddress": "@input[sablierAddress]"
+          },
+          "saveResultAsInput": "contractAddress"
+        }
+      ],
+      "outputs": []
+    }
+  ]
+}
