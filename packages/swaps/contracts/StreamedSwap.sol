@@ -206,6 +206,8 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
 
         _cancelStream(swap.streamId1, swap.tokenAddress1, swap.sender);
         _cancelStream(swap.streamId2, swap.tokenAddress2, swap.recipient);
+
+        delete streamedSwaps[swapId];
         return true;
     }
 
