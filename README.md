@@ -35,6 +35,7 @@ Sablier is maintained as a monorepo with multiple sub packages. Please find a co
 | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | [`@sablier/payroll`](/packages/payroll)                   | [![npm](https://img.shields.io/npm/v/@sablier/payroll.svg)](https://www.npmjs.com/package/@sablier/payroll)                   | Payroll proxy                                                     |
 | [`@sablier/protocol`](/packages/protocol)                 | [![npm](https://img.shields.io/npm/v/@sablier/protocol.svg)](https://www.npmjs.com/package/@sablier/protocol)                 | Money streaming protocol                                          |
+| [`@sablier/swaps`](/packages/swaps)                       | [![npm](https://img.shields.io/npm/v/@sablier/swaps.svg)](https://www.npmjs.com/package/@sablier/swaps)                       | Streamed swaps of tokens                                          |
 | [`@sablier/shared-contracts`](/packages/shared-contracts) | [![npm](https://img.shields.io/npm/v/@sablier/shared-contracts.svg)](https://www.npmjs.com/package/@sablier/shared-contracts) | Smart contracts to be shared across Sablier projects and packages |
 
 ### Private Packages
