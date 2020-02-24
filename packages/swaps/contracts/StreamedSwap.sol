@@ -42,7 +42,7 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
         (, address recipient1, , , , , , ) = sablier.getStream(streamedSwaps[swapId].streamId1);
         (, address recipient2, , , , , , ) = sablier.getStream(streamedSwaps[swapId].streamId2);
 
-        require(msg.sender == recipient1 || msg.sender == recipient2, "caller is not party to the swap");
+        require(msg.sender == recipient1 || msg.sender == recipient2, "caller is not the sender or recipient");
         _;
     }
 

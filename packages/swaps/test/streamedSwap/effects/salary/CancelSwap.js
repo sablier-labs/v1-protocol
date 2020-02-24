@@ -16,21 +16,17 @@ function runTests() {
     });
 
     it("transfers the tokens to the sender of the stream", async function() {
-      const balance = await this.token2.balanceOf(this.company);
+      const balance = await this.token2.balanceOf(this.sender);
       await this.streamedSwap.cancelSwap(this.swapId, this.opts);
-      const newBalance = await this.token2.balanceOf(this.company);
+      const newBalance = await this.token2.balanceOf(this.sender);
       const tolerateByAddition = false;
-      newBalance.should.tolerateTheBlockTimeVariation(
-        balance.minus(streamedAmount).plus(this.salary),
-        STANDARD_SCALE,
-        tolerateByAddition,
-      );
+      newBalance.should.tolerateTheBlockTimeVariation(balance.plus(streamedAmount), STANDARD_SCALE);
     });
 
     it("transfers the tokens to the recipient of the stream", async function() {
-      const balance = await this.token1.balanceOf(this.employee);
+      const balance = await this.token1.balanceOf(this.recipient);
       await this.streamedSwap.cancelSwap(this.swapId, this.opts);
-      const newBalance = await this.token1.balanceOf(this.employee);
+      const newBalance = await this.token1.balanceOf(this.recipient);
       newBalance.should.tolerateTheBlockTimeVariation(balance.plus(streamedAmount), STANDARD_SCALE);
     });
 
@@ -54,8 +50,12 @@ function shouldBehaveLikeCancelSwap(alice, bob, eve) {
 
   describe("when the swap exists", function() {
     beforeEach(async function() {
-      this.opts = { from: this.company };
-      await this.token.approve(this.streamedSwap.address, this.salary, this.opts);
+      this.senderOpts = { from: this.sender };
+      this.recipientOpts = { from: this.recipient };
+
+      await this.token1.approve(this.streamedSwap.address, this.salary, this.senderOpts);
+      await this.token2.approve(this.streamedSwap.address, this.salary, this.recipientOpts);
+
       const result = await this.streamedSwap.createSwap(
         this.recipient,
         this.salary,
@@ -64,7 +64,7 @@ function shouldBehaveLikeCancelSwap(alice, bob, eve) {
         this.token2.address,
         startTime,
         stopTime,
-        this.opts,
+        this.senderOpts,
       );
       this.swapId = Number(result.logs[0].args.swapId);
     });
@@ -91,7 +91,7 @@ function shouldBehaveLikeCancelSwap(alice, bob, eve) {
       it("reverts", async function() {
         await truffleAssert.reverts(
           this.streamedSwap.cancelSwap(this.swapId, opts),
-          "caller is not the sender or the recipient",
+          "caller is not the sender or recipient",
         );
       });
     });

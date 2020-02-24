@@ -101,7 +101,7 @@ function shouldBehaveLikeWithdrawFromSwap(alice, bob, carol, eve) {
       it("reverts", async function() {
         await truffleAssert.reverts(
           this.streamedSwap.withdrawFromSwap(swapId, FIVE_UNITS, opts),
-          "caller is not the sender or receiver",
+          "caller is not the sender or recipient"
         );
       });
     });
