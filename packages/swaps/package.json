@@ -57,5 +57,6 @@
     "lint:js": "eslint --ignore-path ../../.eslintignore .",
     "lint:sol": "solhint --config ../../.solhint.json --max-warnings 0 'contracts/**/*.sol'",
     "test": "scripts/test.sh",
+    "solui": "solui view --spec ./contracts/ui.json --artifacts ./build/contracts"
   }
 }

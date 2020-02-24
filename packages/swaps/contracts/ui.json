@@ -1,19 +1,26 @@
 {
   "version": 1,
-  "id": "solui-repo-erc20",
+  "id": "sablier-atomic-swaps",
   "title": "Streamed Atomic Swaps",
-  "description": "Deploy your own ERC-20 token and manage it.",
-  "aboutUrl": "https://github.com/TomAFrench/sablier-atomic-swaps",
+  "description": "Swap tokens using Sablier",
+  "aboutUrl": "https://github.com/TomAFrench/sablier",
+  "image": {
+    "url": "https://camo.githubusercontent.com/e4a40ffa9d4c7c037871862dbf0d1ae8a6f307ee/68747470733a2f2f692e696d6775722e636f6d2f713655485474312e706e67"
+  },
   "panels": [
     {
-      "id": "create",
-      "title": "Create Swap contract",
-      "description": "Perform an atomic swap",
+      "id": "deploy",
+      "title": "Deploy",
+      "description": "Deploy a Swap Contract",
+      "image": {
+        "url": "https://upload.wikimedia.org/wikipedia/commons/8/89/Google-Cloud-Functions.svg"
+      },
       "inputs": [
         {
-          "name": "sablierAddress",
-          "title": "Sablier Address",
-          "type": "address"
+          "name": "sablier",
+          "title": "Sablier Contract Address",
+          "type": "address",
+          "helpText": "The swap contract needs a Sablier contract to create streams."
         }
       ],
       "execs": [
@@ -21,12 +28,292 @@
           "type": "deploy",
           "contract": "StreamedSwap",
           "args": {
-            "_sablierContractAddress": "@input[sablierAddress]"
+            "_sablierContractAddress": "@input[sablier]"
           },
-          "saveResultAsInput": "contractAddress"
+          "saveResultAsInput": "swapAddress"
         }
       ],
-      "outputs": []
+      "outputs": [
+        {
+          "title": "Swap Contract Address",
+          "value": "@input[swapAddress]",
+          "type": "address"
+        }
+      ]
+    },
+    {
+      "id": "nextSwapId",
+      "title": "Next Swap ID",
+      "description": "Get the SwapID of the next swap",
+      "image": {
+        "url": "https://upload.wikimedia.org/wikipedia/commons/3/38/Info_Simple.svg"
+      },
+      "inputs": [
+        {
+          "name": "swapAddress",
+          "title": "Swap Contract Address",
+          "type": "address"
+        }
+      ],
+      "execs": [
+        {
+          "type": "call",
+          "contract": "StreamedSwap",
+          "address": "@input[swapAddress]",
+          "method": "nextStreamedSwapId",
+          "saveResultAsInput": "swapId"
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Next Swap ID",
+          "value": "@input[swapId]",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": "newSwap",
+      "title": "Create a Swap",
+      "description": "Perform an atomic swap",
+      "image": {
+        "url": "https://upload.wikimedia.org/wikipedia/commons/0/0c/Message_%28Send%29.png"
+      },
+      "inputs": [
+        {
+          "name": "swapAddress",
+          "title": "Swap Contract Address",
+          "type": "address"
+        },
+        {
+          "name": "recipient",
+          "title": "Recipient Address",
+          "type": "address",
+          "helpText": "The address you want to swap tokens with."
+        },
+        {
+          "name": "token1",
+          "title": "Token 1 Address",
+          "type": "address",
+          "helpText": "The address of the token you are sending."
+        },
+        {
+          "name": "token2",
+          "title": "Token 2 Address",
+          "type": "address",
+          "helpText": "The address of the token you are swapping for."
+        },
+        {
+          "name": "deposit1",
+          "title": "Deposit 1 amount",
+          "type": "int",
+          "unit": "Token",
+          "scale": "18",
+          "validation": [
+            {
+              "type": "range",
+              "min": "1",
+              "max": "1000000000"
+            }
+          ],
+          "helpText": "The amount of the token you want to give."
+        },
+        {
+          "name": "deposit2",
+          "title": "Deposit 2 amount",
+          "type": "int",
+          "unit": "Token",
+          "scale": "18",
+          "validation": [
+            {
+              "type": "range",
+              "min": "1",
+              "max": "1000000000"
+            }
+          ],
+          "helpText": "The amount of the token you want to swap for."
+        },
+        {
+          "name": "startTime",
+          "title": "Start Time",
+          "type": "int",
+          "helpText": "When the swap should start."
+        },
+        {
+          "name": "stopTime",
+          "title": "Stop Time",
+          "type": "int",
+          "validation": [
+            {
+              "type": "range",
+              "min": "@input[startTime]"
+            }
+          ],
+          "helpText": "When the swap should end."
+        }
+      ],
+      "execs": [
+        {
+          "type": "send",
+          "contract": "StreamedSwap",
+          "address": "@input[swapAddress]",
+          "method": "CreateStreamedSwap",
+          "args": {
+            "recipient": "@input[recipient]",
+            "deposit1": "@input[deposit1]",
+            "deposit2": "@input[deposit2]",
+            "tokenAddress1": "@input[token1]",
+            "tokenAddress2": "@input[token2]",
+            "startTime": "@input[startTime]",
+            "stopTime": "@input[stopTime]"
+          },
+          "saveResult": "swapID"
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Swap ID",
+          "value": "swapID",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": "getSwap",
+      "title": "Get Swap Info",
+      "description": "Read information related to a Swap ID",
+      "image": {
+        "url": "https://upload.wikimedia.org/wikipedia/commons/3/38/Info_Simple.svg"
+      },
+      "inputs": [
+        {
+          "name": "swapAddress",
+          "title": "Swap Contract Address",
+          "type": "address"
+        },
+        {
+          "name": "swapId",
+          "title": "Swap ID",
+          "type": "int"
+        }
+      ],
+      "execs": [
+        {
+          "type": "call",
+          "contract": "StreamedSwap",
+          "address": "@input[swapAddress]",
+          "method": "getSwap",
+          "args": {
+            "swapId": "@input[swapId]"
+          },
+          "saveResultAsInput": "swapStatus"
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Swap Info",
+          "value": "@input[swapStatus]",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": "getBalance",
+      "title": "Read balance",
+      "description": "Read your balance from a swap",
+      "image": {
+        "url": "https://upload.wikimedia.org/wikipedia/commons/3/38/Info_Simple.svg"
+      },
+      "inputs": [
+        {
+          "name": "swapAddress",
+          "title": "Swap Contract Address",
+          "type": "address"
+        },
+        {
+          "name": "swapId",
+          "title": "Swap Id",
+          "type": "int"
+        },
+        {
+          "name": "recipient",
+          "title": "Address",
+          "type": "address"
+        }
+      ],
+      "execs": [
+        {
+          "type": "call",
+          "contract": "StreamedSwap",
+          "address": "@input[swapAddress]",
+          "method": "balanceOf",
+          "args": {
+            "swapId": "@input[swapId]",
+            "who": "@input[recipient]"
+          },
+          "saveResultAsInput": "balance"
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Balance",
+          "value": "@input[balance]",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": "withdrawBalance",
+      "title": "Withdraw balance",
+      "description": "Withdraw swapped tokens",
+      "image": {
+        "url": "https://upload.wikimedia.org/wikipedia/commons/0/0c/Message_%28Send%29.png"
+      },
+      "inputs": [
+        {
+          "name": "swapAddress",
+          "title": "Swap Contract Address",
+          "type": "address"
+        },
+        {
+          "name": "swapId",
+          "title": "Swap Id",
+          "type": "int"
+        },
+        {
+          "name": "amount",
+          "title": "Withdrawal Amount",
+          "type": "int",
+          "unit": "Token",
+          "scale": "18",
+          "validation": [
+            {
+              "type": "range",
+              "min": "1",
+              "max": "1000000000"
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "send",
+          "contract": "StreamedSwap",
+          "address": "@input[swapAddress]",
+          "method": "withdrawFromSwap",
+          "args": {
+            "swapId": "@input[swapId]",
+            "amount": "@input[amount]"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Balance",
+          "value": "Withdrew Balance!",
+          "type": "string"
+        }
+      ]
     }
   ]
 }
