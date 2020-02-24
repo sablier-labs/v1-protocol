@@ -62,6 +62,20 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
      * @notice Emits when a party of the swap withdraws a portion or all their pro rata share of the swap.
      */
     event WithdrawFromSwap(uint256 indexed swapId, address indexed recipient, uint256 amount);
+
+    /**
+     * @notice Emits when a stream is successfully cancelled and tokens are transferred back on a pro rata basis.
+     */
+    event CancelSwap(
+        uint256 indexed swapId,
+        address indexed sender,
+        address indexed recipient,
+        uint256 senderBalance1,
+        uint256 senderBalance2,
+        uint256 recipientBalance1,
+        uint256 recipientBalance2
+    );
+
     /*********************************
      * @notice - Streamed Atomic Swap
      *********************************/
@@ -204,10 +218,23 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
     {
         SwapTypes.AtomicSwap memory swap = streamedSwaps[swapId];
 
+        (uint256 senderBalance1, uint256 senderBalance2) = balanceOf(swapId, swap.sender);
+        (uint256 recipientBalance1, uint256 recipientBalance2) = balanceOf(swapId, swap.recipient);
+
         _cancelStream(swap.streamId1, swap.tokenAddress1, swap.sender);
         _cancelStream(swap.streamId2, swap.tokenAddress2, swap.recipient);
 
         delete streamedSwaps[swapId];
+
+        emit CancelSwap(
+            swapId,
+            swap.sender,
+            swap.recipient,
+            senderBalance1,
+            senderBalance2,
+            recipientBalance1,
+            recipientBalance2
+        );
         return true;
     }
 
