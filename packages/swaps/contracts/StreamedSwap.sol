@@ -147,10 +147,8 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
         // Withdraw from correct stream for caller to this contract.
         if (msg.sender == swap.sender) {
             sablier.withdrawFromStream(swap.streamId2, amount);
-            IERC20(swap.tokenAddress2).transfer(msg.sender, amount);
         } else if (msg.sender == swap.recipient) {
             sablier.withdrawFromStream(swap.streamId1, amount);
-            IERC20(swap.tokenAddress1).transfer(msg.sender, amount);
         }
 
         // TODO: Add check to see if both streams are exhausted. If so delete the swap
