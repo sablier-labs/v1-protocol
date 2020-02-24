@@ -26,7 +26,6 @@ function runTests() {
         const streamBalance = await this.streamedSwap.balanceOf(this.swapId, this.opts.from)
         await this.streamedSwap.withdrawFromSwap(this.swapId, FIVE_UNITS, this.opts);
         const newStreamBalance = await this.streamedSwap.balanceOf(this.swapId, this.opts.from)
-        console.log(streamBalance, newStreamBalance)
         if (this.token == this.token1) {
           newStreamBalance.balance1.should.tolerateTheBlockTimeVariation(streamBalance.balance1.minus(FIVE_UNITS), STANDARD_SCALE);
         } else if (this.token == this.token2) {
