@@ -58,6 +58,10 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
         uint256 stopTime
     );
 
+    /**
+     * @notice Emits when a party of the swap withdraws a portion or all their pro rata share of the swap.
+     */
+    event WithdrawFromSwap(uint256 indexed swapId, address indexed recipient, uint256 amount);
     /*********************************
      * @notice - Streamed Atomic Swap
      *********************************/
@@ -156,6 +160,7 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
         // delete streamedSwaps[swapId];
         // }
 
+        emit WithdrawFromSwap(swapId, msg.sender, amount);
         return true;
     }
 
