@@ -1,9 +1,7 @@
-/* global artifacts, web3 */
-const BigNumber = require("bignumber.js");
-
+/* global artifacts */
 const StreamedSwap = artifacts.require("./StreamedSwap.sol");
 
-module.exports = async (deployer, network, accounts) => {
+module.exports = async (deployer, _network, _accounts) => {
   if (process.env.CI) {
     return;
   }
@@ -13,11 +11,4 @@ module.exports = async (deployer, network, accounts) => {
   }
 
   await deployer.deploy(StreamedSwap, process.env.SABLIER_ADDRESS);
-
-  // const swapContract = await Payroll.deployed();
-  // const ownerAddress = accounts[0];
-  // const signerAddress = accounts[0];
-  // const sablierAddress = process.env.SABLIER_ADDRESS;
-  // const opts = { from: accounts[0] };
-  // await swapContract.methods["initialize(address,address,address)"](ownerAddress, signerAddress, sablierAddress, opts);
 };
