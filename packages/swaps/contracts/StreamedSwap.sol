@@ -138,7 +138,7 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
         MathError mathErr;
         (mathErr, nextSwapId) = addUInt(swapId, uint256(1));
 
-        require(mathErr == MathError.NO_ERROR, "next stream id calculation error");
+        require(mathErr == MathError.NO_ERROR, "next swap id calculation error");
 
         return swapId;
     }
