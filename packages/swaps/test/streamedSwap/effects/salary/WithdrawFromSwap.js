@@ -22,12 +22,17 @@ function runTests() {
         truffleAssert.eventEmitted(result, "WithdrawFromSwap");
       });
 
-      // it("decreases the stream balance", async function() {
-      //   const balance = await this.sablier.balanceOf(streamId, this.opts.from);
-      //   await this.streamedSwap.withdrawFromSwap(this.swapId, FIVE_UNITS, this.opts);
-      //   const newBalance = await this.sablier.balanceOf(streamId, this.opts.from);
-      //   newBalance.should.tolerateTheBlockTimeVariation(balance.minus(FIVE_UNITS), STANDARD_SCALE);
-      // });
+      it("decreases the stream balance", async function() {
+        const streamBalance = await this.streamedSwap.balanceOf(this.swapId, this.opts.from)
+        await this.streamedSwap.withdrawFromSwap(this.swapId, FIVE_UNITS, this.opts);
+        const newStreamBalance = await this.streamedSwap.balanceOf(this.swapId, this.opts.from)
+        console.log(streamBalance, newStreamBalance)
+        if (this.token == this.token1) {
+          newStreamBalance.balance1.should.tolerateTheBlockTimeVariation(streamBalance.balance1.minus(FIVE_UNITS), STANDARD_SCALE);
+        } else if (this.token == this.token2) {
+          newStreamBalance.balance2.should.tolerateTheBlockTimeVariation(streamBalance.balance2.minus(FIVE_UNITS), STANDARD_SCALE);
+        }
+      });
     });
 
     describe("when the withdrawal amount is not within the available balance", function() {
