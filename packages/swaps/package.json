@@ -3,39 +3,59 @@
   "description": "Smart contracts for the swaps proxy",
   "version": "1.0.0",
   "author": {
-    "name": "Sablier",
-    "email": "hello@sablier.finance",
+    "name": "Tom French",
+    "email": "tom@tomfren.ch",
     "url": "https://sablier.finance"
   },
   "bugs": {
-    "url": "https://github.com/sablierhq/sablier/issues"
+    "url": "https://github.com/TomAFrench/sablier/issues"
   },
   "dependencies": {
-    "@openzeppelin/contracts-ethereum-package": "2.2.3"
+    "@openzeppelin/contracts-ethereum-package": "2.2.3",
+    "@openzeppelin/upgrades": "2.5.2",
+    "@sablier/protocol": "1.0.0"
   },
   "devDependencies": {
+    "@paulrberg/eslint-config": "^1.0.0",
+    "@sablier/dev-utils": "1.0.0",
+    "@sablier/shared-contracts": "1.0.0",
+    "@truffle/hdwallet-provider": "^1.0.18",
+    "dotenv": "^7.0.0",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-import": "^2.18.2",
+    "ganache-cli": "6.5.1",
+    "ganache-time-traveler": "^1.0.5",
+    "istanbul": "^0.4.5",
+    "prettier-plugin-solidity": "^1.0.0-alpha.34",
+    "shx": "^0.3.2",
     "solc": "0.5.11",
     "solhint": "^2.1.2",
-    "truffle": "5.0.37"
+    "solidity-coverage": "0.7.0-beta.0",
+    "truffle": "5.0.37",
+    "web3": "1.2.1",
+    "web3-utils": "1.2.1"
   },
   "files": [
-    "/compound",
-    "/interfaces",
-    "/mocks",
-    "/test"
+    "/contracts"
   ],
-  "homepage": "https://github.com/sablierhq/sablier/tree/develop/packages/shared-contracts#readme",
+  "homepage": "https://github.com/TomAFrench/sablier/tree/develop/packages/swaps#readme",
   "license": "LGPL-3.0",
-  "main": "./contracts",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sablierhq/sablier.git",
-    "directory": "packages/shared-contracts"
+    "url": "https://github.com/TomAFrench/sablier.git",
+    "directory": "packages/swaps"
   },
   "scripts": {
-    "lint": "solhint --config ../../.solhint.json --max-warnings 0 'compound/**/*.sol' 'interfaces/**/*.sol' 'mocks/**/*.sol' 'test/**/*.sol'"
+    "clean": "shx rm -rf ./.0x-artifacts ./artifacts ./build ./coverage ./coverage.json",
+    "coverage": "scripts/coverage.sh",
+    "lint": "yarn lint:js && yarn lint:sol",
+    "lint:js": "eslint --ignore-path ../../.eslintignore .",
+    "lint:sol": "solhint --config ../../.solhint.json --max-warnings 0 'contracts/**/*.sol'",
+    "test": "scripts/test.sh",
   }
 }
