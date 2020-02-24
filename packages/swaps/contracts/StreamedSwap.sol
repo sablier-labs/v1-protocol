@@ -13,7 +13,7 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
     /**
      * @notice Counter for new stream ids.
      */
-    uint256 public nextStreamedSwapId;
+    uint256 public nextSwapId;
 
     /**
      * @notice The swap objects identifiable by their unsigned integer ids.
@@ -23,6 +23,7 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
     Sablier public sablier;
 
     constructor(address _sablierContractAddress) public {
+        require(_sablierContractAddress != address(0x00), "Sablier contract address is zero address.");
         sablier = Sablier(_sablierContractAddress);
     }
 
@@ -62,7 +63,7 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
      *********************************/
 
     // TODO: Add verification that recipient consents to swap
-    function CreateStreamedSwap(
+    function createSwap(
         address recipient,
         uint256 deposit1,
         uint256 deposit2,
@@ -76,10 +77,11 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
          ***/
 
         require(tokenAddress1 != tokenAddress2, "Can't swap token for itself.");
+        require(recipient != address(this), "stream to the contract itself");
 
         // Pull in deposits from users
-        IERC20(tokenAddress1).transferFrom(msg.sender, address(this), deposit1);
-        IERC20(tokenAddress2).transferFrom(recipient, address(this), deposit2);
+        require(IERC20(tokenAddress1).transferFrom(msg.sender, address(this), deposit1), "token transfer failure");
+        require(IERC20(tokenAddress2).transferFrom(recipient, address(this), deposit2), "token transfer failure");
 
         /* Approve the Sablier contract to spend from our tokens. */
         require(IERC20(tokenAddress1).approve(address(sablier), deposit1), "token approval failure");
@@ -91,8 +93,8 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
         uint256 streamId2 = sablier.createStream(msg.sender, deposit2, tokenAddress2, startTime, stopTime);
 
         /* Create and store the swap stream object. */
-        uint256 streamedSwapId = nextStreamedSwapId;
-        streamedSwaps[streamedSwapId] = SwapTypes.AtomicSwap({
+        uint256 swapId = nextSwapId;
+        streamedSwaps[swapId] = SwapTypes.AtomicSwap({
             sender: msg.sender,
             recipient: recipient,
             tokenAddress1: tokenAddress1,
@@ -102,14 +104,8 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
             isEntity: true
         });
 
-        /* Increment the next swap id. */
-        MathError mathErr;
-        (mathErr, nextStreamedSwapId) = addUInt(nextStreamedSwapId, uint256(1));
-
-        require(mathErr == MathError.NO_ERROR, "next stream id calculation error");
-
         emit SwapCreation(
-            streamedSwapId,
+            swapId,
             msg.sender,
             recipient,
             deposit1,
@@ -120,7 +116,13 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
             stopTime
         );
 
-        return streamedSwapId;
+        /* Increment the next swap id. */
+        MathError mathErr;
+        (mathErr, nextSwapId) = addUInt(swapId, uint256(1));
+
+        require(mathErr == MathError.NO_ERROR, "next stream id calculation error");
+
+        return swapId;
     }
 
     /**
@@ -152,7 +154,9 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
         }
 
         // TODO: Add check to see if both streams are exhausted. If so delete the swap
-        // if (!sablier.streamExists(swap.streamId1) && !sablier.streamExists(swap.streamId2) ) delete streamedSwaps[swapId];
+        // if (!sablier.streamExists(swap.streamId1) && !sablier.streamExists(swap.streamId2) ) {
+        // delete streamedSwaps[swapId];
+        // }
 
         return true;
     }
@@ -171,9 +175,10 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
         // This is the amount which needs to be returned to the user
         uint256 senderBalance = sablier.balanceOf(streamId, address(this));
 
-        // Recipient's balance is automatically sent to them by Sablier.sol
+        // Recipient's balance is automatically sent to them by Sablier.sol so don't need to worry
         sablier.cancelStream(streamId);
 
+        // Return unswapped balance to sender
         if (senderBalance > 0)
             require(IERC20(tokenAddress).transfer(sender, senderBalance), "recipient token transfer failure");
         return true;
@@ -212,6 +217,7 @@ contract StreamedSwap is Ownable, CarefulMath, ReentrancyGuard {
     function getSwap(uint256 swapId)
         external
         view
+        swapExists(swapId)
         returns (
             address sender,
             address recipient,
