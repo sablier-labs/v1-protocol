@@ -1,5 +1,5 @@
 const { devConstants } = require("@sablier/dev-utils");
-const { shouldBehaveLikeStreamedSwap } = require("./StreamedSwap.behavior");
+const { shouldBehaveLikeStreamedSwap } = require("./StreamedSwap.behaviour");
 
 const CTokenManager = artifacts.require("./CTokenManager.sol");
 const ERC20Mock = artifacts.require("./ERC20Mock.sol");
@@ -29,6 +29,7 @@ contract("StreamedSwap", function([alice, bob, carol, eve]) {
 
     this.cTokenManager = await CTokenManager.new(opts);
     this.sablier = await Sablier.new(this.cTokenManager.address, opts);
+
     this.streamedSwap = await StreamedSwap.new(this.sablier.address, opts);
   });
 

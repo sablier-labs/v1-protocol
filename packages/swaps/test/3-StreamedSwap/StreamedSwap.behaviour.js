@@ -3,9 +3,9 @@ const truffleAssert = require("truffle-assertions");
 
 const shouldBehaveLikeGetSwap = require("./view/GetSwap");
 
-const shouldBehaveLikeCreateSwap = require("./effects/salary/CreateSwap");
-const shouldBehaveLikeWithdrawFromSwap = require("./effects/salary/WithdrawFromSwap");
-const shouldBehaveLikeCancelSwap = require("./effects/salary/CancelSwap");
+const shouldBehaveLikeExecuteSwap = require("./effects/swap/ExecuteSwap");
+const shouldBehaveLikeWithdrawFromSwap = require("./effects/swap/WithdrawFromSwap");
+const shouldBehaveLikeCancelSwap = require("./effects/swap/CancelSwap");
 
 const StreamedSwap = artifacts.require("./StreamedSwap.sol");
 const { ZERO_ADDRESS } = devConstants;
@@ -29,8 +29,8 @@ function shouldBehaveLikeStreamedSwap(alice, bob, carol, eve) {
   });
 
   describe("effects & interactions functions", function() {
-    describe("createSwap", function() {
-      shouldBehaveLikeCreateSwap(alice, bob);
+    describe("executeSwap", function() {
+      shouldBehaveLikeExecuteSwap(alice, bob);
     });
 
     /**

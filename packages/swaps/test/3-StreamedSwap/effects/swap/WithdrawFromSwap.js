@@ -35,7 +35,7 @@ function runTests() {
     });
 
     describe("when the withdrawal amount is not within the available balance", function() {
-      const withdrawalAmount = FIVE_UNITS.multipliedBy(2).toString(10);
+      const withdrawalAmount = STANDARD_SALARY.multipliedBy(2).toString(10);
 
       it("reverts", async function() {
         await truffleAssert.reverts(
@@ -55,8 +55,7 @@ function shouldBehaveLikeWithdrawFromSwap(alice, bob, carol, eve) {
     const sender = alice;
     const receiver = bob;
     const salary = STANDARD_SALARY.toString(10);
-    const startTime = now.plus(STANDARD_TIME_OFFSET);
-    const stopTime = startTime.plus(STANDARD_TIME_DELTA);
+    const duration = STANDARD_TIME_DELTA;
     // let streamId;
 
     beforeEach(async function() {
@@ -65,24 +64,23 @@ function shouldBehaveLikeWithdrawFromSwap(alice, bob, carol, eve) {
 
       await this.token1.approve(this.streamedSwap.address, salary, optsSender);
       await this.token2.approve(this.streamedSwap.address, salary, optsReceiver);
-      const result = await this.streamedSwap.createSwap(
+      const result = await this.streamedSwap.proposeSwap(
         receiver,
         salary,
         salary,
         this.token1.address,
         this.token2.address,
-        startTime,
-        stopTime,
+        duration,
         optsSender,
       );
-      swapId = Number(result.logs[0].args.swapId);
+      this.swapId = Number(result.logs[0].args.swapId);
+      await this.streamedSwap.executeSwap(this.swapId, optsReceiver);
       // streamId = Number(result.logs[0].args.streamId);
     });
 
     describe("when the caller is the sender", function() {
       beforeEach(async function() {
         this.opts = { from: sender };
-        this.swapId = swapId;
         this.token = this.token2;
       });
 
@@ -92,7 +90,6 @@ function shouldBehaveLikeWithdrawFromSwap(alice, bob, carol, eve) {
     describe("when the caller is the receiver", function() {
       beforeEach(async function() {
         this.opts = { from: receiver };
-        this.swapId = swapId;
         this.token = this.token1;
       });
 
@@ -104,7 +101,7 @@ function shouldBehaveLikeWithdrawFromSwap(alice, bob, carol, eve) {
 
       it("reverts", async function() {
         await truffleAssert.reverts(
-          this.streamedSwap.withdrawFromSwap(swapId, FIVE_UNITS, opts),
+          this.streamedSwap.withdrawFromSwap(this.swapId, FIVE_UNITS, opts),
           "caller is not the sender or recipient"
         );
       });

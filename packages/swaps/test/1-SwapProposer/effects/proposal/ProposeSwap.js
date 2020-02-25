@@ -11,7 +11,7 @@ const {
   ZERO_ADDRESS,
 } = devConstants;
 
-function shouldBehaveLikeCreateSwap(alice, bob) {
+function shouldBehaveLikeProposeSwap(alice, bob) {
   const company = alice;
   const opts = { from: company };
   const now = new BigNumber(dayjs().unix());
@@ -20,47 +20,44 @@ function shouldBehaveLikeCreateSwap(alice, bob) {
     describe("when the payroll contract has enough allowance", function() {
       const employee = bob;
       const salary = STANDARD_SALARY.toString(10);
+      const duration = STANDARD_TIME_DELTA
       const startTime = now.plus(STANDARD_TIME_OFFSET);
       const stopTime = startTime.plus(STANDARD_TIME_DELTA);
 
       beforeEach(async function() {
-        await this.token1.approve(this.streamedSwap.address, salary, opts);
-        await this.token2.approve(this.streamedSwap.address, salary, { from: employee });
+        await this.token1.approve(this.swapProposer.address, salary, opts);
       });
 
-      it("creates the swap", async function() {
-        const result = await this.streamedSwap.createSwap(
+      it("creates the swap proposal", async function() {
+        const result = await this.swapProposer.proposeSwap(
           employee,
           salary,
           salary,
           this.token1.address,
           this.token2.address,
-          startTime,
-          stopTime,
+          duration,
           opts,
         );
         const swapId = Number(result.logs[0].args.swapId);
-        const salaryObject = await this.streamedSwap.contract.methods.getSwap(swapId).call();
-        salaryObject.sender.should.be.equal(company);
-        salaryObject.recipient.should.be.equal(employee);
-        salaryObject.deposit1.should.be.bignumber.equal(salary);
-        salaryObject.deposit2.should.be.bignumber.equal(salary);
-        salaryObject.tokenAddress1.should.be.equal(this.token1.address);
-        salaryObject.tokenAddress2.should.be.equal(this.token2.address);
-        salaryObject.startTime.should.be.bignumber.equal(startTime);
-        salaryObject.stopTime.should.be.bignumber.equal(stopTime);
+        const proposalObject = await this.swapProposer.contract.methods.getSwapProposal(swapId).call();
+        proposalObject.sender.should.be.equal(company);
+        proposalObject.recipient.should.be.equal(employee);
+        proposalObject.deposit1.should.be.bignumber.equal(salary);
+        proposalObject.deposit2.should.be.bignumber.equal(salary);
+        proposalObject.tokenAddress1.should.be.equal(this.token1.address);
+        proposalObject.tokenAddress2.should.be.equal(this.token2.address);
+        proposalObject.duration.should.be.bignumber.equal(duration);
       });
 
       it("transfers the tokens to the contract", async function() {
         const balance = await this.token1.balanceOf(company);
-        await this.streamedSwap.createSwap(
+        await this.swapProposer.proposeSwap(
           employee,
           salary,
           salary,
           this.token1.address,
           this.token2.address,
-          startTime,
-          stopTime,
+          duration,
           opts,
         );
         const newBalance = await this.token1.balanceOf(company);
@@ -68,45 +65,40 @@ function shouldBehaveLikeCreateSwap(alice, bob) {
       });
 
       it("increases the next swap id", async function() {
-        const nextSwapId = await this.streamedSwap.nextSwapId();
-        await this.streamedSwap.createSwap(
+        const nextSwapId = await this.swapProposer.nextSwapId();
+        await this.swapProposer.proposeSwap(
           employee,
           salary,
           salary,
           this.token1.address,
           this.token2.address,
-          startTime,
-          stopTime,
+          duration,
           opts,
         );
-        const newNextSwapId = await this.streamedSwap.nextSwapId();
+        const newNextSwapId = await this.swapProposer.nextSwapId();
         newNextSwapId.should.be.bignumber.equal(nextSwapId.plus(1));
       });
 
       it("emits a SwapCreation event", async function() {
-        const result = await this.streamedSwap.createSwap(
+        const result = await this.swapProposer.proposeSwap(
           employee,
           salary,
           salary,
           this.token1.address,
           this.token2.address,
-          startTime,
-          stopTime,
+          duration,
           opts,
         );
-        truffleAssert.eventEmitted(result, "SwapCreation");
+        truffleAssert.eventEmitted(result, "SwapProposal");
       });
     });
 
     describe("when the swap contract does not have enough allowance", function() {
       const employee = bob;
-      const startTime = now.plus(STANDARD_TIME_OFFSET);
-      const stopTime = startTime.plus(STANDARD_TIME_DELTA);
+      const duration = (STANDARD_TIME_DELTA);
 
       beforeEach(async function() {
-        await this.token1.approve(this.streamedSwap.address, STANDARD_SALARY.minus(5).toString(10), opts);
-        await this.token2.approve(this.streamedSwap.address, STANDARD_SALARY.minus(5).toString(10), opts);
-
+        await this.token1.approve(this.swapProposer.address, STANDARD_SALARY.minus(5).toString(10), opts);
       });
 
       describe("when the company has enough tokens", function() {
@@ -114,14 +106,13 @@ function shouldBehaveLikeCreateSwap(alice, bob) {
 
         it("reverts", async function() {
           await truffleAssert.reverts(
-            this.streamedSwap.createSwap(
+            this.swapProposer.proposeSwap(
               employee,
               salary,
               salary,
               this.token1.address,
               this.token2.address,
-              startTime,
-              stopTime,
+              duration,
               opts,
             ),
             truffleAssert.ErrorType.REVERT,
@@ -134,14 +125,13 @@ function shouldBehaveLikeCreateSwap(alice, bob) {
 
         it("reverts", async function() {
           await truffleAssert.reverts(
-            this.streamedSwap.createSwap(
+            this.swapProposer.proposeSwap(
               employee,
               salary,
               salary,
               this.token1.address,
               this.token2.address,
-              startTime,
-              stopTime,
+              duration,
               opts,
             ),
             truffleAssert.ErrorType.REVERT,
@@ -154,25 +144,22 @@ function shouldBehaveLikeCreateSwap(alice, bob) {
   describe("when the token contract is not erc20", function() {
     const employee = bob;
     const salary = STANDARD_SALARY.toString(10);
-    const startTime = now.plus(STANDARD_TIME_OFFSET);
-    const stopTime = startTime.plus(STANDARD_TIME_DELTA);
+    const duration = STANDARD_TIME_DELTA;
 
     describe("when the token contract is non-compliant", function() {
       beforeEach(async function() {
-        await this.nonStandardERC20Token.nonStandardApprove(this.streamedSwap.address, salary, opts);
-        await this.token2.approve(this.streamedSwap.address, salary, {from: employee});
+        await this.nonStandardERC20Token.nonStandardApprove(this.swapProposer.address, salary, opts);
       });
 
       it("reverts", async function() {
         await truffleAssert.reverts(
-          this.streamedSwap.createSwap(
+          this.swapProposer.proposeSwap(
             employee,
             salary,
             salary,
             this.nonStandardERC20Token.address,
             this.token2.address,
-            startTime,
-            stopTime,
+            duration,
             opts,
           ),
           truffleAssert.ErrorType.REVERT,
@@ -183,7 +170,7 @@ function shouldBehaveLikeCreateSwap(alice, bob) {
     describe("when the token contract is the zero address", function() {
       it("reverts", async function() {
         await truffleAssert.reverts(
-          this.streamedSwap.createSwap(employee, salary, salary, ZERO_ADDRESS, ZERO_ADDRESS, startTime, stopTime, opts),
+          this.swapProposer.proposeSwap(employee, salary, salary, ZERO_ADDRESS, ZERO_ADDRESS, duration, opts),
           truffleAssert.ErrorType.REVERT,
         );
       });
@@ -191,4 +178,4 @@ function shouldBehaveLikeCreateSwap(alice, bob) {
   });
 }
 
-module.exports = shouldBehaveLikeCreateSwap;
+module.exports = shouldBehaveLikeProposeSwap;
