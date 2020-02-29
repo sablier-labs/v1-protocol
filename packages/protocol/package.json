@@ -27,6 +27,7 @@
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-config-prettier": "^6.7.0",
     "eslint-plugin-import": "^2.18.2",
+    "ethers": "^4.0.45",
     "ganache-cli": "6.5.1",
     "ganache-time-traveler": "^1.0.5",
     "istanbul": "^0.4.5",
@@ -37,8 +38,7 @@
     "solidity-coverage": "0.7.0-beta.0",
     "truffle": "5.0.37",
     "truffle-assertions": "^0.8.2",
-    "web3": "1.2.1",
-    "web3-utils": "1.2.1"
+    "web3": "1.2.1"
   },
   "files": [
     "/contracts"

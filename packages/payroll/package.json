@@ -34,8 +34,7 @@
     "solhint": "^2.1.2",
     "solidity-coverage": "0.7.0-beta.0",
     "truffle": "5.0.37",
-    "web3": "1.2.1",
-    "web3-utils": "1.2.1"
+    "web3": "1.2.1"
   },
   "files": [
     "/contracts"
