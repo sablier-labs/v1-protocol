@@ -1,6 +1,6 @@
 <p align="center"><img src="https://i.imgur.com/q6UHTt1.png" width="280px"/></p>
 
-<p align="center">Sablier is the protocol for real-time finance on Ethereum. Read this <a href="https://medium.com/@PaulRBerg/the-protocol-for-real-time-finance-on-ethereum-5a5350db16ae" target="_blank">article</a> to find out more about what we're up to.</p>
+<p align="center">Sablier is the protocol for real-time finance on Ethereum..</p>
 
 <p align="center">
   <a href="https://circleci.com/gh/sablierhq/sablier" alt="CircleCI">
@@ -27,7 +27,7 @@
 
 ## Packages :package:
 
-Sablier is maintained as a monorepo with multiple sub packages. Please find a comprehensive list below.
+We're maintaining this as a monorepo with multiple sub packages.
 
 ### Deployed Packages
 
