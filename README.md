@@ -88,7 +88,7 @@ Finally, if you simply want to use our apps, head to [pay.sablier.finance](https
 ## Contributing :raising_hand_woman:
 
 We highly encourage participation from the community to help shape the development of Sablier. If you are interested in
-contributing or have any questions, ping us on [Twitter](https://twitter.com/sablierhq) or [Telegram](https://t.me/sablier);
+contributing or have any questions, ping us on [Discord](https://discord.gg/KXajCXC).
 
 We use [Yarn](https://yarnpkg.com/) as a dependency manager and [Truffle](https://github.com/trufflesuite/truffle)
 as a development environment for compiling, testing, and deploying our contracts. The contracts were written in [Solidity](https://github.com/ethereum/solidity).
