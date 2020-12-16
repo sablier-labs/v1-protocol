@@ -1,6 +1,6 @@
 <p align="center"><img src="https://i.imgur.com/q6UHTt1.png" width="280px"/></p>
 
-<p align="center">Sablier is the protocol for real-time finance on Ethereum..</p>
+<p align="center">The protocol for real-time finance on Ethereum..</p>
 
 <p align="center">
   <a href="https://circleci.com/gh/sablierhq/sablier" alt="CircleCI">
@@ -31,17 +31,12 @@ We're maintaining this as a monorepo with multiple sub packages.
 
 ### Deployed Packages
 
-| Package                                                   | Version                                                                                                                       | Description                                                       |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [`@sablier/payroll`](/packages/payroll)                   | [![npm](https://img.shields.io/npm/v/@sablier/payroll.svg)](https://www.npmjs.com/package/@sablier/payroll)                   | Payroll proxy                                                     |
-| [`@sablier/protocol`](/packages/protocol)                 | [![npm](https://img.shields.io/npm/v/@sablier/protocol.svg)](https://www.npmjs.com/package/@sablier/protocol)                 | Money streaming protocol                                          |
-| [`@sablier/shared-contracts`](/packages/shared-contracts) | [![npm](https://img.shields.io/npm/v/@sablier/shared-contracts.svg)](https://www.npmjs.com/package/@sablier/shared-contracts) | Smart contracts to be shared across Sablier projects and packages |
-
-### Private Packages
-
-| Package                                     | Description                                                                                                     |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| [`@sablier/dev-utils`](/packages/dev-utils) | [![npm](https://img.shields.io/npm/v/@sablier/dev-utils.svg)](https://www.npmjs.com/package/@sablier/dev-utils) | Dev utils to be shared across Sablier projects and packages |
+| Package                                                   | Description                                                       |
+| --------------------------------------------------------- | ----------------------------------------------------------------- |
+| [`@sablier/dev-utils`](/packages/dev-utils)               | Dev utils to be shared across Sablier projects and packages       |
+| [`@sablier/payroll`](/packages/payroll)                   | Proxy used chiefly in our web interfaces                          |
+| [`@sablier/protocol`](/packages/protocol)                 | Money streaming protocol                                          |
+| [`@sablier/shared-contracts`](/packages/shared-contracts) | Smart contracts to be shared across Sablier projects and packages |
 
 ## Contracts :memo:
 
@@ -58,7 +53,7 @@ Diligence](https://github.com/sablierhq/sablier/tree/audit-v1).
 
 ### Ethereum Testnets
 
-These are Goerli, Kovan, Rinkeby and Ropsten. Each contract has the same address on all testnets.
+#### Kovan, Rinkeby and Ropsten
 
 | Name          | Description                      | Address                                                                                                                     |
 | ------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -66,14 +61,17 @@ These are Goerli, Kovan, Rinkeby and Ropsten. Each contract has the same address
 | Payroll       | Proxy used in our web interfaces | [0x7ee114C3628Ca90119fC699f03665bF9dB8f5faF](https://kovan.etherscan.io/address/0x7ee114C3628Ca90119fC699f03665bF9dB8f5faF) |
 | Sablier       | Money streaming engine           | [0xc04Ad234E01327b24a831e3718DBFcbE245904CC](https://kovan.etherscan.io/address/0xc04Ad234E01327b24a831e3718DBFcbE245904CC) |
 
+#### Goerli
+
+| Name          | Description                      | Address                                                                                                                     |
+| ------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| CTokenManager | Whitelist and discard cTokens    | [0x3b7b1eB1B9C65Db580f673d7599da69Bc1A26338](https://kovan.etherscan.io/address/0x3b7b1eB1B9C65Db580f673d7599da69Bc1A26338) |
+| Payroll       | Proxy used in our web interfaces | [0x8eB93647490DF9989295461AB2AcdEDdCCA84781](https://kovan.etherscan.io/address/0x8eB93647490DF9989295461AB2AcdEDdCCA84781) |
+| Sablier       | Money streaming engine           | [0x590b3974533141a44a89033deEcf932F52fcFDea](https://kovan.etherscan.io/address/0x590b3974533141a44a89033deEcf932F52fcFDea) |
+
 ## Usage :hammer_and_pick:
 
-If you just want to use the dapps, head to [pay.sablier.finance](https://pay.sablier.finance) to create streams and
-[app.sablier.finance](https://app.sablier.finance) to withdraw from streams. You'll need an Ethereum wallet and some ERC20 tokens to interact
-with the dapps.
-
-To check out and compile the smart contracts, bootstrap the monorepo and head to each individual package as presented
-above. For example, these are the instructions for `@sablier/protocol`:
+To compile the smart contracts, bootstrap the monorepo and open the package you'd like to work on. For example, here are the instructions for `@sablier/protocol`:
 
 ```bash
 $ yarn run bootstrap
@@ -81,6 +79,11 @@ $ cd packages/protocol
 $ truffle compile --all
 $ truffle migrate --reset --network development
 ```
+
+If you are looking for a version of Sablier that is stripped out of the integration with cTokens, check out [sablier-smooth-contracts](https://github.com/sablierhq/sablier-smooth-contracts).
+
+Finally, if you simply want to use our apps, head to [pay.sablier.finance](https://pay.sablier.finance) to create streams and
+[app.sablier.finance](https://app.sablier.finance) to withdraw from streams. You'll need an Ethereum wallet and some ERC20 tokens.
 
 ## Contributing :raising_hand_woman:
 
