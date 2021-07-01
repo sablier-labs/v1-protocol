@@ -1,7 +1,7 @@
 # Sablier [![CircleCI](https://circleci.com/gh/sablierhq/sablier.svg?style=svg)](https://circleci.com/gh/sablierhq/sablier) [![Coverage Status](https://coveralls.io/repos/github/sablierhq/sablier/badge.svg?branch=develop)](https://coveralls.io/github/sablierhq/sablier?branch=develop) [![Styled with Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io) [![Commitizen Friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/) [![License: LGPL3.0](https://img.shields.io/badge/License-LGPL%20v3-008033.svg)](https://opensource.org/licenses/lgpl-3.0)
 
-A protocol for money streaming. A good place to start is our [FAQ](https://faq.sablier.finance), while in-depth documentation
-is available at [docs.sablier.finance](https://docs.sablier.finance).
+A protocol for money streaming. Start with our [FAQ](https://faq.sablier.finance) if you want to learn how Sablier works
+at the high-level, and check our [docs](https://docs.sablier.finance) if you want to integrate it in your project.
 
 | Package                                                   | Description                                                       |
 | --------------------------------------------------------- | ----------------------------------------------------------------- |
