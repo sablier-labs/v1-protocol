@@ -1,6 +1,4 @@
-pragma solidity 0.5.11;
-
-import "@sablier/shared-contracts/compound/Exponential.sol";
+pragma solidity =0.5.17;
 
 /**
  * @title Sablier Types
@@ -16,13 +14,6 @@ library Types {
         address recipient;
         address sender;
         address tokenAddress;
-        bool isEntity;
-    }
-
-    struct CompoundingStreamVars {
-        Exponential.Exp exchangeRateInitial;
-        Exponential.Exp senderShare;
-        Exponential.Exp recipientShare;
         bool isEntity;
     }
 }

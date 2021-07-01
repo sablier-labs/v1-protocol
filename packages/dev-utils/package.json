@@ -1,7 +1,7 @@
 {
   "name": "@sablier/dev-utils",
   "description": "Dev utils to be shared across Sablier packages",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "Sablier",
     "email": "hello@sablier.finance",

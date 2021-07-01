@@ -1,15 +1,12 @@
 /* global artifacts, web3 */
 const BigNumber = require("bignumber.js");
 
-const CTokenManager = artifacts.require("./CTokenManager.sol");
 const ERC20Mock = artifacts.require("./ERC20Mock.sol");
 const Sablier = artifacts.require("./Sablier.sol");
 
 module.exports = async (deployer, network, accounts) => {
-  const cTokenManagerInstance = await CTokenManager.deployed();
-  await deployer.deploy(Sablier, cTokenManagerInstance.address);
+  await deployer.deploy(Sablier);
   const sablier = await Sablier.deployed();
-
   if (network !== "development") {
     return;
   }

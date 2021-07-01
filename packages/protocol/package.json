@@ -1,7 +1,7 @@
 {
   "name": "@sablier/protocol",
-  "description": "Smart contracts for the money streaming protocol",
-  "version": "1.0.0",
+  "description": "The Sablier money streaming protocol",
+  "version": "1.1.0",
   "author": {
     "name": "Sablier",
     "email": "hello@sablier.finance",
@@ -11,7 +11,7 @@
     "url": "https://github.com/sablierhq/sablier/issues"
   },
   "dependencies": {
-    "@openzeppelin/contracts-ethereum-package": "2.2.3"
+    "@openzeppelin/contracts": "2.3.0"
   },
   "devDependencies": {
     "@paulrberg/eslint-config": "1.0.0",
@@ -33,7 +33,7 @@
     "istanbul": "^0.4.5",
     "prettier-plugin-solidity": "^1.0.0-alpha.34",
     "shx": "^0.3.2",
-    "solc": "0.5.11",
+    "solc": "0.5.17",
     "solhint": "^2.1.2",
     "solidity-coverage": "0.7.0-beta.0",
     "truffle": "5.0.37",
@@ -54,7 +54,7 @@
     "directory": "packages/protocol"
   },
   "scripts": {
-    "clean": "shx rm -rf ./.0x-artifacts ./artifacts ./build ./coverage ./coverage.json",
+    "clean": "shx rm -rf ./artifacts ./build ./coverage ./coverage.json",
     "coverage": "scripts/coverage.sh",
     "lint": "yarn lint:js && yarn lint:sol",
     "lint:js": "eslint --ignore-path ../../.eslintignore .",

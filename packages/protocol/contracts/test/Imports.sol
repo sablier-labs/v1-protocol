@@ -1,7 +1,6 @@
-pragma solidity 0.5.11;
+pragma solidity =0.5.17;
 
-import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
-import "@sablier/shared-contracts/mocks/CERC20Mock.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Mintable.sol";
 import "@sablier/shared-contracts/mocks/ERC20Mock.sol";
 import "@sablier/shared-contracts/test/EvilERC20.sol";
 import "@sablier/shared-contracts/test/NonStandardERC20.sol";

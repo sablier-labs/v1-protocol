@@ -1,7 +1,7 @@
 {
   "name": "@sablier/shared-contracts",
   "description": "Solidity contracts to be shared across Sablier packages",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "Sablier",
     "email": "hello@sablier.finance",
@@ -11,16 +11,15 @@
     "url": "https://github.com/sablierhq/sablier/issues"
   },
   "dependencies": {
-    "@openzeppelin/contracts-ethereum-package": "2.2.3"
+    "@openzeppelin/contracts": "2.3.0"
   },
   "devDependencies": {
-    "solc": "0.5.11",
+    "solc": "0.5.17",
     "solhint": "^2.1.2",
     "truffle": "5.0.37"
   },
   "files": [
     "/compound",
-    "/interfaces",
     "/mocks",
     "/test"
   ],
@@ -36,6 +35,6 @@
     "directory": "packages/shared-contracts"
   },
   "scripts": {
-    "lint": "solhint --config ../../.solhint.json --max-warnings 0 'compound/**/*.sol' 'interfaces/**/*.sol' 'mocks/**/*.sol' 'test/**/*.sol'"
+    "lint": "solhint --config ../../.solhint.json --max-warnings 0 'compound/**/*.sol' 'mocks/**/*.sol' 'test/**/*.sol'"
   }
 }

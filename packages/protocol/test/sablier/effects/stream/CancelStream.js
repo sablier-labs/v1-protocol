@@ -70,7 +70,7 @@ function runTests() {
     it("transfers nothing to the sender of the stream", async function() {
       const balance = await this.token.balanceOf(this.sender, this.opts);
       await this.sablier.cancelStream(this.streamId, this.opts);
-      const newBalance = await this.token.balanceOf(this.recipient, this.opts);
+      const newBalance = await this.token.balanceOf(this.sender, this.opts);
       newBalance.should.be.bignumber.equal(balance);
     });
 

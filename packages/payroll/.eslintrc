@@ -1,6 +1,0 @@
-{
-  "env": {
-    "node": true
-  },
-  "extends": ["airbnb-base", "@paulrberg/eslint-config"]
-}

@@ -1,11 +1,10 @@
-pragma solidity 0.5.11;
+pragma solidity >=0.5.17;
 
 /**
- * @title ERC-1620 Money Streaming Standard
+ * @title ISablier
  * @author Sablier
- * @dev See https://eips.ethereum.org/EIPS/eip-1620
  */
-interface IERC1620 {
+interface ISablier {
     /**
      * @notice Emits when a stream is successfully created.
      */
