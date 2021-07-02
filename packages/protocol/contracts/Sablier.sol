@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@sablier/shared-contracts/compound/CarefulMath.sol";
 
-import "./ISablier.sol";
+import "./interfaces/ISablier.sol";
 import "./Types.sol";
 
 /**
