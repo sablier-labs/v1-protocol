@@ -48,6 +48,13 @@ module.exports = {
       port: "8545",
       skipDryRun: true,
     },
+    goerli: {
+      provider: createProvider("goerli"),
+      gas: "6000000",
+      gasPrice: ethers.utils.parseUnits("10", "gwei").toString(),
+      network_id: "5",
+      skipDryRun: true,
+    },
     kovan: {
       provider: createProvider("kovan"),
       gas: "6000000",
