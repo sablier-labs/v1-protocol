@@ -1,7 +1,7 @@
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
-Copyright (C) 2019-2020 Sablier <https://sablier.finance>
+Copyright (C) 2019-2021 Sablier <https://sablier.finance>
 Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.
 
