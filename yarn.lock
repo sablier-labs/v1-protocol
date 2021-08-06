@@ -1679,11 +1679,6 @@
     eslint "^6.7.0"
     eslint-config-prettier "^6.7.0"
 
-"@paulrberg/eslint-config@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/@paulrberg/eslint-config/-/eslint-config-1.0.1.tgz#9c28dfc1bb0ad1aef932bb58ea2b7da15d802ae1"
-  integrity sha512-BwPnQftlyKBYdl6/aZNN5YeUY6bCDmjiO18V21Od9RgQ7s9uQpah+380ZP6/zjFNIUfy+kxG1LhtKzryTAkrDw==
-
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.npmjs.org/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"

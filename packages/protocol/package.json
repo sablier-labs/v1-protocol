@@ -15,8 +15,8 @@
   },
   "devDependencies": {
     "@paulrberg/eslint-config": "1.0.0",
-    "@sablier/dev-utils": "1.0.0",
-    "@sablier/shared-contracts": "1.0.0",
+    "@sablier/dev-utils": "1.1.0",
+    "@sablier/shared-contracts": "1.1.0",
     "@truffle/hdwallet-provider": "^1.0.18",
     "bignumber.js": "8.1.1",
     "chai": "^4.2.0",
