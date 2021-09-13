@@ -17,7 +17,7 @@
     "@paulrberg/eslint-config": "1.0.0",
     "@sablier/dev-utils": "1.1.0",
     "@sablier/shared-contracts": "1.1.0",
-    "@truffle/hdwallet-provider": "^1.0.18",
+    "@truffle/hdwallet-provider": "^1.5.0",
     "bignumber.js": "8.1.1",
     "chai": "^4.2.0",
     "chai-bignumber": "3.0.0",
