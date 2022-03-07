@@ -36,7 +36,7 @@
     "solc": "0.5.17",
     "solhint": "^2.1.2",
     "solidity-coverage": "0.7.0-beta.0",
-    "truffle": "5.0.37",
+    "truffle": "^5.5.3",
     "truffle-assertions": "^0.8.2",
     "web3": "1.2.1"
   },

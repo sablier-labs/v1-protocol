@@ -16,7 +16,7 @@
   "devDependencies": {
     "solc": "0.5.17",
     "solhint": "^2.1.2",
-    "truffle": "5.0.37"
+    "truffle": "^5.5.3"
   },
   "files": [
     "/compound",
