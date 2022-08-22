@@ -1,12 +1,12 @@
 # Sablier [![CircleCI](https://circleci.com/gh/sablierhq/sablier.svg?style=svg)](https://circleci.com/gh/sablierhq/sablier) [![Coverage Status](https://coveralls.io/repos/github/sablierhq/sablier/badge.svg?branch=develop)](https://coveralls.io/github/sablierhq/sablier?branch=develop) [![Styled with Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io) [![Commitizen Friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/) [![License: LGPL3.0](https://img.shields.io/badge/License-LGPL%20v3-008033.svg)](https://opensource.org/licenses/lgpl-3.0)
 
-A protocol for money streaming. Start with our [FAQ](https://faq.sablier.finance) if you want to learn how Sablier works
-at the high-level, and check our [docs](https://docs.sablier.finance) if you want to integrate it in your project.
+The source code of the Sablier token streaming protocol. Start with our [FAQ](https://docs.sablier.finance/protocol/faq/basics) to get a
+high-level understanding of how Sablier works, and see our [docs](https://docs.sablier.finance) if you want to integrate it in your project.
 
 | Package                                                   | Description                                                       |
 | --------------------------------------------------------- | ----------------------------------------------------------------- |
 | [`@sablier/dev-utils`](/packages/dev-utils)               | Dev utils to be shared across Sablier projects and packages       |
-| [`@sablier/protocol`](/packages/protocol)                 | Money streaming protocol                                          |
+| [`@sablier/protocol`](/packages/protocol)                 | The core token streaming protocol                                 |
 | [`@sablier/shared-contracts`](/packages/shared-contracts) | Smart contracts to be shared across Sablier projects and packages |
 
 ## Usage :hammer_and_pick:
