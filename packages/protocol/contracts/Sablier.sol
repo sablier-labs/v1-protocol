@@ -90,7 +90,7 @@ contract Sablier is ISablier, ReentrancyGuard, CarefulMath {
 
     /**
      * @notice Returns either the delta in seconds between `block.timestamp` and `startTime` or
-     *  between `stopTime` and `startTime, whichever is smaller. If `block.timestamp` is before
+     *  between `stopTime` and `startTime`, whichever is smaller. If `block.timestamp` is before
      *  `startTime`, it returns 0.
      * @dev Throws if the id does not point to a valid stream.
      * @param streamId The id of the stream for which to query the delta.
