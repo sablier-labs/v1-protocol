@@ -34,6 +34,9 @@
     "url": "https://github.com/sablier-labs/v1-protocol.git",
     "directory": "packages/shared-contracts"
   },
+  "resolutions": {
+    "ethereumjs-abi": "https://registry.npmjs.org/ethereumjs-abi/-/ethereumjs-abi-0.6.8.tgz"
+  },
   "scripts": {
     "lint": "solhint --config ../../.solhint.json --max-warnings 0 'compound/**/*.sol' 'mocks/**/*.sol' 'test/**/*.sol'"
   }

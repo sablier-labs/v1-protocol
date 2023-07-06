@@ -53,6 +53,9 @@
     "url": "https://github.com/sablier-labs/v1-protocol.git",
     "directory": "packages/protocol"
   },
+  "resolutions": {
+    "ethereumjs-abi": "https://registry.npmjs.org/ethereumjs-abi/-/ethereumjs-abi-0.6.8.tgz"
+  },
   "scripts": {
     "clean": "shx rm -rf ./artifacts ./build ./coverage ./coverage.json",
     "coverage": "scripts/coverage.sh",

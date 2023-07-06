@@ -8,6 +8,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Change git protocol
+          command: git config --global url."https://".insteadOf git://
+      - run:
           name: "Install Dependencies"
           command: yarn install
       - run:
@@ -59,7 +62,7 @@ jobs:
           command: yarn coverage
       - run:
           name: "Merge Results and Upload to Coveralls"
-          command: "yarn lcov-result-merger \"packages/**/coverage/lcov.info\"| yarn coveralls"
+          command: 'yarn lcov-result-merger "packages/**/coverage/lcov.info"| yarn coveralls'
 workflows:
   version: 2
   main:
