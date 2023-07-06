@@ -22,7 +22,7 @@ Make sure to have a running [Ganache](https://truffleframework.com/ganache) inst
 ## Contributing
 
 We highly encourage participation from the community to help shape the development of Sablier. If you are interested in
-contributing or have any questions, please ping us on [Twitter](https://twitter.com/sablierhq).
+contributing or have any questions, please ping us on [Discord](https://discord.gg/bSwRCwWRsT).
 
 ### Install Modules
 
