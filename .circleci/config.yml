@@ -4,15 +4,9 @@ jobs:
   build:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:10.15.3
+      - image: cimg/node:16.20
     steps:
       - checkout
-      - run:
-          name: "Update NPM"
-          command: sudo npm install -g npm@6.10.2
-      - run:
-          name: "Install Yarn"
-          command: sudo npm install -g yarn@1.17.3
       - run:
           name: "Install Dependencies"
           command: yarn install
@@ -26,7 +20,7 @@ jobs:
   lint:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:10.15.3
+      - image: cimg/node:16.20
     steps:
       - restore_cache:
           keys:
@@ -40,7 +34,7 @@ jobs:
   test:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:10.15.3
+      - image: cimg/node:16.20
       - image: trufflesuite/ganache-cli:v6.5.1
         command: ganache-cli -i 1234 -p 8545 -e 10000000 -l 6721975
     steps:
@@ -53,7 +47,7 @@ jobs:
   coverage:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:10.15.3
+      - image: cimg/node:16.20
       - image: trufflesuite/ganache-cli:v6.5.1
         command: ganache-cli -i 1234 -p 8545 -e 10000000 -l 6721975
     steps:
