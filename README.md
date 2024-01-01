@@ -1,7 +1,8 @@
-# Sablier [![CircleCI](https://circleci.com/gh/sablier-labs/v1-protocol.svg?style=svg)](https://circleci.com/gh/sablier-labs/v1-protocol) [![Coverage Status](https://coveralls.io/repos/github/sablier-labs/v1-protocol/badge.svg?branch=develop)](https://coveralls.io/github/sablier-labs/v1-protocol?branch=develop) [![Styled with Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io) [![Commitizen Friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/) [![License: LGPL3.0](https://img.shields.io/badge/License-LGPL%20v3-008033.svg)](https://opensource.org/licenses/lgpl-3.0)
+# Sablier V1 [![CircleCI](https://circleci.com/gh/sablier-labs/v1-protocol.svg?style=svg)](https://circleci.com/gh/sablier-labs/v1-protocol) [![Coverage Status](https://coveralls.io/repos/github/sablier-labs/v1-protocol/badge.svg?branch=develop)](https://coveralls.io/github/sablier-labs/v1-protocol?branch=develop) [![Styled with Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io) [![Commitizen Friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/) [![License: LGPL3.0](https://img.shields.io/badge/License-LGPL%20v3-008033.svg)](https://opensource.org/licenses/lgpl-3.0)
 
-The source code of the Sablier token streaming protocol. Start with our [FAQ](https://docs.sablier.finance/protocol/faq/basics) to get a
-high-level understanding of how Sablier works, and see our [docs](https://docs.sablier.finance) if you want to integrate it in your project.
+This is the source code of the Sablier V1 token streaming protocol, which is a legacy release. The most recent release is V2 and can be found [here](https://github.com/sablier-labs/v2-core). For more details about how Sablier works, check out our docs at [docs.sablier.com](https://docs.sablier.com)/.
+
+This repo is structured as a monorepo:
 
 | Package                                                   | Description                                                       |
 | --------------------------------------------------------- | ----------------------------------------------------------------- |
@@ -20,12 +21,12 @@ $ truffle compile --all
 $ truffle migrate --reset --network development
 ```
 
-Alternatively, if you simply want to use our apps, head to [pay.sablier.finance](https://pay.sablier.finance) to create streams and
-[app.sablier.finance](https://app.sablier.finance) to withdraw from streams. You'll need an Ethereum wallet and some ERC20 tokens.
+Alternatively, if you simply want to use the UI, head to [v1-pay.sablier.com](https://v1-pay.sablier.com) to create streams and
+[v1-app.sablier.com](https://v1-app.sablier.com) to withdraw from streams. You'll need an Ethereum wallet and some ERC20 tokens.
 
 ## Contributing :raising_hand_woman:
 
-We highly encourage participation from the community to help shape the development of Sablier. If you are interested in
+Participation from the community is crucial for shaping the future development of Sablier. If you are interested in
 contributing or have any questions, ping us on [Discord](https://discord.gg/KXajCXC).
 
 We use [Yarn](https://yarnpkg.com/) as a dependency manager and [Truffle](https://github.com/trufflesuite/truffle)
@@ -39,13 +40,13 @@ as a development environment for compiling, testing, and deploying our contracts
 
 ### Pre Requisites
 
-Make sure you are using Yarn >=1.17.3 To install using homebrew:
+Make sure you are using Yarn >=1.17.3.
 
 ```bash
-$ brew install yarn
+$ npm install --global yarn
 ```
 
-Then install dependencies:
+Then, install dependencies:
 
 ```bash
 $ yarn install
